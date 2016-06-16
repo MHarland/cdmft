@@ -1,0 +1,8 @@
+import unittest
+
+from Bethe.impuritysolver import ImpuritySolver
+
+class TestImpuritySolver(unittest.TestCase):
+
+    def test_ImpuritySolver_initialization(self):
+        solver = ImpuritySolver(10, {'u': range(2)})

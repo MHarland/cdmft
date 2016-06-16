@@ -1,0 +1,15 @@
+import unittest, numpy as np
+
+from Bethe.gfoperations import double_dot_product, sum
+
+class TestGfOperations(unittest.TestCase):
+
+    def test_sum(self):
+        summands = [1,2,3]
+        self.assertEqual(sum(summands), 6)
+
+    def test_double_dot_product_2by2(self):
+        a = np.array([[1,2],[0,3]])
+        b = np.array([[4,5],[6,7]])
+        c = np.array([[8,9],[10,11]])
+        self.assertEqual(double_dot_product(a, b, c), a.dot(b.dot(c)))
