@@ -1,21 +1,26 @@
 from impuritysolver import ImpuritySolver
 from weissfield import WeissField
 from glocal import GLocal
+from storage import LoopStorage
 
 
 class DMFT:
 
-    def __init__(self, parameters, hamiltonian):
-        self.params = Parameters(parameters)
-        self.params.check_for_missing()
-        #self.storage = Storage()
-        
-        self.impuity_solver = ImpuritySolver(**self.params.impurity_solver["init"])
-        self.g0 = WeissField(**self.params.matsubara_greensfunction)
-        self.g_loc = GLocal(**self.params.matsubara_greensfunction)
-        self.mu = 
-        self.hamiltonian = hamiltonian
-        
+    def __init__(self, parameters, system, archive_name):
+        self.sys = system
+        self.par = parameters({"beta": self.sys.beta, "gf_struct": self.sys.gf_struct})
+        self.storage = LoopStorage(archive_name)
+        self.impurity_solver = ImpuritySolver(*self.par.init_solver())
+        self.g0 = WeissField(*(self.par.init_gf_iw() + [self.sys.t, self.sys.t_loc]))
+        if self.storage.provide_last_g_loc() is None:
+            self.g_loc = self.sys.initial_guess.copy()
+        else:
+            self.g_loc = self.storage.provide_last_g_loc()
 
-    def run_loops(self, n_loops):
-        self.g0.calc_selfconsistency(self.g_loc, self.mu)
+    def run_loops(self, n_loops, **parameters_dict):
+        self.par.set(parameters_dict)
+        for i in range(n_loops):
+            self.g0.calc_selfconsistency(self.g_loc, self.sys.mu)
+            self.impurity_solver.run(self.g0.gf, self.sys.h_int, **self.par.run_solver())
+            self.g_loc = self.impurity_solver.get_g_iw()
+            self.storage.save_loop(self.impurity_solver.get_results())
