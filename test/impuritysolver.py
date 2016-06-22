@@ -2,7 +2,7 @@ import unittest
 from pytriqs.operators import c, c_dag
 from pytriqs.gf.local import BlockGf, GfImFreq, SemiCircular, iOmega_n, inverse
 
-from Bethe.impuritysolver import ImpuritySolver
+from bethe.impuritysolver import ImpuritySolver
 
 
 class TestImpuritySolver(unittest.TestCase):

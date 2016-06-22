@@ -61,4 +61,3 @@ class LoopStorage:
                 g_loc = self.dmft_results[str(last_loop)]["g_iw"]
         g_loc = mpi.bcast(g_loc)
         return g_loc
-            

@@ -1,5 +1,6 @@
 from pytriqs.gf.local import BlockGf, GfImFreq, iOmega_n, inverse
 
+
 class MatsubaraGreensFunction:
     
     def __init__(self, block_names, block_states, beta, n_iw):
@@ -10,5 +11,3 @@ class MatsubaraGreensFunction:
                           block_list = [GfImFreq(indices = states,
                                                  beta = beta,
                                                  n_points = n_iw) for states in block_states])
-
-matsubara_greensfunction_parameters = ["block_names", "block_states", "beta", "n_iw"]

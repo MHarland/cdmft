@@ -1,6 +1,6 @@
-from Bethe.parameters import DefaultDMFTParameters
-from Bethe.dmft import DMFT
-from Bethe.systems import SingleSiteBethe
+from bethe.parameters import DefaultDMFTParameters
+from bethe.dmft import DMFT
+from bethe.systems import SingleSiteBethe
 
 
 sys = SingleSiteBethe(10, 3, 6)

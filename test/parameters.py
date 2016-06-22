@@ -1,6 +1,6 @@
 import unittest
 
-from Bethe.parameters import DMFTParameters, UnkownParameters, MissingParameters, DefaultDMFTParameters
+from bethe.parameters import DMFTParameters, UnkownParameters, MissingParameters, DefaultDMFTParameters
 
 
 class TestDMFTParameters(unittest.TestCase):
@@ -37,5 +37,3 @@ class TestDMFTParameters(unittest.TestCase):
 
     def test_defaultparameters_initialization(self):
         p = DefaultDMFTParameters()
-
-    

@@ -8,6 +8,7 @@ from dmft import TestDMFT
 from hamiltonian import TestHamiltonians
 from storage import TestLoopStorage
 
+
 suite = unittest.TestSuite()
 suite.addTest(TestDMFTParameters("test_parameters_initialization"))
 suite.addTest(TestDMFTParameters("test_parameters_recognization"))

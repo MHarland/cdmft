@@ -1,6 +1,6 @@
 import unittest, os
 
-from Bethe.storage import LoopStorage
+from bethe.storage import LoopStorage
 
 
 class TestLoopStorage(unittest.TestCase):

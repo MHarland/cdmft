@@ -1,5 +1,6 @@
 import itertools as itt
 
+
 def double_dot_product(matrix1, gf, matrix2):
     inds = range(matrix1.shape[0])
     prod = gf.copy()

@@ -1,6 +1,6 @@
 import unittest
 
-from Bethe.hamiltonian import HubbardSite
+from bethe.hamiltonian import HubbardSite
 
 
 class TestHamiltonians(unittest.TestCase):

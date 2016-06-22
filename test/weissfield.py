@@ -1,6 +1,6 @@
 import unittest, numpy as np
 
-from Bethe.weissfield import WeissField
+from bethe.weissfield import WeissField
 
 
 class TestWeissField(unittest.TestCase):
