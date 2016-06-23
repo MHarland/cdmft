@@ -2,7 +2,7 @@ import unittest, os
 
 from bethe.parameters import DefaultDMFTParameters
 from bethe.dmft import DMFT
-from bethe.systems import SingleSiteBethe
+from bethe.models import SingleSiteBethe
 
 
 class TestDMFT(unittest.TestCase):

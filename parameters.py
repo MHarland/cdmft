@@ -5,7 +5,7 @@ class DMFTParameters:
     """
     always needs gf_struct and beta
     untouched parameters: random_seed, fit_known_moments
-    treated in system: h_int, t, t_loc, mu, u, initial_guess, gf_struct, beta
+    treated in models: h_int, t, t_loc, mu, u, initial_guess, gf_struct, beta
     """
     def __init__(self, parameter_dict = {}):
         self.solver_run = ["n_cycles", "partition_method", "quantum_numbers", "length_cycle", "n_warmup_cycles", "random_name", "max_time", "verbosity", "move_shift", "move_double", "use_trace_estimator", "measure_g_tau", "measure_g_l", "measure_pert_order", "measure_density_matrix", "use_norm_as_weight", "performance_analysis", "proposal_prob", "imag_threshold", "perform_post_proc", "perform_tail_fit", "fit_min_n", "fit_max_n", "fit_min_w", "fit_max_w", "fit_max_moment"]

@@ -1,9 +1,9 @@
 from bethe.parameters import DefaultDMFTParameters
 from bethe.dmft import DMFT
-from bethe.systems import SingleSiteBethe
+from bethe.models import SingleSiteBethe
 
 
-sys = SingleSiteBethe(10, 3, 6)
+mod = SingleSiteBethe(10, 3, 6)
 par = {"n_iw": 1025,
        "n_tau": 10001,
        # solver:
@@ -23,5 +23,5 @@ par = {"n_iw": 1025,
        "fit_max_n": 1025,
        "fit_max_moment": 3}
 par = DefaultDMFTParameters(par)
-dmft = DMFT(par, sys, "example.h5")
+dmft = DMFT(par, mod, "example.h5")
 dmft.run_loops(3)
