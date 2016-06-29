@@ -1,5 +1,5 @@
 from pytriqs.applications.impurity_solvers.cthyb import Solver
-from pytriqs.gf.local import SemiCircular, LegendreToMatsubara, TailGf, BlockGf, GfImFreq
+from pytriqs.gf.local import SemiCircular, LegendreToMatsubara, TailGf, BlockGf, GfImFreq, inverse
 
 
 class ImpuritySolver:
@@ -41,7 +41,10 @@ class ImpuritySolver:
 
     def _get_g_iw_by_tau(self):
         g_iw = self._init_new_giw()
-        g_iw << self.cthyb.G_iw
+        if self.run_parameters["perform_post_proc"]:
+            g_iw << inverse(inverse(self.cthyb.G0_iw) - self.cthyb.Sigma_iw)
+        else:
+            g_iw << self.cthyb.G_iw
         return g_iw
 
     def _get_g_iw_by_legendre(self):

@@ -23,4 +23,5 @@ class DMFT:
             self.g0.calc_selfconsistency(self.g_loc, self.model.mu)
             self.impurity_solver.run(self.g0.gf, self.model.h_int, **self.par.run_solver())
             self.g_loc = self.impurity_solver.get_g_iw()
-            self.storage.save_loop(self.impurity_solver.get_results())
+            self.storage.save_loop(self.impurity_solver.get_results(),
+                                   {"g_loc_iw": self.g_loc})

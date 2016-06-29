@@ -23,7 +23,10 @@ class LoopStorage:
                 self.dmft_results = self.disk["dmft_results"]
         self.memory_container = objects_to_store
 
-    def save_loop(self, objects_to_store = {}):
+    def save_loop(self, objects_to_store = {}, *args):
+        """args can be an arbitrary number of dicts"""
+        for arg in args:
+            objects_to_store.update(arg)
         self.memory_container.update(objects_to_store)
         new_loop_nr = self.get_completed_loops()
         if mpi.is_master_node():
@@ -51,13 +54,13 @@ class LoopStorage:
         return n_loops
 
     def get_last_loop_nr(self):
-        return self.get_completed_loops - 1
+        return self.get_completed_loops() - 1
 
     def provide_last_g_loc(self):
         g_loc = None
         if self.get_completed_loops() > 0:
             last_loop = self.get_last_loop_nr()
             if mpi.is_master_node():
-                g_loc = self.dmft_results[str(last_loop)]["g_iw"]
+                g_loc = self.dmft_results[str(last_loop)]["g_loc_iw"]
         g_loc = mpi.bcast(g_loc)
         return g_loc
