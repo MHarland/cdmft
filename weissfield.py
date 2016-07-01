@@ -7,7 +7,8 @@ from gfoperations import double_dot_product
 
 class WeissField(MatsubaraGreensFunction):
     """
-RevModPhys.68.13 Eq. (23) generalized to a cluster-impurity, i.e. quantities becoming matrices over the clustersites.
+    RevModPhys.68.13 Eq. (23) generalized to a cluster-impurity, i.e. quantities
+    becoming matrices over the clustersites.
     """
     def __init__(self, name_list, block_states, beta, n_iw, t, t_loc):
         MatsubaraGreensFunction.__init__(self, name_list, block_states, beta, n_iw)
@@ -24,8 +25,7 @@ RevModPhys.68.13 Eq. (23) generalized to a cluster-impurity, i.e. quantities bec
         if not mu is None:
             self.mu = mu
         for bn, b in self.gf:
-            b << inverse(iOmega_n  + self.mu[bn] - self.t_loc[bn]
-                         - self.t**2 * gf_local[bn])
+            b << inverse(iOmega_n  + self.mu[bn] - self.t_loc[bn] - self.t**2 * gf_local[bn])
 
     def set_mu(self, mu_number):
         self.mu = dict([[bn, mu_number * np.identity(len(bs))] for bn, bs in zip(self.block_names, self.block_states)])
