@@ -24,7 +24,7 @@ RevModPhys.68.13 Eq. (23) generalized to a cluster-impurity, i.e. quantities bec
         if not mu is None:
             self.mu = mu
         for bn, b in self.gf:
-            b << inverse(iOmega_n  + self.mu[bn] + self.t_loc[bn]
+            b << inverse(iOmega_n  + self.mu[bn] - self.t_loc[bn]
                          - self.t**2 * gf_local[bn])
 
     def set_mu(self, mu_number):
