@@ -3,7 +3,8 @@ from pytriqs.gf.local import BlockGf, GfImFreq
 
 
 class GfStructTransformationIndex:
-
+    """Supports transformation of vectors. They don't depend on a 2D blockstructure, but indices are grouped differently from struct to struct. Used to transform operators of hamiltonians.
+    """
     def __init__(self, gf_struct_new, gf_struct_old):
         self.gf_struct_new = gf_struct_new
         self.new_blocksizes = [len(b[1]) for b in self.gf_struct_new]
