@@ -8,6 +8,7 @@ from dmft import TestDMFT
 from hamiltonian import TestHamiltonians
 from storage import TestLoopStorage
 from transformation import TestTransformation
+from models import TestModels
 
 
 suite = unittest.TestSuite()
@@ -25,6 +26,7 @@ suite.addTest(TestImpuritySolver("test_ImpuritySolver_initialization"))
 suite.addTest(TestImpuritySolver("test_ImpuritySolver_run"))
 suite.addTest(TestHamiltonians("test_HubbardSite"))
 suite.addTest(TestHamiltonians("test_HubbardPlaquetteMomentum"))
+suite.addTest(TestHamiltonians("test_HubbardPlaquetteMomentumNambu"))
 suite.addTest(TestDMFT("test_dmft_initialization"))
 suite.addTest(TestDMFT("test_dmft_default_run"))
 suite.addTest(TestLoopStorage("test_loopstorage_initialization"))
@@ -32,5 +34,6 @@ suite.addTest(TestLoopStorage("test_loopstorage_get_completed_loops"))
 suite.addTest(TestTransformation("test_GfStructTransformationIndex"))
 suite.addTest(TestTransformation("test_MatrixTransformation"))
 suite.addTest(TestTransformation("test_InterfaceToBlockstructure"))
+suite.addTest(TestModels("test_NambuMomentumPlaquetteBethe_initialization"))
 
 unittest.TextTestRunner(verbosity = 2).run(suite)

@@ -78,6 +78,24 @@ class MatrixTransformation:
                 result[b_new][i1_new, i2_new] = interface_matrix[b_new, i1_new, i2_new]
         return result
 
+    def reblock_by_map(self, matrix, map_dict):
+        """returns a new BlockGf with gf_struct_new. map_dict maps old 3-tupel (block, index1, index2) to a new 3-tupel"""
+        if isinstance(matrix, BlockGf):
+            return self._reblock_gf_by_map(matrix, map_dict)
+        else:
+            return self._reblock_matrix_by_map(matrix, map_dict)
+
+    def _reblock_gf_by_map(self, gf, map_dict):
+        result = BlockGf(name_list = self.gf_struct_names_new, block_list = [GfImFreq(indices = block[1], mesh = matrix.mesh) for block in self.gf_struct_new])
+        for old, new in map_dict.items():
+            result[new[0]][new[1], new[2]] << matrix[old[0]][old[1], old[2]]
+        return result
+
+    def _reblock_matrix_by_map(self, matrix, map_dict):
+        result = dict([[block[0], np.zeros([len(block[1]), len(block[1])])] for block in self.gf_struct_new])
+        for old, new in map_dict.items():
+            result[new[0]][new[1], new[2]] = matrix[old[0]][old[1], old[2]]
+        return result
 
 class InterfaceToBlockstructure:
     """
