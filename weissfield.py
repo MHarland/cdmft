@@ -37,6 +37,10 @@ class WeissFieldNambu(WeissField):
     Modified self-consistency condition since the particle-hole transformation on 
     spin-down is not unitary, gf_struct is considered to be of 2x2 Nambu-blocks
     """
+    def __init__(self, *args, **kwargs):
+        WeissField.__init__(self, *args, **kwargs)
+        self.anom_field = None
+        
     def calc_selfconsistency(self, gf_local, mu = None):
         for name, block in gf_local:
             assert len(block.data[0,:,:]) == 2, "gf_struct not with implemented Nambu self-consistency compatible"
@@ -45,6 +49,19 @@ class WeissFieldNambu(WeissField):
         if not mu is None:
             self.mu = mu
         for bn, b in self.gf:
-            tmp1 = pauli3.dot(self.mu[bn] - self.t_loc[bn])
+            if self.anom_field is None:
+                tmp1 = pauli3.dot(self.mu[bn] - self.t_loc[bn])
+            else:
+                tmp1 = pauli3.dot(self.mu[bn] + self.anom_field[bn] - self.t_loc[bn])
             tmp2 = double_dot_product(pauli3, gf_local[bn], pauli3)
             b << inverse(iOmega_n  + tmp1 - self.t**2 * tmp2)
+
+    def set_anomalous_dwave_field(self, field):
+        if field == None:
+            self.anom_field = None
+        else:
+            self.anom_field = {}
+            for block in self.gf.indices:
+                self.anom_field[block] = np.zeros([2, 2])
+            for block, matrix in field.items():
+                self.anom_field[block] = matrix
