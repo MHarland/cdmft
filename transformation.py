@@ -37,7 +37,7 @@ class MatrixTransformation:
     where U is the transformation_matrix given in gf_struct block structure
     subsequent reblocking into gf_struct_new is optional
     """
-    def __init__(self, gf_struct, transformation_matrix, gf_struct_new = None):
+    def __init__(self, gf_struct, transformation_matrix = None, gf_struct_new = None):
         self.gf_struct = gf_struct
         self.blocksizes = [len(block[1]) for block in self.gf_struct]
         self.mat = transformation_matrix
@@ -86,9 +86,9 @@ class MatrixTransformation:
             return self._reblock_matrix_by_map(matrix, map_dict)
 
     def _reblock_gf_by_map(self, gf, map_dict):
-        result = BlockGf(name_list = self.gf_struct_names_new, block_list = [GfImFreq(indices = block[1], mesh = matrix.mesh) for block in self.gf_struct_new])
+        result = BlockGf(name_list = self.gf_struct_names_new, block_list = [GfImFreq(indices = block[1], mesh = gf.mesh) for block in self.gf_struct_new])
         for old, new in map_dict.items():
-            result[new[0]][new[1], new[2]] << matrix[old[0]][old[1], old[2]]
+            result[new[0]][new[1], new[2]] << gf[old[0]][old[1], old[2]]
         return result
 
     def _reblock_matrix_by_map(self, matrix, map_dict):
@@ -102,6 +102,7 @@ class InterfaceToBlockstructure:
     blocked_matrix m must be an object accessible via m[blockname][index1, index2]
     interface for reading data only, i.e. not writing data into the source
     if data outside blocks is being accessed, getitem returns 0
+    order matters, that is why it is initialized by both structs
     """
     def __init__(self, blocked_matrix, struct_old, struct_new):
         self.source = blocked_matrix

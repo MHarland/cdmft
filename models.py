@@ -1,8 +1,8 @@
-import numpy as np
+import numpy as np, itertools as itt
 from pytriqs.gf.local import BlockGf, GfImFreq, SemiCircular
 
 from hamiltonian import HubbardSite, HubbardPlaquette, HubbardPlaquetteMomentum, HubbardPlaquetteMomentumNambu
-from transformation import MatrixTransformation
+from transformation import MatrixTransformation, InterfaceToBlockstructure
 
 
 class SingleSiteBethe:
@@ -128,7 +128,26 @@ class NambuMomentumPlaquetteBethe:
         for s, b in self.initial_guess:
             b[0, 0] << SemiCircular(self.bandwidth * .5)
             b[1, 1] << -b[0,0]
+        """
         self.initial_guess[x][0, 1] << initial_field_strength
         self.initial_guess[x][1, 0] << initial_field_strength
         self.initial_guess[y][0, 1] << -initial_field_strength
         self.initial_guess[y][1, 0] << -initial_field_strength
+        """
+
+    def set_initial_guess_by_transform(self, g_momentumplaquettebethe):
+        gf_struct_mom = dict([(s+k, [0]) for s in self.spins for k in self.momenta])
+        to_nambu = MatrixTransformation(gf_struct_mom, None, self.gf_struct)
+        up, dn = self.spins
+        #g_nambuspace = InterfaceToBlockstructure(g_momentumplaquettebethe, gf_struct_mom, self.gf_struct)
+        reblock_map = [[(up+'-'+k,0,0), (k,0,0)] for k in self.momenta]
+        reblock_map += [[(dn+'-'+k,0,0), (k,1,1)]  for k in self.momenta]
+        reblock_map = dict(reblock_map)
+        g_momentumplaquettebethe = to_nambu.reblock_by_map(g_momentumplaquettebethe, reblock_map)
+        for block in self.gf_struct:
+            blockname, blockindices = block
+            for i, j in itt.product(*[blockindices]*2):
+                if not(i == j == 1):
+                    self.initial_guess[blockname][i, j] << g_momentumplaquettebethe[blockname][ i, j]
+                else:
+                    self.initial_guess[blockname][i, j] << -1 * g_momentumplaquettebethe[blockname][i, j].conjugate()

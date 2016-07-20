@@ -12,6 +12,13 @@ class DMFTParameters:
         all_parameternames = ["beta", "n_iw", "n_tau", "n_l", "gf_struct", "mix"] + self.solver_run
         self.current = dict([(name, None) for name in all_parameternames])
         self.set(parameter_dict)
+        self.model = None
+
+    def set_by_model(self, model):
+        """garantuees compatibility of beta and gf_struct with the chosen model"""
+        self.current["beta"] = model.beta
+        self.current["gf_struct"] = model.gf_struct
+        self.model = model
 
     def run_solver(self):
         rs_dict = {}
@@ -39,7 +46,9 @@ class DMFTParameters:
         block_states = [block[1] for block in self.current["gf_struct"]]
         beta = self.current["beta"]
         n_iw = self.current["n_iw"]
-        return [name_list, block_states, beta, n_iw]
+        t = self.model.t
+        t_loc = self.model.t_loc
+        return [name_list, block_states, beta, n_iw, t, t_loc]
 
     def assert_setup_complete(self):
         """
