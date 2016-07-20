@@ -6,12 +6,15 @@ from storage import LoopStorage
 
 class DMFT:
 
-    def __init__(self, parameters, model, archive_name):
+    def __init__(self, parameters, model, archive_name, weiss_field = None):
         self.model = model
         self.par = parameters({"beta": self.model.beta, "gf_struct": self.model.gf_struct})
         self.storage = LoopStorage(archive_name)
         self.impurity_solver = ImpuritySolver(*self.par.init_solver())
-        self.g0 = WeissField(*(self.par.init_gf_iw() + [self.model.t, self.model.t_loc]))
+        if weiss_field is None:
+            self.g0 = WeissField(*(self.par.init_gf_iw() + [self.model.t, self.model.t_loc]))
+        else:
+            self.g0 = weiss_field
         if self.storage.provide_last_g_loc() is None:
             self.g_loc = self.model.initial_guess.copy()
         else:
