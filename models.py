@@ -136,10 +136,12 @@ class NambuMomentumPlaquetteBethe:
         xi = self.momenta[1]
         yi = self.momenta[2]
         g = self.initial_guess
-        for offdiag in [(0,1), (1,0)]:
-            g[xi][offdiag] << factor * (np.pi/g.beta)**4
-            for i in range(4):
-                g[xi][offdiag] << g[xi][offdiag] * inverse(iOmega_n)
+        n_points = len([iwn for iwn in g.mesh])/2
+        for offdiag in [[0,1], [1,0]]:
+            for n in [n_points, n_points-1]:
+                inds = tuple([n] + offdiag)
+                g[xi].data[inds] = factor * g.beta * .5
+            offdiag = tuple(offdiag)
             g[yi][offdiag] << -1 * g[xi][offdiag]
 
     def _init_particlehole(self, g_mpb):
