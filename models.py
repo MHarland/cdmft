@@ -1,5 +1,5 @@
 import numpy as np, itertools as itt
-from pytriqs.gf.local import BlockGf, GfImFreq, SemiCircular
+from pytriqs.gf.local import BlockGf, GfImFreq, SemiCircular, iOmega_n, inverse
 
 from hamiltonian import HubbardSite, HubbardPlaquette, HubbardPlaquetteMomentum, HubbardPlaquetteMomentumNambu
 from transformation import MatrixTransformation, InterfaceToBlockstructure
@@ -89,7 +89,7 @@ class MomentumPlaquetteBethe:
 
 class NambuMomentumPlaquetteBethe:
 
-    def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t = 1, initial_field_strength = 0.05, n_iw = 1025):
+    def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t = 1, n_iw = 1025):
         g = "G"
         x = "X"
         y = "Y"
@@ -125,29 +125,34 @@ class NambuMomentumPlaquetteBethe:
         self.bandwidth = 4 * t
         self.initial_guess = BlockGf(name_list = [b[0] for b in self.gf_struct],
                                      block_list = [GfImFreq(n_points = n_iw, beta = beta, indices = b[1]) for b in self.gf_struct])
-        for s, b in self.initial_guess:
-            b[0, 0] << SemiCircular(self.bandwidth * .5)
-            b[1, 1] << -b[0,0]
-        """
-        self.initial_guess[x][0, 1] << initial_field_strength
-        self.initial_guess[x][1, 0] << initial_field_strength
-        self.initial_guess[y][0, 1] << -initial_field_strength
-        self.initial_guess[y][1, 0] << -initial_field_strength
-        """
 
-    def set_initial_guess_by_transform(self, g_momentumplaquettebethe):
+    def init_guess(self, g_momentumplaquettebethe, anom_field_factor):
+        """initializes by previous solution and anomalous field"""
+        self._init_particlehole(g_momentumplaquettebethe)
+        self._init_anomalous(anom_field_factor)
+
+    def _init_anomalous(self, factor):
+        """d-wave, singlet"""
+        xi = self.momenta[1]
+        yi = self.momenta[2]
+        g = self.initial_guess
+        for offdiag in [(0,1), (1,0)]:
+            g[xi][offdiag] << factor * (np.pi/g.beta)**4
+            for i in range(4):
+                g[xi][offdiag] << g[xi][offdiag] * inverse(iOmega_n)
+            g[yi][offdiag] << -1 * g[xi][offdiag]
+
+    def _init_particlehole(self, g_mpb):
+        """gets a non-nambu greensfunction to initialize nambu"""
         gf_struct_mom = dict([(s+k, [0]) for s in self.spins for k in self.momenta])
         to_nambu = MatrixTransformation(gf_struct_mom, None, self.gf_struct)
         up, dn = self.spins
-        #g_nambuspace = InterfaceToBlockstructure(g_momentumplaquettebethe, gf_struct_mom, self.gf_struct)
+        #g_nambuspace = InterfaceToBlockstructure(g_mpb, gf_struct_mom, self.gf_struct)
         reblock_map = [[(up+'-'+k,0,0), (k,0,0)] for k in self.momenta]
         reblock_map += [[(dn+'-'+k,0,0), (k,1,1)]  for k in self.momenta]
         reblock_map = dict(reblock_map)
-        g_momentumplaquettebethe = to_nambu.reblock_by_map(g_momentumplaquettebethe, reblock_map)
+        g_mpb = to_nambu.reblock_by_map(g_mpb, reblock_map)
         for block in self.gf_struct:
             blockname, blockindices = block
-            for i, j in itt.product(*[blockindices]*2):
-                if not(i == j == 1):
-                    self.initial_guess[blockname][i, j] << g_momentumplaquettebethe[blockname][ i, j]
-                else:
-                    self.initial_guess[blockname][i, j] << -1 * g_momentumplaquettebethe[blockname][i, j].conjugate()
+            self.initial_guess[blockname][0, 0] << g_mpb[blockname][0, 0]
+            self.initial_guess[blockname][1, 1] << -1 * g_mpb[blockname][1, 1].conjugate()

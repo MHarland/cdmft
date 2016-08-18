@@ -27,14 +27,15 @@ class TestWeissField(unittest.TestCase):
         self.assertEqual(g.mu['u'][1,1], 0.3)
 
     def test_WeissFieldNambu(self):
-        mu = dict([[spin, np.array([[-1,0],[0,-1]])] for spin in ['g', 'x']])
-        t_loc = dict([[spin, np.identity(2)] for spin in ['g', 'x']])
+        orbs = ["g","x","y","m"]
+        mu = dict([[orb, np.array([[-1,0],[0,-1]])] for orb in orbs])
+        t_loc = dict([[orb, np.identity(2)] for orb in orbs])
         t = 1
-        gw = WeissFieldNambu(['g', 'x'], [range(2)] * 2, 5, 50, t, t_loc)
-        g = BlockGf(name_list = ['g', 'x'],
+        gw = WeissFieldNambu(orbs, [range(2)] * 4, 5, 50, t, t_loc)
+        g = BlockGf(name_list = orbs,
                     block_list = [GfImFreq(indices = range(2),
-                                           beta = 5, n_points = 50)] * 2)
-        for block in ['x', 'g']:
+                                           beta = 5, n_points = 50)] * 4)
+        for block in orbs:
             g[block] << SemiCircular(1)
         g['x'][0, 1] << 0.01
         g['x'][1, 0] << 0.01
