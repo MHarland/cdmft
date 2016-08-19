@@ -1,5 +1,5 @@
 import numpy as np, itertools as itt
-from pytriqs.gf.local import BlockGf, GfImFreq, iOmega_n, inverse
+from pytriqs.gf.local import BlockGf, GfImFreq, iOmega_n, inverse, GfImTime
 
 from greensfunctions import MatsubaraGreensFunction
 from gfoperations import double_dot_product
@@ -29,6 +29,23 @@ class WeissField(MatsubaraGreensFunction):
 
     def set_mu(self, mu_number):
         self.mu = dict([[bn, mu_number * np.identity(len(bs))] for bn, bs in zip(self.block_names, self.block_states)])
+
+    def make_g_tau_real(self, n_tau):
+        """Transforms to tau space with n_tau meshsize, sets self.gf accordingly"""
+        blocks = self.block_names
+        beta = self.gf.beta
+        bstates = self.block_states
+        g0_iw = self.gf
+        inds_tau = range(n_tau)
+        g0_tau = BlockGf(name_list = blocks,
+                         block_list = [GfImTime(beta = beta, indices = s,
+                                                n_points = n_tau) for s in bstates])
+        for bname, b in g0_tau:
+            b.set_from_inverse_fourier(g0_iw[bname])
+            inds_block = range(len(b.data[0,:,:]))
+            for n, i, j in itt.product(inds_tau, inds_block, inds_block):
+                b.data[n,i,j] = b.data[n,i,j].real
+            g0_iw[bname].set_from_fourier(b)
 
 
 class WeissFieldNambu(WeissField):

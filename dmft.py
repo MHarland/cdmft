@@ -26,6 +26,7 @@ class DMFT:
         self.par.set(parameters_dict)
         for i in range(n_loops):
             self.g0.calc_selfconsistency(self.g_loc, self.model.mu)
+            self.prepare_impurity_run()
             self.impurity_solver.run(self.g0.gf, self.model.h_int, **self.par.run_solver())
             self.g_loc = self.impurity_solver.get_g_iw()
             self.process_impurity_results()
@@ -39,3 +40,7 @@ class DMFT:
         g << mix * self.g_loc + (1 - mix) * self._g_loc_old
         self._g_loc_old << g
         return g
+
+    def prepare_impurity_run(self):
+        if self.par["make_g0_tau_real"]:
+            self.g0.make_g_tau_real(self.par["n_tau"])
