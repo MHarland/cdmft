@@ -114,10 +114,10 @@ class NambuMomentumPlaquetteBethe:
         a = tnn_plaquette
         b = tnnn_plaquette
         t_loc = np.array([[0,a,a,b],[a,0,b,a],[a,b,0,a],[b,a,a,0]])
-        t_loc = {up: np.array(t_loc), dn: -np.array(t_loc)}
+        t_loc = {up: np.array(t_loc), dn: np.array(t_loc)}
         reblock_map = {(up,0,0):(g,0,0), (dn,0,0):(g,1,1), (up,1,1):(x,0,0), (dn,1,1):(x,1,1), (up,2,2):(y,0,0), (dn,2,2):(y,1,1), (up,3,3):(m,0,0), (dn,3,3):(m,1,1)}
         self.t_loc = mom_transf.reblock_by_map(mom_transf.transform_matrix(t_loc), reblock_map)
-        mu = {up: mu * np.identity(4), dn: -mu * np.identity(4)}
+        mu = {up: mu * np.identity(4), dn: mu * np.identity(4)}
         self.mu = mom_transf.reblock_by_map(mom_transf.transform_matrix(mu), reblock_map)
         h = HubbardPlaquetteMomentumNambu(u, self.spins, self.momenta, self.transformation)
         self.h_int = h.get_h_int()
@@ -128,10 +128,10 @@ class NambuMomentumPlaquetteBethe:
 
     def init_guess(self, g_momentumplaquettebethe, anom_field_factor):
         """initializes by previous solution and anomalous field"""
-        self._init_particlehole(g_momentumplaquettebethe)
-        self._init_anomalous(anom_field_factor)
+        self._set_particlehole(g_momentumplaquettebethe)
+        self._set_anomalous(anom_field_factor)
 
-    def _init_anomalous(self, factor):
+    def _set_anomalous(self, factor):
         """d-wave, singlet"""
         xi = self.momenta[1]
         yi = self.momenta[2]
@@ -144,7 +144,7 @@ class NambuMomentumPlaquetteBethe:
             offdiag = tuple(offdiag)
             g[yi][offdiag] << -1 * g[xi][offdiag]
 
-    def _init_particlehole(self, g_mpb):
+    def _set_particlehole(self, g_mpb):
         """gets a non-nambu greensfunction to initialize nambu"""
         gf_struct_mom = dict([(s+k, [0]) for s in self.spins for k in self.momenta])
         to_nambu = MatrixTransformation(gf_struct_mom, None, self.gf_struct)
@@ -158,3 +158,7 @@ class NambuMomentumPlaquetteBethe:
             blockname, blockindices = block
             self.initial_guess[blockname][0, 0] << g_mpb[blockname][0, 0]
             self.initial_guess[blockname][1, 1] << -1 * g_mpb[blockname][1, 1].conjugate()
+
+    def _set_particlehole_noninteracting(self):
+        """sets up the exact solution for U=0"""
+        pauli3 = np.array([[1,0],[0,-1]])
