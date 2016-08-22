@@ -53,7 +53,14 @@ class WeissFieldNambu(WeissField):
     RevModPhys.68.13 Eq. (101)
     Modified self-consistency condition since the particle-hole transformation on 
     spin-down is not unitary, gf_struct is considered to be of 2x2 Nambu-blocks
+    broken_symmetry_map maps within the self-consistency equation the Weissfield
+    index to the corresponding local Greensfunction index
     """
+    def __init__(self, name_list, block_states, beta, n_iw, t, t_loc,
+                 broken_symmetry_map = {"G": "G", "X": "X", "Y": "Y", "M": "M"}):
+        WeissField.__init__(self, name_list, block_states, beta, n_iw, t, t_loc)
+        self.bs_map = broken_symmetry_map
+
     def calc_selfconsistency(self, gf_local, mu = None):
         for name, block in gf_local:
             assert len(block.data[0,:,:]) == 2, "gf_struct not with implemented Nambu self-consistency compatible"
@@ -62,5 +69,5 @@ class WeissFieldNambu(WeissField):
             self.mu = mu
         for bn, b in self.gf:
             tmp1 = pauli3.dot(self.mu[bn] - self.t_loc[bn])
-            tmp2 = double_dot_product(pauli3, gf_local[bn], pauli3)
+            tmp2 = double_dot_product(pauli3, gf_local[self.bs_map[bn]], pauli3)
             b << inverse(iOmega_n  + tmp1 - self.t**2 * tmp2)
