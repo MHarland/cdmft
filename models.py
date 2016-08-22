@@ -126,10 +126,15 @@ class NambuMomentumPlaquetteBethe:
         self.initial_guess = BlockGf(name_list = [b[0] for b in self.gf_struct],
                                      block_list = [GfImFreq(n_points = n_iw, beta = beta, indices = b[1]) for b in self.gf_struct])
 
-    def init_guess(self, g_momentumplaquettebethe, anom_field_factor):
-        """initializes by previous solution and anomalous field"""
-        self._set_particlehole(g_momentumplaquettebethe)
-        self._set_anomalous(anom_field_factor)
+    def init_guess(self, g_momentumplaquettebethe, anom_field_factor,
+                   g_nambumomentumplaquettebethe = None):
+        """initializes by previous non-nambu solution and anomalous field or by 
+        nambu-solution"""
+        if g_nambumomentumplaquettebethe is None:
+            self._set_particlehole(g_momentumplaquettebethe)
+            self._set_anomalous(anom_field_factor)
+        else:
+            self.initial_guess = g_nambumomentumplaquettebethe.copy()
 
     def _set_anomalous(self, factor):
         """d-wave, singlet"""
