@@ -126,7 +126,7 @@ class NambuMomentumPlaquetteBethe:
         self.initial_guess = BlockGf(name_list = [b[0] for b in self.gf_struct],
                                      block_list = [GfImFreq(n_points = n_iw, beta = beta, indices = b[1]) for b in self.gf_struct])
 
-    def init_guess(self, g_momentumplaquettebethe, anom_field_factor,
+    def init_guess(self, g_momentumplaquettebethe = None, anom_field_factor = None,
                    g_nambumomentumplaquettebethe = None):
         """initializes by previous non-nambu solution and anomalous field or by 
         nambu-solution"""
