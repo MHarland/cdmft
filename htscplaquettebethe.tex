@@ -1,0 +1,320 @@
+\documentclass[aps,prb,twocolumn,groupedaddress,amsmath,amssymb]{revtex4-1}
+\usepackage{physics}
+\usepackage{graphicx}
+\newcommand{\up}{\uparrow}
+\newcommand{\dn}{\downarrow}
+\newcommand{\kett}[1]{\left| #1 \right \}}
+\newcommand{\refeq}[1]{Eq.~(\ref{#1})}
+\newcommand{\reffig}[1]{Fig.~\ref{#1}}
+\newcommand{\reftab}[1]{Tab.~\ref{#1}}
+\newcommand{\expectv}[1]{\left< #1 \right>}
+\newcommand{\nambu}[1]{\mathcal{#1}}
+\newcommand{\Nambu}[1]{\underline{#1}}
+\newenvironment{rcases}{\left.\begin{aligned}}{\end{aligned}\right\rbrace}
+
+%\DeclareMathOperator{\Tr}{Tr}
+
+\begin{document}
+
+\title{$d_{x^2-y^2}$-wave Pairing emerging from a Quantum Critical Point of the Hubbard-Plaquette in Infinite Dimensions}
+\author{Malte~Harland}
+\affiliation{Institut f\"ur Theoretische Physik, Universit\"at
+Hamburg, Jungiusstra{\ss}e 9, 20355, Hamburg, Germany}
+\date{\today}
+\begin{abstract}
+  We investigate the high-temperature superconductivity pairing phenomenon on the artificial plaquette -- Bethe lattice by means of the Dynamical mean-field theory. The theory provides an exact solution to the model with full spatial and temporal fluctuations. TODO CTHYB singlet, infinite dimensions, quadrupolar Bethe, exact, Hubbard, local-dynamical correlations, finite temperature
+\end{abstract}
+\maketitle
+
+\section{Introduction}
+TODO
+cuprates\cite{Damascelli2003};
+antiferromagnetism;
+experiments; cuprates;
+scope of this project(?): ``microscopic'' condensation, not macroscopic condensation;
+trace pairing mechanics back to plaquette physics which is often used as the auxiliary model for d-wave superconductivity investigations
+
+\section{Model}
+\subsection{Hubbard Model}
+We are interested in pairing correlations stemming from a complex interaction including charge and spin fluctuations. Thus we choose the one band Hubbard model \cite{Hubbard1963}
+\begin{equation}
+  \label{eq:hubbard}
+  H_{tU}=\sum_{ij\sigma}t_{ij}c^{\dagger}_{i\sigma}c_{j\sigma}-\mu\sum_{i\sigma}c^{\dagger}_{i\sigma}c_{j\sigma}+U\sum_ic^{\dagger}_{i\up}c^{\dagger}_{i\dn}c_{i\dn}c_{i\up},
+\end{equation}
+which contains a hopping term $t_{i,j}$, that for lattice structures becomes diagonal $k$-space and therefore for lattice structures promotes delocalization of the charge (non-interacting limit), whereas the screened, local coulomb repulsion $U$ is diagonal is site-space and promotes charge localization (atomic limit). 
+%Decoupling the quartic interaction by a Hubbard-Stratonovich transformation\cite{AlexanderAltland2010} in the cooper-channel, i.e. using the fermion bilinears ($c^{\dagger}_{\up} c^{\dagger}_{\dn}$)($c_{\dn} c_{\up}$), shows that the $U$-term provides an overlapp with singlet-pairing -- "anomalous" -- terms. In combination with the anisotropy of the hopping, with e.g. $Z_4$-symmetry, we have a reasonable candidate for a minimal model of the $d$-wave pairing as it is observed in htsc-superconductors.
+The $d$-wave pairing order parameter $\Psi$ we define as
+\begin{equation}
+  \label{eq:dwaveop}
+  \Psi_{dSC} = \left< c^\dagger_X c^\dagger_{-X} - c^\dagger_Y c^\dagger_{-Y}\right>.
+\end{equation}
+Clearly, a field coupling to $\Psi$ breaks the $U(1)$-symmetry and states with finite $\Psi$ thus have some degree of coherence, i.e. an indefinite number of particles emerging from a condensation into a zero-momentum-pair state.\cite{AlexanderAltland2010,HenrikBruus2004}
+\subsection{Quadrupolar Bethe-Lattice}
+\begin{figure}[th]
+  \includegraphics[scale=1]{structureplot/quadbethestructure_plt}
+  \caption{Quadrupolar Bethe lattice, four Bethe lattices(dotted lines) interconnected via plaquettes(solid lines). The coordination number for each Bethe lattice of this figure is set to $z=3$ for convenience.}
+  \label{fig:structure}
+\end{figure}
+In order to investigate plaquette correlations exactly, we choose to solve a structure built from 4 bethe lattices, that are plaquette-wise connected, see \reffig{fig:structure}. The coordination number of the Bethe-lattices is set to $z=\infty$, i.e. infininte dimensions. We introduce three types of hopping. The first hopping is the nearest-neighbor hopping $t_b$ within a bethe-lattice, the second $t_p$ connects sites of a bethe-lattice with equivalent points of two neighboring bethe-lattices and the third hopping $t^\prime_p$ connects with equivalent points of the one remaining bethe-lattice. The $t_p$ and $t^\prime_p$ hoppings form plaquettes that interconnect the four bethe-lattices. A closely related model of 2 coupled Bethe lattices has been investigated in the context of the Kondo-RKKY-competetion\cite{Moeller1999} and the singlet-insulator\cite{Hafermann2009}.
+
+\section{Method}
+\subsection{Anomalous Field}
+In order to investigate this order by one-particle observables we introduce ad-hoc a field $\Delta$ coupling to this order parameter and subsequently we check for stationary points of the dynamical mean-field theory justifying the ansatz
+\begin{equation}
+  \label{eq:hamiltonian}
+  H = H_{tU}+\sum_{ij}(\Delta_{ij} c_{i\up} c_{j\dn} + h.c.).
+\end{equation}
+Because of the $d$-wave spatial symmetry, we have $\Delta_{01}=\Delta_{23} =-\Delta_{02} =-\Delta_{13}$ and furthermore $\Delta_{ij} = \Delta_{ji}$.
+\subsection{Nambu Formalism}
+To calculate the breaking of the $U(1)$-symmetry it is convenient to set up the problem in terms of Nambu-spinors. They help us to select the crucial subspace of our system's Hilbert-space, when discussing certain types of condensation. Most commonly they are introduced in $k$-space, since, e.g. in BCS-theory they are discussed in the context of translational symmetry\cite{AlexanderAltland2010,HenrikBruus2004}. But as we apply them to the Bethe-typ lattice, we formulate them in real-space. In view of the conventional basis, the Nambu-spinors for $S=0$-pairing read
+\begin{align}
+  \label{eq:nambuspinors}
+  \begin{split}
+    \Psi_i(\tau) &= \begin{pmatrix}c_{i\up},c_{i\dn}^{\dagger} \end{pmatrix}^\intercal,\\
+    \Psi^{\dagger}_i(\tau) &= \begin{pmatrix}c^\dagger_{i\up},c_{i\dn} \end{pmatrix}.
+  \end{split}
+\end{align}
+The Nambu-Greensfunction is defined by the time-ordered outer product of the Nambu-spinors
+\begin{align}
+  \label{eq:nambugf}
+  \begin{split}
+    \Nambu{G}_{ij}(\tau)&=-\expectv{T\Psi_i(\tau)\otimes\Psi^\dagger_j(0)}\\
+    &=\begin{pmatrix}-\expectv{Tc_{\up i}(\tau)c^\dagger_{\dn j}(0)}&-\expectv{Tc_{\up i}(\tau)c_{\dn j}(0)}\\-\expectv{Tc^\dagger_{\dn i}(\tau)c^\dagger_{\up j}(0)}&-\expectv{Tc^\dagger_{\dn i}(\tau)c_{\dn j}(0)}\end{pmatrix}\\
+    &\equiv\begin{pmatrix}\nambu{G}_{ij}(\tau)&\nambu{F}_{ij}(\tau)\\\nambu{D}_{ij}(\tau)&\nambu{H}_{ij}(\tau)\end{pmatrix}
+  \end{split}
+ \end{align}
+Note, that we omit the spin-indices for the newly defined quantities, since we expand into spin-space. Throughout $i,j$ denote site indices. We can simplify this expression with the following relations:
+\begin{align}
+  \label{eq:H}
+  \begin{split}
+    \nambu{H}_{ij}(\tau)&=\expectv{Tc_{\dn j}(0)c^\dagger_{\dn i}(\tau)}\\
+    &=\expectv{Tc_{\dn j}(-\tau)c^\dagger_{\dn i}(0)}\\
+    &=-\nambu{G}_{ji}(-\tau)
+  \end{split}
+\end{align}
+that uses the time-shift and time-ordering property. Further we use the spectral representations
+\begin{align}
+  \label{eq:D}
+  \begin{split}
+    \nambu{D}_{ij}(\tau)&=-\theta(\tau)\expectv{c^\dagger_{\dn i}(\tau)c^\dagger_{\up j}(0)} + \theta(\-\tau)\expectv{c^\dagger_{\up j}(0)c^\dagger_{\dn i}(\tau)}\\
+    &=-\theta(\tau)\Tr\frac{e^{-\beta H}}{Z}e^{H\tau}c_{\dn i}e^{-H\tau}c^\dagger_{\up j}\\
+    &\quad+\theta(-\tau)\Tr\frac{e^{-\beta H}}{Z}c^\dagger_{\up j}e^{H\tau}c^\dagger_{\dn i}e^{-H\tau}\\
+    &=\sum_{mn}f_{mn}(\tau)\bra{n}c^\dagger_{\dn i}\ket{m} \bra{m}c^\dagger_{\up j}\ket{n}
+  \end{split}
+\end{align}
+with
+\begin{align}
+  \label{eq:fmntau}
+  \begin{split}
+    f_{mn}(\tau)&\equiv-\theta(\tau)e^{\beta E_n + \tau(E_n - E_m)}/Z\\
+    &\quad+\theta(-\tau)e^{\beta E_m - \tau(E_n - E_m)}/Z\\
+    &\in\mathbb{R}
+  \end{split}
+\end{align}
+and $\theta(\tau)$ is the Heaviside step function to represent the time order explicitly. Analogously, we find 
+\begin{align}
+  \label{eq:F}
+  \begin{split}
+    \nambu{F}_{ij}=\sum_{mn}f_{mn}(\tau)\bra{n}c_{\up i}\ket{m} \bra{m}c_{\dn j}\ket{n}.
+  \end{split}
+\end{align}
+Next, we complex conjugate \refeq{eq:D}
+\begin{align}
+  \label{eq:Dconjugate}
+  \begin{split}
+    \implies\nambu{D}^\ast_{ij}(\tau)&=\sum_{mn}f_{mn}(\tau)\bra{n}c^\dagger_{\dn i}\ket{m}^\ast \bra{m}c^\dagger_{\up j}\ket{n}^\ast\\
+    &=\sum_{mn}f_{mn}(\tau)\bra{m}c_{\dn i}\ket{n} \bra{n}c_{\up j}\ket{m}
+  \end{split}
+\end{align}
+to obtain the relation
+\begin{align}
+  \label{eq:D2}
+    \implies\nambu{D}_{ij}(\tau)=\nambu{F}^\ast_{ji}(\tau).
+\end{align}
+Finally the Nambu-Greensfunction can be written as
+\begin{equation}
+  \label{eq:nambugftau}
+    \Nambu{G}_{ij}(\tau)=\begin{pmatrix}\nambu{G}_{ij}(\tau)&\nambu{F}_{ij}(\tau)\\\nambu{F}^\ast_{ji}(\tau)&-\nambu{G}_{ji}(-\tau)\end{pmatrix}.
+ \end{equation}
+Calculating the Matsubara-frequency representation is trivial, except for quantities, that involve a complex conjugate:
+\begin{align}
+  \label{eq:fiwn}
+  \begin{split}
+    \nambu{F}^\ast(\tau)&=\left(\sum_ne^{i\omega_n\tau}\nambu{F}(i\omega_n)\right)^\ast\\
+    &=\sum_ne^{-i\omega_n\tau}\nambu{F}^\ast(i\omega_n)\\
+    &=\sum_ne^{i\omega_n\tau}\nambu{F}^\ast(-i\omega_n),
+  \end{split}
+\end{align}
+here an additional minus sign in the argument shows up.
+
+\subsection{Symmetries}
+We introduced $\nambu{F}_{ij}$ being an orderparameter and as a local observable. Therefore it must be real and equals its complex conjugate
+\begin{equation}
+  \label{eq:realsymmetry}
+  \nambu{F}(\tau)=\Re\nambu{F}(\tau)\iff\nambu{F}^\ast(\tau)=\nambu{F}(\tau)
+\end{equation}
+and furthermore by properties of the Fourier transform $\Re\nambu{F}(i\omega_n)$ and $\Im\nambu{F}(i\omega_n)$ must be even and odd, respectively.
+%\begin{equation}
+%  \label{eq:fiwsym}
+%  \iff\Re\nambu{F}(i\omega_n): even,\quad \Im\nambu{F}(i\omega_n): odd.
+%\end{equation}
+Additionally we use the sum rule with $\{c_{\up i}, c_{\dn j}\}=0$ to determine, that the first moment is zero. Then we obtain
+\begin{equation}
+  \label{eq:moments}
+  %\lim_{n\rightarrow\infty} 
+  \nambu{F}(i\omega_n)=\sum^\infty_{k=2} \frac{a_k}{(i\omega_n)^k}.
+\end{equation}
+
+We connect four equivalent Bethe-lattices to build the quadrupolar Bethe-lattice. Therefore, the four sites within a plaquette are symmetric. We apply a discrete Fourier transform to diagonalize the hopping of the plaquette and to identify its orbitals with commonly used $k$-vectors, although translational symmetry is abscent. The orthogonal transformation applied to site-space reads
+\begin{align}
+  \label{eq:ktransform}
+  \begin{split}
+    U&=\frac{1}{2}
+    \begin{pmatrix}
+      e^{i\pi\Gamma r_0}\ldots e^{i\pi\Gamma r_3}\\
+      e^{i\pi X r_0}\ldots e^{i\pi X r_3}\\
+      e^{i\pi Y r_0}\ldots e^{i\pi Y r_3}\\
+      e^{i\pi M r_0}\ldots e^{i\pi M r_3}\\
+    \end{pmatrix}\\
+    &=\frac{1}{2}
+    \begin{pmatrix}
+      1&1&1&1\\
+      1&-1&1&-1\\
+      1&1&-1&-1\\
+      1&-1&-1&1\\
+    \end{pmatrix}
+  \end{split}
+\end{align}
+with
+\begin{align}
+  \label{eq:ktransform2}
+  \begin{split}
+    r_0&=\begin{pmatrix}0,0\end{pmatrix}^\intercal,r_1=\begin{pmatrix}a,0\end{pmatrix}^\intercal, r_2=\begin{pmatrix}0,a\end{pmatrix}^\intercal,r_3=\begin{pmatrix}a,a\end{pmatrix}^\intercal\\
+    \Gamma&=\begin{pmatrix}0,0\end{pmatrix},X=\begin{pmatrix}a^{-1},0\end{pmatrix},Y=\begin{pmatrix}0,a^{-1}\end{pmatrix},M=\begin{pmatrix}a^{-1},a^{-1}\end{pmatrix}
+  \end{split}
+\end{align}
+where the position vectors $r_i$ reflect the hopping symmetry of the plaquette for some nearest-neighbor distance $a$. Due to the symmetry of the site-space, we can diagonalize the quadratic parts of the hamiltonian $H$ in site-space. Note, that the anomalous terms lift the $X$-$Y$ degeneracy, but preserve the diagonal form. 
+%We introduce the diagonal form of e.g. the anomalous Greensfunction $D\equiv U\nambu{F}U^\intercal$, then
+%\begin{align}
+%  \label{eq:fsitesym}
+%  \begin{split}
+%    U\nambu{F}U^\intercal = D &= D^\intercal = U\nambu{F}^\intercal U^\intercal\\
+%    \implies \nambu{F} &= \nambu{F}^\intercal ,
+%  \end{split}
+%\end{align}
+%which also includes symmetry under $k\mapsto -k$ for $k \in \{\Gamma,X,Y,M\}$ and, of course, holds for $\nambu{G}$, too. We emphasize, that property \refeq{eq:fsitesym} holds for $d$-wave symmetry.
+For the same reasons the exchange of site indices $(i,j)\mapsto(j,i)$ must not change our local correlationfunctions, since in infinite dimensions spatial correlations of our structure exist only within a plaquette. Therefore
+\begin{equation}
+  \label{eq:ijji}
+  \nambu{F}_{ij}(\tau) = \nambu{F}_{ji}(\tau).
+\end{equation}
+We choose not to break time reversal symmetry and parity, which in general need not be the case.\cite{Balatsky1992} Thus, the pairing under consideration must be of singlet-type. Due to the symmetries we have $-\expectv{Tc_{i\up}(\tau)c_{j\dn}(0)}=\expectv{Tc_{i\dn}(\tau)c_{j\up}(0)}$, that enables es to introduce the spin metric $g_{\alpha\beta}=(i\sigma_y)_{\alpha\beta}$, that has been derived in the context of triplet-pairing\cite{Berezinskii1974}, then
+\begin{equation}
+  \label{eq:spinmetric}
+  F_{ij}(\tau)=-\frac{1}{2}\sum_{\alpha\beta}g_{\beta\alpha}\expectv{Tc_{i\alpha}(\tau)c_{j\beta}(0)}.
+\end{equation}
+%\begin{equation}
+%  \label{eq:ijji}
+%  \begin{rcases}
+%    &\nambu{F}_{ij}(\tau)=\nambu{F}_{ji}(\tau)\Leftrightarrow\nambu{F}(\tau)=\nambu{F}^\intercal(\tau)\\
+%    &\nambu{F}(\tau)=\Re\nambu{F}(\tau)\Leftrightarrow\nambu{F}(\tau)=\nambu{F}^\ast(\tau)
+%  \end{rcases}
+%  \implies\nambu{F}^\dagger(\tau)=\nambu{F}(\tau)
+%\end{equation}
+Finally the Nambu Greensfunction simplifies to
+\begin{equation}
+  \label{eq:nambugftausimple}
+    \Nambu{G}_{ij}(\tau)=\begin{pmatrix}\nambu{G}_{ij}(\tau)&\nambu{F}_{ij}(\tau)\\\nambu{F}_{ij}(\tau)&-\nambu{G}_{ij}(-\tau)\end{pmatrix},
+ \end{equation}
+with the Matsubara-frequency representation and unitary transform to the eigenspace of the local hopping it becomes
+\begin{equation}
+  \label{eq:nambugffreqsimple}
+    \Nambu{G}_{k}(i\omega_n)=\begin{pmatrix}\nambu{G}_{k}(i\omega_n)&\nambu{F}_{k}(i\omega_n)\\\nambu{F}_{k}(i\omega_n)&-\nambu{G}_{k}^\ast(i\omega_n)\end{pmatrix},
+ \end{equation}
+where $k\in \{\Gamma,X,Y,M\}$.
+
+The Bethe-lattice is bipartite, thus, the Hubbard-model at half-filling describes a particle-hole symmetric system. Note, that the half-filling condition is usually abscent in our calculations.
+
+\subsection{Dynamical Mean-Field Theory}
+bethe exact;
+canonical transformation: particle-hole on spin-down, not unitary thus sse changes
+\begin{equation}
+  \label{eq:selfconsistency}
+  \Nambu{G}^{-1}(i\omega_n)=i\omega_n+(\mu-t_{p})\sigma_z-t_{b}^2\sigma_z\Nambu{G}(i\omega_n)\sigma_z
+\end{equation}
+TODO\cite{Hafermann2009}\cite{Moeller1999}
+\subsection{Continuous Time Quantum Monte Carlo (CTHYB)}
+TODO
+
+\subsection{Numerics}
+first we converge a solution in the paramagnetic regime, then we run 4 DMFT loops with field, then switch field off and see whether solution is stable
+
+has implications on the initialization of the DMFT-cycles, since the anomalous field is introduced ad-hoc.
+
+We solve the Anderson impurity model with a continuous time Quantum Monte-Carlo method in a strong coupling expansion(CTHYB).\cite{Parcollet2015,Seth2016} Since the measurement of the anomalous Greensfunction is not available, it is convenient to solve the impurity problem with an additional transformation, i.e. a particle-hole transformation on the $\dn$-subspace. The Greensfunction then retains its $cc^\dagger$-structure, that is commonly available in impurity solvers. The transformation reads
+\begin{equation}
+  \label{eq:particleholetransf}
+  \tilde{c}^\dagger_{i\up}=c^\dagger_{i\up},\quad \tilde{c}_{i\up}=c_{i\up},\quad\tilde{c}^\dagger_{i\dn}=c_{i\dn},\quad \tilde{c}_{i\dn}=c^\dagger_{i\dn}.
+\end{equation}
+Then we can write the Nambu Greensfunction as
+\begin{equation}
+  \label{eq:nambugfph}
+  \Nambu{G}_{ij}(\tau)=\begin{pmatrix}-\expectv{T\tilde{c}_{\up i}(\tau)\tilde{c}^\dagger_{\dn j}(0)}&-\expectv{T\tilde{c}_{\up i}(\tau)\tilde{c}^\dagger_{\dn j}(0)}\\-\expectv{T\tilde{c}_{\dn i}(\tau)\tilde{c}^\dagger_{\up j}(0)}&-\expectv{T\tilde{c}_{\dn i}(\tau)\tilde{c}^\dagger_{\dn j}(0)}\end{pmatrix}.
+\end{equation}
+
+Next, we address the Hubbard-Hamiltonian under that transformation. We apply \refeq{eq:particleholetransf} and examine how $t_{ij}$, $\mu$ and $U$ transform. This is simply done by using the anticommutation rules. We end up with
+\begin{align}
+  \label{eq:nambuhubbard}
+  \begin{split}
+    \tilde{t}_{ij\sigma}&=t_{ij}\left(\delta_{\sigma 0}-\delta_{\sigma 1}\right),\\
+    \tilde{\mu}_\sigma&=\left(\mu+U\right)\delta_{\sigma 0}-\mu\delta_{\sigma 1},\\
+    \tilde{U}&=-U.
+  \end{split}
+\end{align}
+We had to introduce a diagonal index for the spinor-space $\sigma$. The $\up /\dn$-space, which is symmetric for paramegnetic calculations, transforms into a particle($\sigma=0$)/hole($\sigma=1$) space, which is only at half-filling on a bipartite lattice symmetric. Clearly, $U$ becomes attractive describing the Coulomb interaction between particles and holes. The hopping promotes delocalization of electrons and vice versa localization of holes. The chemical potential lowers and increases the energy of particles and holes, respectively. But it is asymmetric, since it has a counteracting contribution of $U$ in the particle space.
+
+
+In DMFT calculations broken symmetries can be calculated more effieciently by breaking them artificially for the first DMFT-loop and subsequently run additional loops to make it converge. However, care has to be taken in order not to break more symmetries than desired. We initialize the anomalous Greensfunction with
+\begin{align}
+  \label{eq:anomiwinit}
+  \begin{split}
+    \nambu{F}_X^{\mathrm{init}}(i\omega_n) &= \frac{A\beta}{2}\left( \delta_{n,-1} + \delta_{n, 0}\right),\quad \omega_n = \left(2n+1\right)\frac{\pi}{\beta},\\
+    \nambu{F}_Y^{\mathrm{init}}(i\omega_n) &= -\nambu{F}_X^{\mathrm{init}}(i\omega_n)
+  \end{split}
+\end{align}
+this function transforms into a cosine, that is symmetric and real. Furthermore, $A$ controls the static order parameter directly.
+
+\section{Results}
+\subsection{Non-Interacting Case}
+For the non-interacting case the Greensfunction $\Nambu{G}(i\omega_n)$ of \refeq{eq:selfconsistency} becomes non-interacting $\Nambu{G}^0(i\omega_n)$. By non-interacting we mean, that $U=0$ and the interaction left is only the hopping, which can be solved analytically and without auxiliary problem such as the Anderson impurity model. Thus we can also solve \refeq{eq:selfconsistency} analytically. We obtain
+\begin{align}
+  \label{eq:uzero}
+  \begin{split}
+  \Nambu{G}^0(i\omega_n)&=\sigma_z\frac{\xi+\sqrt{\xi^2 - 4t^2_b}}{2t^2_b},\\
+  \xi&=i\omega_n\sigma_z+\left(\mu - t_p\right).
+  \end{split}
+\end{align}
+The existence of this solutions depends on the fact, that all quantities can be diagonalized in spinor and site -space by a unitary transformation. Furthermore we used $\sigma_z = \sigma^{-1}_z$.
+\begin{figure}[th]
+  \includegraphics{noninteracting/dos_nonint}
+  \caption{Non-interacting, semicircular, electronic densities of states for the different orbitals and bethe-lattice hoppings $t_b$. $t_p$ and $\mu$ are chosen according to the quantum critical point of the isolated plaquette at $t^\prime=-0.3t, N=3$. The total density of states is only shown for $t_b=1$.}
+  \label{fig:nonint}
+\end{figure}
+The spectral function corresponding to $\Nambu{G}^0(i\omega_n)$ at parameters of the quanum ciritcal point is shown in \reffig{fig:nonint}. We observe, that for $t_b\approx 0.3$ states of the $X$ and, by symmetry, $Y$ -orbitals emerge at the Fermi level. At $t_b=1$ the $\Gamma$ and $M$ orbitals touch in proximity to the Fermi level, however the largest contribution at that energy is made by the $X,Y$ orbitals.
+
+In order to identify states of the isolated plaquette with solutions of the quadrupolar Bethe lattice, we have to analyse the particle occupation dependency on the chemical potential and especially the bethe hopping, i.e. $N(\mu,t_b)$. Fortunetaly, for the non-interacting solution we can carry out numerical integration of \refeq{eq:uzero} and create the diagram shown in \reffig{fig:nonintnmutb}. We observe, that the filling depends on the Bethe hopping $t_b$. This effect is strongest in proximity to the $N=3$ region around . Interestingly, in the region $\mu\approx 1$ for a fixed chemical potential the Bethe hopping can increase and decrease the filling. This is shown by minima of the contours in \reffig{fig:nonintnmutb}. The mechanism is explained by the broadening of bands below as well as above Fermi level becoming electron and hole -doped throughout that process.
+\begin{figure}[th]
+  \includegraphics{noninteracting/n_mu_tb}
+  \caption{Particle occupation dependency on the chemical potential and the Bethe hopping $N(\mu,t_b)$ for the non-interacting case.}
+  \label{fig:nonintnmutb}
+\end{figure}
+
+\section{Discussion}
+TODO
+
+\bibliography{betheplaquette}
+\end{document}
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
