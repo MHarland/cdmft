@@ -54,7 +54,7 @@ class ImpuritySolver:
         return g_iw
 
     def run(self, weiss_field, hamiltonian, **run_parameters):
-        self.cthyb.G0_iw << weiss_field
+        self.cthyb.G0_iw << weiss_field.gf
         self.run_parameters["h_int"] = hamiltonian
         self.run_parameters.update(run_parameters)
         self.cthyb.solve(**self.run_parameters)
@@ -84,3 +84,6 @@ class ImpuritySolver:
         if params["performance_analysis"]:
             results.update({"performance_analysis": self.cthyb.performance_analysis})
         return results
+
+    def get_se(self):
+        return self.cthyb.Sigma_iw

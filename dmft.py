@@ -2,44 +2,46 @@ from impuritysolver import ImpuritySolver
 from weissfield import WeissField
 from glocal import GLocal
 from storage import LoopStorage
+from greensfunctions import MatsubaraGreensFunction
 
 
 class DMFT:
 
-    def __init__(self, parameters, model, archive_name, weiss_field = None):
+    def __init__(self, parameters, model, archive_name, weiss_field = None, g_loc = None):
         self.model = model
         self.par = parameters
         self.par.set_by_model(model)
         self.storage = LoopStorage(archive_name)
         self.impurity_solver = ImpuritySolver(*self.par.init_solver())
-        if weiss_field is None:
-            self.g0 = WeissField(*self.par.init_gf_iw())
-        else:
-            self.g0 = weiss_field
-        if self.storage.provide_last_g_loc() is None:
-            self.g_loc = self.model.initial_guess.copy()
-        else:
-            self.g_loc = self.storage.provide_last_g_loc()
-        self._g_loc_old = self.g_loc.copy()
+        self.g0 = WeissField(**self.par.init_gf_iw())
+        self.g_loc = GLocal(**self.par.init_gf_iw())
+        self.se = MatsubaraGreensFunction(**self.par.init_gf_iw())
+        self.g_loc.set_gf(g_loc, self.storage.provide("g_loc_iw"), self.model.initial_guess)
+        self.g0.set_gf(weiss_field, self.storage.provide("g0_iw"))
+        self.mu = self.storage.provide("mu") if self.storage.provide("mu") else self.model.mu
 
     def run_loops(self, n_loops, **parameters_dict):
         self.par.set(parameters_dict)
         for i in range(n_loops):
-            self.g0.calc_selfconsistency(self.g_loc, self.model.mu)
+            if self.par["filling"] and self.storage.get_completed_loops() > 0:
+                self.mu = self.g_loc.find_and_set_mu(self.par["filling"], self.se)
+            self.g0.calc_selfconsistency(self.g_loc, self.mu)
             self.prepare_impurity_run()
-            self.impurity_solver.run(self.g0.gf, self.model.h_int, **self.par.run_solver())
-            self.g_loc = self.impurity_solver.get_g_iw()
+            self.impurity_solver.run(self.g0, self.model.h_int, **self.par.run_solver())
+            self.g_loc.set_gf(self.impurity_solver.get_g_iw())
             self.process_impurity_results()
             self.storage.save_loop(self.impurity_solver.get_results(),
-                                   {"g_loc_iw": self.g_loc})
+                                   {"g_loc_iw": self.g_loc.gf,
+                                    "density0": self.g_loc.filling_with_old_mu,
+                                    "mu": self.mu,
+                                    "density": self.g_loc.total_density()})
 
     def process_impurity_results(self):
-        self.g_loc = self.mix(self.g_loc, self.par["mix"])
-
-    def mix(self, g, mix):
-        g << mix * self.g_loc + (1 - mix) * self._g_loc_old
-        self._g_loc_old << g
-        return g
+        if self.par["perform_post_proc"]:
+            self.se.set_gf(self.impurity_solver.get_se())
+        self.se.mix(self.par["mix"])
+        self.se.symmetrize(self.par["block_symmetries"])
+        self.g_loc.calc_dyson(self.g0, self.se)
 
     def prepare_impurity_run(self):
         if self.par["make_g0_tau_real"]:

@@ -1,25 +1,30 @@
 import numpy as np, itertools as itt
 from pytriqs.gf.local import BlockGf, GfImFreq, SemiCircular, iOmega_n, inverse
+from pytriqs.gf.local.descriptor_base import Function
 
 from hamiltonian import HubbardSite, HubbardPlaquette, HubbardPlaquetteMomentum, HubbardPlaquetteMomentumNambu
 from transformation import MatrixTransformation, InterfaceToBlockstructure
 
+class Bethe:
 
-class SingleSiteBethe:
-
-    def __init__(self, beta, mu, u, t = 1, n_iw = 1025):
-        self.dim = 1
+    def __init__(self, beta, mu, u, t_bethe = 1, n_iw = 1025):
         self.beta = beta
+        self.mu = float(mu)
+        self.u = u
+        self.t = t_bethe
+        self.n_iw = n_iw
+        self.bandwidth = 4 * t_bethe
+
+class SingleSite(Bethe):
+
+    def __init__(self, beta, mu, u, t_bethe = 1, n_iw = 1025):
+        Bethe.__init__(self, beta, mu, u, t_bethe = 1, n_iw = 1025)
         up = "up"
         dn = "dn"
         self.gf_struct = [[up, range(1)], [dn, range(1)]]
-        self.u = u
         self.t_loc = {up: np.zeros([1, 1]), dn: np.zeros([1, 1])}
-        self.mu = {up: mu * np.identity(1), dn: mu * np.identity(1)}
         h = HubbardSite(u, [up, dn])
         self.h_int = h.get_h_int()
-        self.t = t
-        self.bandwidth = 4 * t
         self.initial_guess = BlockGf(name_list = [b[0] for b in self.gf_struct],
                                      block_list = [GfImFreq(n_points = n_iw, beta = beta, indices = b[1]) for b in self.gf_struct])
         for s, b in self.initial_guess:
@@ -59,6 +64,7 @@ class MomentumPlaquetteBethe:
         up = "up"
         dn = "dn"
         self.spins = [up, dn]
+        self.mu_number = mu
         self.sites = range(4)
         self.block_labels = [spin+"-"+k for spin in self.spins for k in self.momenta]
         self.gf_struct = [[l, range(1)] for l in self.block_labels]
@@ -83,7 +89,22 @@ class MomentumPlaquetteBethe:
         self.bandwidth = 4 * t
         self.initial_guess = BlockGf(name_list = [b[0] for b in self.gf_struct],
                                      block_list = [GfImFreq(n_points = n_iw, beta = beta, indices = b[1]) for b in self.gf_struct])
-        for s, b in self.initial_guess:
+        self.init_centered_semicirculars()
+
+    def init_noninteracting(self):
+        for sk, b in self.initial_guess:
+            z = lambda iw: iw + (self.mu[sk] - self.t_loc[sk])[0, 0]
+            gf = lambda iw: (z(iw) - complex(0, 1) * np.sign(z(iw).imag) * np.sqrt(4*self.t**2 - z(iw)**2))/(2*self.t**2)
+            one = np.identity(b.N1)
+            b.tail.zero()
+            b.tail[1][:,:] = 1. * one
+            b.tail[3][:,:] = self.t**2 * one
+            b.tail[5][:,:] = 2 * self.t**4 * one
+            b.tail.mask.fill(6)
+            Function(gf, None)(b)
+
+    def init_centered_semicirculars(self):
+        for sk, b in self.initial_guess:
             b << SemiCircular(self.bandwidth * .5)
 
 

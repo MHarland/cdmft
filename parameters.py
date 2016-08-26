@@ -9,7 +9,7 @@ class DMFTParameters:
     """
     def __init__(self, parameter_dict = {}):
         self.solver_run = ["n_cycles", "partition_method", "quantum_numbers", "length_cycle", "n_warmup_cycles", "random_name", "max_time", "verbosity", "move_shift", "move_double", "use_trace_estimator", "measure_g_tau", "measure_g_l", "measure_pert_order", "measure_density_matrix", "use_norm_as_weight", "performance_analysis", "proposal_prob", "imag_threshold", "perform_post_proc", "perform_tail_fit", "fit_min_n", "fit_max_n", "fit_min_w", "fit_max_w", "fit_max_moment"]
-        all_parameternames = ["beta", "n_iw", "n_tau", "n_l", "gf_struct", "mix", "make_g0_tau_real"] + self.solver_run
+        all_parameternames = ["beta", "n_iw", "n_tau", "n_l", "gf_struct", "mix", "make_g0_tau_real", "filling", "block_symmetries"] + self.solver_run
         self.current = dict([(name, None) for name in all_parameternames])
         self.set(parameter_dict)
         self.model = None
@@ -42,13 +42,13 @@ class DMFTParameters:
         return [self.current["beta"], self.current["gf_struct"], self.current["n_iw"], self.current["n_tau"], self.current["n_l"]]
 
     def init_gf_iw(self):
-        name_list = [block[0] for block in self.current["gf_struct"]]
+        block_names = [block[0] for block in self.current["gf_struct"]]
         block_states = [block[1] for block in self.current["gf_struct"]]
         beta = self.current["beta"]
         n_iw = self.current["n_iw"]
         t = self.model.t
         t_loc = self.model.t_loc
-        return [name_list, block_states, beta, n_iw, t, t_loc]
+        return {"block_names": block_names, "block_states": block_states, "beta": beta, "n_iw": n_iw, "t": t, "t_loc": t_loc}
 
     def assert_setup_complete(self):
         """
@@ -116,6 +116,8 @@ class DefaultDMFTParameters(DMFTParameters):
                    "n_l": 30,
                    "mix": 1,
                    "make_g0_tau_real": True,
+                   "filling": None,
+                   "block_symmetries": [],
                    # solver:
                    "n_cycles": 1000,
                    "partition_method": "autopartition",

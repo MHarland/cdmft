@@ -33,13 +33,17 @@ class LoopStorage:
             self.dmft_results.create_group(str(new_loop_nr))
             place_to_store = self.dmft_results[str(new_loop_nr)]
             for name, obj in self.memory_container.items():
-                place_to_store[name] = obj
+                if not obj is None:
+                    place_to_store[name] = obj
             self.dmft_results["n_dmft_loops"] += 1
 
     def load(self, quantity_name, loop_nr = None, bcast = True):
         quantity = None
         if loop_nr is None:
             loop_nr = self.get_last_loop_nr()
+        if loop_nr < 0:
+            loop_nr = self.get_completed_loops() + loop_nr
+            assert loop_nr >= 0, "loop not available"
         if mpi.is_master_node():
             quantity = self.dmft_results[str(loop_nr)][quantity_name]
         if bcast:
@@ -56,11 +60,12 @@ class LoopStorage:
     def get_last_loop_nr(self):
         return self.get_completed_loops() - 1
 
-    def provide_last_g_loc(self):
-        g_loc = None
+    def provide(self, f_str):
+        f = None
         if self.get_completed_loops() > 0:
             last_loop = self.get_last_loop_nr()
             if mpi.is_master_node():
-                g_loc = self.dmft_results[str(last_loop)]["g_loc_iw"]
-        g_loc = mpi.bcast(g_loc)
-        return g_loc
+                f = self.dmft_results[str(last_loop)][f_str]
+        f = mpi.bcast(f)
+        return f
+        
