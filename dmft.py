@@ -23,7 +23,7 @@ class DMFT:
     def run_loops(self, n_loops, **parameters_dict):
         self.par.set(parameters_dict)
         for i in range(n_loops):
-            if self.par["filling"] and self.storage.get_completed_loops() > 0:
+            if self.par["filling"]:
                 self.mu = self.g_loc.find_and_set_mu(self.par["filling"], self.se)
             self.g0.calc_selfconsistency(self.g_loc, self.mu)
             self.prepare_impurity_run()
