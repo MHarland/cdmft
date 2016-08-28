@@ -32,7 +32,7 @@ class DMFT:
             self.process_impurity_results()
             self.storage.save_loop(self.impurity_solver.get_results(),
                                    {"g_loc_iw": self.g_loc.gf,
-                                    "density0": self.g_loc.filling_with_old_mu,
+                                    "density0": self.g_loc.last_found_density,
                                     "mu": self.mu,
                                     "density": self.g_loc.total_density()})
 

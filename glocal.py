@@ -66,7 +66,7 @@ class GLocal(MatsubaraGreensFunction):
         if not filling is None:
             self.filling_with_old_mu = self.total_density()
             f = lambda mu: self.set_mu_get_filling(mu, selfenergy)
-            self.last_found_mu_number, self.last_found_density = bound_and_bisect(f, self.get_mu_number(selfenergy), filling, x_name = "mu", y_name = "filling", *args, **kwargs)
+            self.last_found_mu_number, self.last_found_density = bound_and_bisect(f, self.get_mu_number(selfenergy), filling, x_name = "mu", y_name = "filling", maxiter = 10000, *args, **kwargs)
             return self.last_found_mu_number
 
     def calc_dyson(self, g0, se):
