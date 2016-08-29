@@ -29,6 +29,7 @@ class DMFT:
         self.par.set(parameters_dict)
         for i in range(n_loops):
             if self.par["filling"] and not self.skip_mufinder_firstloop:
+                self.mu = dict_to_number(self.mu)
                 self.mu = self.g_loc.find_and_set_mu(self.par["filling"], self.se, self.mu, self.par["dmu_max"])
             self.skip_mufinder_firstloop = False
             self.g0.calc_selfconsistency(self.g_loc, self.mu)
@@ -52,3 +53,9 @@ class DMFT:
     def prepare_impurity_run(self):
         if self.par["make_g0_tau_real"]:
             self.g0.make_g_tau_real(self.par["n_tau"])
+
+def dict_to_number(mu):
+    if isinstance(mu, dict):
+        for key, val in mu.items():
+            return val[0, 0]
+    return mu
