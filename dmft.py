@@ -18,13 +18,21 @@ class DMFT:
         self.se = MatsubaraGreensFunction(**self.par.init_gf_iw())
         self.g_loc.set_gf(g_loc, self.storage.provide("g_loc_iw"), self.model.initial_guess)
         self.g0.set_gf(weiss_field, self.storage.provide("g0_iw"))
-        self.mu = self.storage.provide("mu") if self.storage.provide("mu") else self.model.mu
+        if self.storage.provide("mu"):
+            self.mu = self.storage.provide("mu")
+            self.skip_mufinder_firstloop = False
+        else:
+            self.mu = self.model.mu
+            self.skip_mufinder_firstloop = True
 
     def run_loops(self, n_loops, **parameters_dict):
         self.par.set(parameters_dict)
         for i in range(n_loops):
-            if self.par["filling"]:
-                self.mu = self.g_loc.find_and_set_mu(self.par["filling"], self.se)
+            print "mu was", self.mu
+            if self.par["filling"] and not self.skip_mufinder_firstloop:
+                self.mu = self.g_loc.find_and_set_mu(self.par["filling"], self.se, self.mu, self.par["dmu_max"])
+            self.skip_mufinder_firstloop = False
+            print "mu is", self.mu
             self.g0.calc_selfconsistency(self.g_loc, self.mu)
             self.prepare_impurity_run()
             self.impurity_solver.run(self.g0, self.model.h_int, **self.par.run_solver())

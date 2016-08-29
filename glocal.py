@@ -61,13 +61,18 @@ class GLocal(MatsubaraGreensFunction):
         self.set_mu_number(mu_number, selfenergy)
         return self.total_density()
 
-    def find_and_set_mu(self, filling, selfenergy, *args, **kwargs):
+    def find_and_set_mu(self, filling, selfenergy, mu0, dmu_max, *args, **kwargs):
         """Assumes a diagonal-mu basis"""
         if not filling is None:
             self.filling_with_old_mu = self.total_density()
             f = lambda mu: self.set_mu_get_filling(mu, selfenergy)
-            self.last_found_mu_number, self.last_found_density = bound_and_bisect(f, self.get_mu_number(selfenergy), filling, x_name = "mu", y_name = "filling", maxiter = 10000, *args, **kwargs)
-            return self.last_found_mu_number
+            self.last_found_mu_number, self.last_found_density = bound_and_bisect(f, mu0, filling, x_name = "mu", y_name = "filling", maxiter = 10000, *args, **kwargs)
+            return self.limit(self.last_found_mu_number, mu0, dmu_max)
 
     def calc_dyson(self, g0, se):
         self.gf << inverse(inverse(g0.gf) - se.gf)
+
+    def limit(self, x, x0, dxlim):
+        if abs(x - x0) > dxlim:
+            return x0 + dxlim * np.sign(x - x0)
+        return x
