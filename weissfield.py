@@ -16,7 +16,6 @@ class WeissField(MatsubaraGreensFunction):
         self.t_loc = t_loc
 
     def calc_selfconsistency(self, g_loc, mu):
-        print g_loc, mu
         if isinstance(mu, float):
             mu = self._get_mu_matrix(mu)
         for bn, b in self.gf:
