@@ -34,7 +34,7 @@ class GLocal(MatsubaraGreensFunction):
             mu_mat[s] = const.data[self.n_iw,:,:].copy()
         return mu_mat
 
-    def _trace(self, blockmatrix):
+    def _average(self, blockmatrix):
         d = 0
         s = 0
         for name, block in blockmatrix.items():
@@ -45,7 +45,7 @@ class GLocal(MatsubaraGreensFunction):
 
     def get_mu_number(self, selfenergy):
         mu_mat = self.get_mu(selfenergy)
-        return self._trace(mu_mat).real
+        return self._average(mu_mat).real
 
     def set_mu_number(self, mu_number, selfenergy):
         """Assumes same mu in all orbitals"""

@@ -46,7 +46,7 @@ class WeissFieldNambu(WeissField):
     broken_symmetry_map maps within the self-consistency equation the Weissfield
     index to the corresponding local Greensfunction index
     """
-    def __init__(self, name_list, block_states, beta, n_iw, t, t_loc,
+    def __init__(self, block_names, block_states, beta, n_iw, t, t_loc,
                  broken_symmetry_map = {"G": "G", "X": "X", "Y": "Y", "M": "M"}):
         WeissField.__init__(self, name_list, block_states, beta, n_iw, t, t_loc)
         self.bs_map = broken_symmetry_map
