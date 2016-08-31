@@ -24,9 +24,11 @@ class MatsubaraGreensFunction:
     def set_gf(self, *args):
         """sets the first non-None argument, dropping the remainers"""
         for gf in list(args):
-            if not gf is None:
-                assert isinstance(gf, BlockGf), "types Nonetype or BlockGf expected"
+            if not gf is None and isinstance(gf, BlockGf):
                 self.gf << gf
+                break
+            elif not gf is None:
+                self.gf << self.gf
                 break
 
     def mix(self, coeff):
