@@ -48,7 +48,7 @@ class WeissFieldNambu(WeissField):
     """
     def __init__(self, block_names, block_states, beta, n_iw, t, t_loc,
                  broken_symmetry_map = {"G": "G", "X": "X", "Y": "Y", "M": "M"}):
-        WeissField.__init__(self, name_list, block_states, beta, n_iw, t, t_loc)
+        WeissField.__init__(self, block_names, block_states, beta, n_iw, t, t_loc)
         self.bs_map = broken_symmetry_map
 
     def calc_selfconsistency(self, g_loc, mu):
