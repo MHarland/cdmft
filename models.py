@@ -2,6 +2,7 @@ import numpy as np, itertools as itt
 from pytriqs.gf.local import BlockGf, GfImFreq, SemiCircular, iOmega_n, inverse
 from pytriqs.gf.local.descriptor_base import Function
 
+from glocal import GLocal
 from hamiltonian import HubbardSite, HubbardPlaquette, HubbardPlaquetteMomentum, HubbardPlaquetteMomentumNambu
 from transformation import MatrixTransformation, InterfaceToBlockstructure
 
@@ -14,6 +15,9 @@ class Bethe:
         self.t = t_bethe
         self.n_iw = n_iw
         self.bandwidth = 4 * t_bethe
+
+    def init_dmft(self):
+        return {"h_int": self.h_int, "g_local": self.initial_guess, "mu": self.mu}
 
 class SingleSite(Bethe):
 
@@ -144,8 +148,8 @@ class NambuMomentumPlaquetteBethe:
         self.h_int = h.get_h_int()
         self.t = t
         self.bandwidth = 4 * t
-        self.initial_guess = BlockGf(name_list = [b[0] for b in self.gf_struct],
-                                     block_list = [GfImFreq(n_points = n_iw, beta = beta, indices = b[1]) for b in self.gf_struct])
+        #self.initial_guess = BlockGf(name_list = [b[0] for b in self.gf_struct], block_list = [GfImFreq(n_points = n_iw, beta = beta, indices = b[1]) for b in self.gf_struct])
+        self.initial_guess = GLocal(self.momenta, [self.spinors]*4, self.beta, n_iw)
 
     def init_guess(self, g_momentumplaquettebethe = None, anom_field_factor = None,
                    g_nambumomentumplaquettebethe = None):
@@ -161,7 +165,7 @@ class NambuMomentumPlaquetteBethe:
         """d-wave, singlet"""
         xi = self.momenta[1]
         yi = self.momenta[2]
-        g = self.initial_guess
+        g = self.initial_guess.gf
         n_points = len([iwn for iwn in g.mesh])/2
         for offdiag in [[0,1], [1,0]]:
             for n in [n_points, n_points-1]:
@@ -182,8 +186,8 @@ class NambuMomentumPlaquetteBethe:
         g_mpb = to_nambu.reblock_by_map(g_mpb, reblock_map)
         for block in self.gf_struct:
             blockname, blockindices = block
-            self.initial_guess[blockname][0, 0] << g_mpb[blockname][0, 0]
-            self.initial_guess[blockname][1, 1] << -1 * g_mpb[blockname][1, 1].conjugate()
+            self.initial_guess.gf[blockname][0, 0] << g_mpb[blockname][0, 0]
+            self.initial_guess.gf[blockname][1, 1] << -1 * g_mpb[blockname][1, 1].conjugate()
 
     def _set_particlehole_noninteracting(self):
         """sets up the exact solution for U=0"""

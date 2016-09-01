@@ -7,23 +7,18 @@ from greensfunctions import MatsubaraGreensFunction
 
 class DMFT:
 
-    def __init__(self, parameters, model, archive_name, weiss_field = None, g_loc = None):
-        self.model = model
+    def __init__(self, loopstorage, parameters, weiss_field, h_int, g_local, mu):
+        """
+        Parameters, h_int, LoopStorage, weiss_field, glocal
+        """
+        self.h_int = h_int
         self.par = parameters
-        self.par.set_by_model(model)
-        self.storage = LoopStorage(archive_name)
+        self.storage = loopstorage
         self.impurity_solver = ImpuritySolver(*self.par.init_solver())
-        self.g0 = WeissField(**self.par.init_gf_iw())
-        self.g_loc = GLocal(**self.par.init_gf_iw())
+        self.g0 = weiss_field
+        self.g_loc = g_local
+        self.mu = mu
         self.se = MatsubaraGreensFunction(**self.par.init_gf_iw())
-        self.g_loc.set_gf(g_loc, self.storage.provide("g_loc_iw"), self.model.initial_guess)
-        self.g0.set_gf(weiss_field, self.storage.provide("g0_iw"))
-        if self.storage.provide("mu"):
-            self.mu = self.storage.provide("mu")
-            self.skip_mufinder_firstloop = False
-        else:
-            self.mu = self.model.mu
-            self.skip_mufinder_firstloop = True
 
     def run_loops(self, n_loops, **parameters_dict):
         self.par.set(parameters_dict)
@@ -33,8 +28,11 @@ class DMFT:
                 self.mu = self.g_loc.find_and_set_mu(self.par["filling"], self.se, self.mu, self.par["dmu_max"])
             self.skip_mufinder_firstloop = False
             self.g0.calc_selfconsistency(self.g_loc, self.mu)
+            for s, b in self.g0.gf:
+                print s
+                print b.data[0,:,:]
             self.prepare_impurity_run()
-            self.impurity_solver.run(self.g0, self.model.h_int, **self.par.run_solver())
+            self.impurity_solver.run(self.g0, self.h_int, **self.par.run_solver())
             self.g_loc.set_gf(self.impurity_solver.get_g_iw())
             self.process_impurity_results()
             self.storage.save_loop(self.impurity_solver.get_results(),

@@ -52,12 +52,12 @@ class WeissFieldNambu(WeissField):
         self.bs_map = broken_symmetry_map
 
     def calc_selfconsistency(self, g_loc, mu):
-        for name, block in gf_local:
+        for name, block in g_loc.gf:
             assert len(block.data[0,:,:]) == 2, "gf_struct not with implemented Nambu self-consistency compatible"
         if isinstance(mu, float):
             mu = self._get_mu_matrix(mu)
         pauli3 = np.array([[1,0],[0,-1]])
         for bn, b in self.gf:
-            tmp1 = pauli3.dot(self.mu[bn] - self.t_loc[bn])
+            tmp1 = pauli3.dot(mu[bn] - self.t_loc[bn])
             tmp2 = double_dot_product(pauli3, g_loc.gf[self.bs_map[bn]], pauli3)
             b << inverse(iOmega_n  + tmp1 - self.t**2 * tmp2)
