@@ -5,6 +5,7 @@ from pytriqs.gf.local.descriptor_base import Function
 from glocal import GLocal
 from hamiltonian import HubbardSite, HubbardPlaquette, HubbardPlaquetteMomentum, HubbardPlaquetteMomentumNambu
 from transformation import MatrixTransformation, InterfaceToBlockstructure
+from weissfield import WeissField 
 
 
 class Bethe:
@@ -18,7 +19,12 @@ class Bethe:
         self.bandwidth = 4 * t_bethe
 
     def init_dmft(self):
-        return {"h_int": self.h_int, "g_local": self.initial_guess, "mu": self.mu}
+        return {"weiss_field": self.g0, "h_int": self.h_int, "g_local": self.initial_guess, "mu": self.mu}
+
+    def init_guess(self, g):
+        """initializes by previous solution"""
+        self.initial_guess.set_gf(g.copy())
+
 
 class SingleSite(Bethe):
 
@@ -60,21 +66,18 @@ class PlaquetteBethe:
             b << SemiCircular(self.bandwidth * .5)
 
 
-class MomentumPlaquetteBethe:
+class MomentumPlaquetteBethe(Bethe):
 
-    def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t = 1, n_iw = 1025):
-        self.dim = 2
-        self.beta = beta
+    def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t_bethe = 1, n_iw = 1025):
+        Bethe.__init__(self, beta, mu, u, t_bethe, n_iw)
         self.momenta = ["G", "X", "Y", "M"]
         up = "up"
         dn = "dn"
         self.spins = [up, dn]
-        self.mu_number = mu
         self.sites = range(4)
         self.block_labels = [spin+"-"+k for spin in self.spins for k in self.momenta]
         self.gf_struct = [[l, range(1)] for l in self.block_labels]
         self.gf_struct_site = [[s, self.sites] for s in self.spins]
-        self.u = u
         transformation_matrix = .5 * np.array([[1,1,1,1],
                                                [1,-1,1,-1],
                                                [1,1,-1,-1],
@@ -90,14 +93,12 @@ class MomentumPlaquetteBethe:
         self.mu = mom_transf.reblock(mom_transf.transform_matrix(mu))
         h = HubbardPlaquetteMomentum(u, self.spins, self.momenta, self.transformation)
         self.h_int = h.get_h_int()
-        self.t = t
-        self.bandwidth = 4 * t
-        self.initial_guess = BlockGf(name_list = [b[0] for b in self.gf_struct],
-                                     block_list = [GfImFreq(n_points = n_iw, beta = beta, indices = b[1]) for b in self.gf_struct])
+        self.initial_guess = GLocal(self.block_labels, [[0]]*8, self.beta, n_iw, self.t, self.t_loc)
+        self.g0 = WeissField(self.block_labels, [[0]]*8, self.beta, n_iw, self.t, self.t_loc)
         self.init_centered_semicirculars()
 
     def init_noninteracting(self):
-        for sk, b in self.initial_guess:
+        for sk, b in self.initial_guess.gf:
             z = lambda iw: iw + (self.mu[sk] - self.t_loc[sk])[0, 0]
             gf = lambda iw: (z(iw) - complex(0, 1) * np.sign(z(iw).imag) * np.sqrt(4*self.t**2 - z(iw)**2))/(2*self.t**2)
             one = np.identity(b.N1)
@@ -109,7 +110,7 @@ class MomentumPlaquetteBethe:
             Function(gf, None)(b)
 
     def init_centered_semicirculars(self):
-        for sk, b in self.initial_guess:
+        for sk, b in self.initial_guess.gf:
             b << SemiCircular(self.bandwidth * .5)
 
 

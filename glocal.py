@@ -8,16 +8,14 @@ from gfoperations import double_dot_product
 
 class GLocal(MatsubaraGreensFunction):
 
-    def __init__(self, block_names, block_states, beta, n_iw, *args, **kwargs):
+    def __init__(self, block_names, block_states, beta, n_iw, t, t_loc):
         MatsubaraGreensFunction.__init__(self, block_names, block_states, beta, n_iw)
         self._gf_lastloop = BlockGf(name_list = self.block_names,
                                block_list = [GfImFreq(indices = states,
                                                       beta = self.beta,
                                                       n_points = self.n_iw) for states in self.block_states])
-        if "t_loc" in kwargs.keys():
-            self.t_loc = kwargs["t_loc"]
-        if "t" in kwargs.keys():
-            self.t = kwargs["t"]
+        self.t_loc = t_loc
+        self.t = t
         self.filling_with_old_mu = None
         self.last_found_mu_number = None
         self.last_found_density = None

@@ -23,14 +23,10 @@ class DMFT:
     def run_loops(self, n_loops, **parameters_dict):
         self.par.set(parameters_dict)
         for i in range(n_loops):
-            if self.par["filling"] and not self.skip_mufinder_firstloop:
+            if self.par["filling"]:
                 self.mu = dict_to_number(self.mu)
                 self.mu = self.g_loc.find_and_set_mu(self.par["filling"], self.se, self.mu, self.par["dmu_max"])
-            self.skip_mufinder_firstloop = False
             self.g0.calc_selfconsistency(self.g_loc, self.mu)
-            for s, b in self.g0.gf:
-                print s
-                print b.data[0,:,:]
             self.prepare_impurity_run()
             self.impurity_solver.run(self.g0, self.h_int, **self.par.run_solver())
             self.g_loc.set_gf(self.impurity_solver.get_g_iw())
