@@ -6,6 +6,7 @@ from glocal import GLocal
 from hamiltonian import HubbardSite, HubbardPlaquette, HubbardPlaquetteMomentum, HubbardPlaquetteMomentumNambu
 from transformation import MatrixTransformation, InterfaceToBlockstructure
 
+
 class Bethe:
 
     def __init__(self, beta, mu, u, t_bethe = 1, n_iw = 1025):
@@ -159,7 +160,7 @@ class NambuMomentumPlaquetteBethe:
             self._set_particlehole(g_momentumplaquettebethe)
             self._set_anomalous(anom_field_factor)
         else:
-            self.initial_guess = g_nambumomentumplaquettebethe.copy()
+            self.initial_guess.set_gf(g_nambumomentumplaquettebethe.copy())
 
     def _set_anomalous(self, factor):
         """d-wave, singlet"""
