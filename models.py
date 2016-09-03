@@ -36,17 +36,16 @@ class SingleSite(Bethe):
         self.t_loc = {up: np.zeros([1, 1]), dn: np.zeros([1, 1])}
         h = HubbardSite(u, [up, dn])
         self.h_int = h.get_h_int()
-        self.initial_guess = BlockGf(name_list = [b[0] for b in self.gf_struct],
-                                     block_list = [GfImFreq(n_points = n_iw, beta = beta, indices = b[1]) for b in self.gf_struct])
-        for s, b in self.initial_guess:
+        self.initial_guess = GLocal(self.block_labels, [[0]]*2, self.beta, n_iw, self.t_loc)
+        self.g0 = WeissField(self.block_labels, [[0]]*8, self.beta, n_iw, self.t, self.t_loc)
+        for s, b in self.initial_guess.gf:
             b << SemiCircular(self.bandwidth * .5)
 
 
-class PlaquetteBethe:
+class Plaquette(Bethe):
 
-    def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t = 1, n_iw = 1025):
-        self.dim = 2
-        self.beta = beta
+    def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t_bethe = 1, n_iw = 1025):
+        Bethe.__init__(self, beta, mu, u , t_bethe = 1, n_iw = 1025)
         up = "up"
         dn = "dn"
         self.gf_struct = [[up, range(4)], [dn, range(4)]]
@@ -58,11 +57,10 @@ class PlaquetteBethe:
         self.mu = {up: mu * np.identity(4), dn: mu * np.identity(4)}
         h = HubbardPlaquette(u, [up, dn])
         self.h_int = h.get_h_int()
-        self.t = t
-        self.bandwidth = 4 * t
-        self.initial_guess = BlockGf(name_list = [b[0] for b in self.gf_struct],
-                                     block_list = [GfImFreq(n_points = n_iw, beta = beta, indices = b[1]) for b in self.gf_struct])
-        for s, b in self.initial_guess:
+        self.t = t_bethe
+        self.initial_guess = GLocal(self.block_labels, [range(4)]*2, self.beta, n_iw, self.t_loc)
+        self.g0 = WeissField(self.block_labels, [[0]]*8, self.beta, n_iw, self.t, self.t_loc)
+        for s, b in self.initial_guess.gf:
             b << SemiCircular(self.bandwidth * .5)
 
 
@@ -150,8 +148,8 @@ class NambuMomentumPlaquetteBethe:
         self.h_int = h.get_h_int()
         self.t = t
         self.bandwidth = 4 * t
-        #self.initial_guess = BlockGf(name_list = [b[0] for b in self.gf_struct], block_list = [GfImFreq(n_points = n_iw, beta = beta, indices = b[1]) for b in self.gf_struct])
-        self.initial_guess = GLocal(self.momenta, [self.spinors]*4, self.beta, n_iw)
+        self.g0 = WeissField(self.momenta, [self.spinors]*4, self.beta, n_iw, self.t, self.t_loc)
+        self.initial_guess = GLocal(self.momenta, [self.spinors]*4, self.beta, n_iw, self.t, self.t_loc)
 
     def init_guess(self, g_momentumplaquettebethe = None, anom_field_factor = None,
                    g_nambumomentumplaquettebethe = None):
