@@ -112,16 +112,16 @@ class MomentumPlaquetteBethe(Bethe):
             b << SemiCircular(self.bandwidth * .5)
 
 
-class NambuMomentumPlaquetteBethe:
+class NambuMomentumPlaquette(Bethe):
 
-    def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t = 1, n_iw = 1025):
+    def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t_bethe = 1, n_iw = 1025):
+        Bethe.__init__(self, beta, mu, u, t_bethe, n_iw)
         g = "G"
         x = "X"
         y = "Y"
         m = "M"
         up = "up"
         dn = "dn"
-        self.beta = beta
         self.spins = [up, dn]
         self.sites = range(4)
         self.momenta = [g, x, y, m]
@@ -129,7 +129,6 @@ class NambuMomentumPlaquetteBethe:
         self.block_labels = [k for k in self.momenta]
         self.gf_struct = [[l, self.spinors] for l in self.block_labels]
         self.gf_struct_site = [[s, self.sites] for s in self.spins]
-        self.u = u
         transformation_matrix = .5 * np.array([[1,1,1,1],
                                                [1,-1,1,-1],
                                                [1,1,-1,-1],
@@ -146,8 +145,6 @@ class NambuMomentumPlaquetteBethe:
         self.mu = mom_transf.reblock_by_map(mom_transf.transform_matrix(mu), reblock_map)
         h = HubbardPlaquetteMomentumNambu(u, self.spins, self.momenta, self.transformation)
         self.h_int = h.get_h_int()
-        self.t = t
-        self.bandwidth = 4 * t
         self.g0 = WeissField(self.momenta, [self.spinors]*4, self.beta, n_iw, self.t, self.t_loc)
         self.initial_guess = GLocal(self.momenta, [self.spinors]*4, self.beta, n_iw, self.t, self.t_loc)
 
