@@ -7,7 +7,15 @@ from bethe.evaluation.generic import Evaluation as GenericEvaluation
 class Evaluation(GenericEvaluation):
     def __init__(self, archive):
         self.archive = LoopStorage(archive)
-        self.n_loops = self.archive.disk["dmft_results"]["n_dmft_loops"]
+        self.n_loops = self.archive.get_completed_loops()
+
+    def get_scorder(self, loop = -1):
+        g = self.archive.load("g_tau", loop)
+        scos = np.array([-g["X"].data[-1,0,1].real,
+                        -g["X"].data[-1,1,0].real,
+                        -g["Y"].data[-1,0,1].real,
+                        -g["Y"].data[-1,1,0].real])
+        return np.mean(abs(scos)), np.std(abs(scos))
 
     def get_scorderset_loop(self):
         scoset_loop = np.empty([self.n_loops, 4])

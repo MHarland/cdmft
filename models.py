@@ -5,7 +5,7 @@ from pytriqs.gf.local.descriptor_base import Function
 from glocal import GLocal
 from hamiltonian import HubbardSite, HubbardPlaquette, HubbardPlaquetteMomentum, HubbardPlaquetteMomentumNambu
 from transformation import MatrixTransformation, InterfaceToBlockstructure
-from weissfield import WeissField 
+from weissfield import WeissField, WeissFieldNambu
 
 
 class Bethe:
@@ -145,7 +145,7 @@ class NambuMomentumPlaquette(Bethe):
         self.mu = mom_transf.reblock_by_map(mom_transf.transform_matrix(mu), reblock_map)
         h = HubbardPlaquetteMomentumNambu(u, self.spins, self.momenta, self.transformation)
         self.h_int = h.get_h_int()
-        self.g0 = WeissField(self.momenta, [self.spinors]*4, self.beta, n_iw, self.t, self.t_loc)
+        self.g0 = WeissFieldNambu(self.momenta, [self.spinors]*4, self.beta, n_iw, self.t, self.t_loc)
         self.initial_guess = GLocal(self.momenta, [self.spinors]*4, self.beta, n_iw, self.t, self.t_loc)
 
     def init_guess(self, g_momentumplaquettebethe = None, anom_field_factor = None,

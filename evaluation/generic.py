@@ -15,3 +15,6 @@ class Evaluation:
             signs[i, 0] = i
             signs[i, 1] = self.archive.load("average_sign", i)
         return signs
+
+    def get_density(self, loop = -1):
+        return self.archive.load("density", loop)
