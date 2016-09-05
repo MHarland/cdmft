@@ -121,7 +121,7 @@ class DefaultDMFTParameters(DMFTParameters):
                    "dmu_max": 0.1,
                    # solver:
                    "n_cycles": 1000,
-                   "partition_method": "autopartition",
+                   "partition_method": "autopartition", #"quantum_numbers"
                    "quantum_numbers": [],
                    "length_cycle": 10,
                    "n_warmup_cycles": 500,

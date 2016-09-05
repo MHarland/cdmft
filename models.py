@@ -64,7 +64,7 @@ class Plaquette(Bethe):
             b << SemiCircular(self.bandwidth * .5)
 
 
-class MomentumPlaquetteBethe(Bethe):
+class MomentumPlaquette(Bethe):
 
     def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t_bethe = 1, n_iw = 1025):
         Bethe.__init__(self, beta, mu, u, t_bethe, n_iw)
@@ -89,8 +89,8 @@ class MomentumPlaquetteBethe(Bethe):
         self.t_loc = mom_transf.reblock(mom_transf.transform_matrix(t_loc))
         mu = {up: mu * np.identity(4), dn: mu * np.identity(4)}
         self.mu = mom_transf.reblock(mom_transf.transform_matrix(mu))
-        h = HubbardPlaquetteMomentum(u, self.spins, self.momenta, self.transformation)
-        self.h_int = h.get_h_int()
+        self.operators = HubbardPlaquetteMomentum(u, self.spins, self.momenta, self.transformation)
+        self.h_int = self.operators.get_h_int()
         self.initial_guess = GLocal(self.block_labels, [[0]]*8, self.beta, n_iw, self.t, self.t_loc)
         self.g0 = WeissField(self.block_labels, [[0]]*8, self.beta, n_iw, self.t, self.t_loc)
         self.init_centered_semicirculars()
@@ -111,6 +111,8 @@ class MomentumPlaquetteBethe(Bethe):
         for sk, b in self.initial_guess.gf:
             b << SemiCircular(self.bandwidth * .5)
 
+    def get_quantum_numbers(self):
+        return [self.operators.get_n_tot(), self.operators.get_n_per_spin(self.spins[0])]
 
 class NambuMomentumPlaquette(Bethe):
 

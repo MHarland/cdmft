@@ -39,6 +39,8 @@ class HubbardPlaquetteMomentum:
         up = spins[0]
         dn = spins[1]
         sites = range(4)
+        self.sites = sites
+        self.spins = spins
         self.transformation = transformation
         self.block_labels = [spin+"-"+k for spin in spins for k in momenta]
         self.gf_struct = [[l, range(1)] for l in self.block_labels]
@@ -56,6 +58,12 @@ class HubbardPlaquetteMomentum:
 
     def get_gf_struct(self):
         return self.gf_struct
+
+    def get_n_per_spin(self, spin):
+        return np.sum([self._c_dag(spin, i) * self._c(spin, i) for i in self.sites], axis = 0)
+
+    def get_n_tot(self):
+        return np.sum([self.get_n_per_spin(s) for s in self.spins], axis = 0)
 
 
 class HubbardPlaquetteMomentumNambu:
