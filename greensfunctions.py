@@ -24,6 +24,7 @@ class MatsubaraGreensFunction:
     def set_gf(self, *args):
         """sets the first non-None argument, dropping the remainers"""
         for gf in list(args):
+            assert isinstance(gf, BlockGf) or isinstance(gf, MatsubaraGreensFunction), str(type(gf))+" not recognized"
             if isinstance(gf, BlockGf):
                 self.gf << gf
                 break

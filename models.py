@@ -19,11 +19,12 @@ class Bethe:
         self.bandwidth = 4 * t_bethe
 
     def init_dmft(self):
-        return {"weiss_field": self.g0, "h_int": self.h_int, "g_local": self.initial_guess, "mu": self.mu}
+        return {"weiss_field": self.g0, "h_int": self.h_int, "g_local": self.initial_g, "mu": self.mu, "self_energy": self.initial_se}
 
-    def init_guess(self, g):
+    def init_guess(self, g, self_energy):
         """initializes by previous solution"""
-        self.initial_guess.set_gf(g.copy())
+        self.initial_g.set_gf(g.copy())
+        self.initial_se.set_gf(self_energy.copy())
 
 
 class SingleSite(Bethe):
@@ -91,9 +92,9 @@ class MomentumPlaquette(Bethe):
         self.mu = mom_transf.reblock(mom_transf.transform_matrix(mu))
         self.operators = HubbardPlaquetteMomentum(u, self.spins, self.momenta, self.transformation)
         self.h_int = self.operators.get_h_int()
-        self.initial_guess = GLocal(self.block_labels, [[0]]*8, self.beta, n_iw, self.t, self.t_loc)
+        self.initial_g = GLocal(self.block_labels, [[0]]*8, self.beta, n_iw, self.t, self.t_loc)
         self.g0 = WeissField(self.block_labels, [[0]]*8, self.beta, n_iw, self.t, self.t_loc)
-        self.init_centered_semicirculars()
+        self.initial_se = GLocal(self.block_labels, [[0]]*8, self.beta, n_iw, self.t, self.t_loc)
 
     def init_noninteracting(self):
         for sk, b in self.initial_guess.gf:
@@ -148,7 +149,8 @@ class NambuMomentumPlaquette(Bethe):
         h = HubbardPlaquetteMomentumNambu(u, self.spins, self.momenta, self.transformation)
         self.h_int = h.get_h_int()
         self.g0 = WeissFieldNambu(self.momenta, [self.spinors]*4, self.beta, n_iw, self.t, self.t_loc)
-        self.initial_guess = GLocal(self.momenta, [self.spinors]*4, self.beta, n_iw, self.t, self.t_loc)
+        self.initial_g = GLocal(self.momenta, [self.spinors]*4, self.beta, n_iw, self.t, self.t_loc)
+        self.initial_se = GLocal(self.momenta, [self.spinors]*4, self.beta, n_iw, self.t, self.t_loc)
 
     def init_guess(self, g_momentumplaquettebethe = None, anom_field_factor = None,
                    g_nambumomentumplaquettebethe = None):

@@ -7,7 +7,7 @@ from greensfunctions import MatsubaraGreensFunction
 
 class DMFT:
 
-    def __init__(self, loopstorage, parameters, weiss_field, h_int, g_local, mu):
+    def __init__(self, loopstorage, parameters, weiss_field, h_int, g_local, mu, self_energy):
         """
         Parameters, h_int, LoopStorage, weiss_field, glocal
         """
@@ -18,7 +18,7 @@ class DMFT:
         self.g0 = weiss_field
         self.g_loc = g_local
         self.mu = mu
-        self.se = MatsubaraGreensFunction(**self.par.init_gf_iw())
+        self.se = self_energy
 
     def run_loops(self, n_loops, **parameters_dict):
         self.par.set(parameters_dict)
