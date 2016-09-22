@@ -1,5 +1,7 @@
 import os
 from pytriqs.archive import HDFArchive
+from pytriqs.operators import Operator
+from pytriqs.applications.impurity_solvers.cthyb import AtomDiag
 from pytriqs.gf.local import BlockGf
 from pytriqs.utility import mpi
 
@@ -9,6 +11,7 @@ class LoopStorage:
     def __init__(self, file_name, objects_to_store = {}):
         self.disk = None
         self.dmft_results = None
+        self.file_name = file_name
         if os.path.isfile(file_name):
             new_archive = False
         else:
@@ -37,14 +40,18 @@ class LoopStorage:
                     place_to_store[name] = obj
             self.dmft_results["n_dmft_loops"] += 1
 
-    def load(self, quantity_name, loop_nr = None, bcast = True):
-        quantity = None
+    def _asc_loop_nr(self, loop_nr):
         if loop_nr is None:
             loop_nr = self.get_last_loop_nr()
         if loop_nr < 0:
             loop_nr = self.get_completed_loops() + loop_nr
             assert loop_nr >= 0, "loop not available"
+        return loop_nr
+
+    def load(self, quantity_name, loop_nr = None, bcast = True):
+        quantity = None
         if mpi.is_master_node():
+            loop_nr = self._asc_loop_nr(loop_nr)
             quantity = self.dmft_results[str(loop_nr)][quantity_name]
         if bcast:
             quantity = mpi.bcast(quantity)
@@ -69,3 +76,36 @@ class LoopStorage:
         f = mpi.bcast(f)
         return f
         
+    def _drop_loop(self, loop):
+        results = self.disk["dmft_results"]
+        del results[str(loop)]
+
+    def _relabel_loop(self, old_label, new_label):
+        old_label = str(old_label)
+        new_label = str(new_label)
+        results = self.disk["dmft_results"]
+        assert not results.is_group(new_label), "unable to relabel, group already exists"
+        results.create_group(new_label)
+        for key, val in results[old_label].items():
+            results[new_label][key] = val
+        #self.disk["dmft_results"][new_label_str] = self.disk["dmft_results"][str(old_label)]
+        del results[old_label]
+
+    def cut_loop(self, loop):
+        loop = self._asc_loop_nr(loop)
+        self._drop_loop(loop)
+        for l in range(self.get_completed_loops()):
+            if l > loop:
+                self._relabel_loop(l, l - 1)
+        self.disk["dmft_results"]["n_dmft_loops"] -= 1
+
+    def merge(self, storage_to_append):
+        n_loops_sto2 = storage_to_append.get_completed_loops()
+        n_loops_sto = self.get_completed_loops()
+        for l in range(n_loops_sto2):
+            appended_loop_nr = str(n_loops_sto + l)
+            self.dmft_results.create_group(appended_loop_nr)
+            for key, val in storage_to_append.dmft_results[str(l)].items():
+                self.dmft_results[appended_loop_nr][key] = val
+        self.dmft_results["n_dmft_loops"] +=  n_loops_sto2
+            
