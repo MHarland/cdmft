@@ -138,7 +138,7 @@ class DefaultDMFTParameters(DMFTParameters):
                    "use_norm_as_weight": False,
                    "performance_analysis": False,
                    "proposal_prob": {},
-                   "imag_threshold": 1.e-15,
+                   "imag_threshold": 1.e-10,
                    # uses solver's fitting to the self-energy
                    "perform_post_proc": True,
                    "perform_tail_fit": True,
