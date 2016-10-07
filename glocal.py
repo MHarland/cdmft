@@ -25,7 +25,11 @@ class GLocal(MatsubaraGreensFunction):
 
     def set_mu(self, selfenergy, mu, w1, w2, filling = None, dmu_max = None, *args, **kwargs):
         if filling is None:
-            self.set_mu_number(mu, selfenergy, w1, w2)
+            assert type(mu) == float or isinstance(mu, dict), "Unexpected type or class of mu."
+            if type(mu) == float:
+                self.set_mu_number(mu, selfenergy, w1, w2)
+            else:
+                self.calculate(mu, selfenergy, w1, w2)
         else:
             mu = self.find_and_set_mu(filling, selfenergy, mu, dmu_max, w1, w2)
         return mu
