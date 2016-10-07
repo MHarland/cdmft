@@ -23,7 +23,6 @@ class Bethe:
 
     def set_initial_guess(self, self_energy, mu = None):
         """initializes by previous solution"""
-        #self.initial_g.set_gf(g.copy())
         self.initial_se.set_gf(self_energy.copy())
         if not mu is None:
             self.mu = mu
@@ -62,10 +61,9 @@ class Plaquette(Bethe):
         h = HubbardPlaquette(u, [up, dn])
         self.h_int = h.get_h_int()
         self.t = t_bethe
-        self.initial_guess = GLocal(self.block_labels, [range(4)]*2, self.beta, n_iw, self.t_loc)
+        self.initial_g = GLocal(self.block_labels, [range(4)]*2, self.beta, n_iw, self.t_loc)
+        self.initial_se = GLocal(self.block_labels, [range(4)]*2, self.beta, n_iw, self.t_loc)
         self.g0 = WeissField(self.block_labels, [[0]]*8, self.beta, n_iw, self.t, self.t_loc)
-        for s, b in self.initial_guess.gf:
-            b << SemiCircular(self.bandwidth * .5)
 
 
 class MomentumPlaquette(Bethe):
@@ -117,6 +115,7 @@ class MomentumPlaquette(Bethe):
 
     def get_quantum_numbers(self):
         return [self.operators.get_n_tot(), self.operators.get_n_per_spin(self.spins[0])]
+
 
 class NambuMomentumPlaquette(Bethe):
 
