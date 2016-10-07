@@ -14,7 +14,7 @@ for fname in sys.argv[1:]:
     ys = []
     x = np.array(range(sto.get_completed_loops()))
     for l in range(sto.get_completed_loops()):
-        g = sto.load("g_loc_iw", l)
+        g = sto.load("g_imp_iw", l)
         if indices is None:
             indices = [str(b)+str(i)+str(j) for b,i,j in g.all_indices]
         n_iw0 = int(len([iw for iw in g.mesh])*.5)
