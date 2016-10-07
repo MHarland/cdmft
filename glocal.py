@@ -1,6 +1,7 @@
-import numpy as np
-from pytriqs.gf.local import BlockGf, GfImFreq, delta, iOmega_n, inverse
+import numpy as np, itertools as itt
+from pytriqs.gf.local import BlockGf, GfImFreq, delta, iOmega_n, inverse, TailGf
 from pytriqs.utility.bound_and_bisect import bound_and_bisect
+from pytriqs.gf.local.descriptor_base import Function
 
 from greensfunctions import MatsubaraGreensFunction
 from gfoperations import double_dot_product
@@ -8,8 +9,10 @@ from gfoperations import double_dot_product
 
 class GLocal(MatsubaraGreensFunction):
 
-    def __init__(self, block_names, block_states, beta, n_iw, t, t_loc):
+    def __init__(self, block_names, block_states, beta, n_iw, t, t_loc, g_loc = None):
         MatsubaraGreensFunction.__init__(self, block_names, block_states, beta, n_iw)
+        if not g_loc is None:
+            self.gf = g_loc.gf.copy()
         self._gf_lastloop = BlockGf(name_list = self.block_names,
                                block_list = [GfImFreq(indices = states,
                                                       beta = self.beta,
@@ -20,18 +23,32 @@ class GLocal(MatsubaraGreensFunction):
         self.last_found_mu_number = None
         self.last_found_density = None
 
-    def set_mu(self, mu, selfenergy):
-        for s, b in self.gf:
-            b << inverse(iOmega_n + mu[s] - self.t_loc[s] - selfenergy.gf[s])
+    def set_mu(self, selfenergy, mu, w1, w2, filling = None, dmu_max = None, *args, **kwargs):
+        if filling is None:
+            self.set_mu_number(mu, selfenergy, w1, w2)
+        else:
+            mu = self.find_and_set_mu(filling, selfenergy, mu, dmu_max, w1, w2)
+        return mu
+        
+    def calculate(self, mu, selfenergy, w1, w2):
+        for sk, b in self.gf:
+            orbitals = [i for i in range(b.data.shape[1])]
+            for i, j in itt.product(orbitals, orbitals):
+                for n, iwn in enumerate(b.mesh):
+                    z = lambda iw: iw + mu[sk][i, j] - self.t_loc[sk][i, j] - selfenergy.gf[sk].data[n,i,j]
+                    gf = lambda iw: (z(iw) - complex(0, 1) * np.sign(z(iw).imag) * np.sqrt(4*self.t**2 - z(iw)**2))/(2*self.t**2)
+                    b.data[n,i,j] = gf(iwn)
+        self._fit_tail(w1, w2)
 
-    def get_mu(self, selfenergy):
-        mu_mat = dict()
+    def _fit_tail(self, w1, w2):
+        beta = self.gf.beta
         for s, b in self.gf:
-            const = b.copy()
-            const << (-1) * inverse(b) + iOmega_n - self.t_loc[s] - selfenergy.gf[s]
-            mu_mat[s] = const.data[self.n_iw,:,:].copy()
-        return mu_mat
-
+            n1 = int(beta/(2*np.pi)*w1 -.5)
+            n2 = int(beta/(2*np.pi)*w2 -.5)
+            known_moments = TailGf(b.N1, b.N2, 1, 1)
+            known_moments[1] = np.identity(1)
+            b.fit_tail(known_moments, 3, n1, n2)
+        
     def _average(self, blockmatrix):
         d = 0
         s = 0
@@ -41,29 +58,22 @@ class GLocal(MatsubaraGreensFunction):
                 s += block[i, i]
         return s /float(d)
 
-    def get_mu_number(self, selfenergy):
-        mu_mat = self.get_mu(selfenergy)
-        return self._average(mu_mat).real
-
-    def set_mu_number(self, mu_number, selfenergy):
+    def set_mu_number(self, mu_number, selfenergy, w1, w2):
         """Assumes same mu in all orbitals"""
         mu = dict()
         for name, matrix in self.t_loc.items():
             mu[name] = np.identity(len(matrix)) * mu_number
-        self.set_mu(mu, selfenergy)
+        self.calculate(mu, selfenergy, w1, w2)
 
-    def total_density(self):
-        return self.gf.total_density()
-
-    def set_mu_get_filling(self, mu_number, selfenergy):
-        self.set_mu_number(mu_number, selfenergy)
+    def set_mu_get_filling(self, mu, selfenergy, w1, w2):
+        self.set_mu_number(mu, selfenergy, w1, w2)
         return self.total_density()
 
-    def find_and_set_mu(self, filling, selfenergy, mu0, dmu_max, *args, **kwargs):
+    def find_and_set_mu(self, filling, selfenergy, mu0, dmu_max, w1, w2, *args, **kwargs):
         """Assumes a diagonal-mu basis"""
         if not filling is None:
             self.filling_with_old_mu = self.total_density()
-            f = lambda mu: self.set_mu_get_filling(mu, selfenergy)
+            f = lambda mu: self.set_mu_get_filling(mu, selfenergy, w1, w2)
             self.last_found_mu_number, self.last_found_density = bound_and_bisect(f, mu0, filling, x_name = "mu", y_name = "filling", maxiter = 10000, *args, **kwargs)
             return self.limit(self.last_found_mu_number, mu0, dmu_max)
 

@@ -8,18 +8,28 @@ class MatsubaraGreensFunction:
     """
     def __init__(self, block_names, block_states, beta, n_iw, gf_init = None, *args, **kwargs):
         assert len(block_names) == len(block_states), "Number of Block-names and blocks have to equal"
-        self.block_names = block_names
-        self.block_states = block_states
-        self.beta = beta
-        self.n_iw = n_iw
-        self.gf = BlockGf(name_list = block_names,
-                          block_list = [GfImFreq(indices = states,
-                                                 beta = beta,
-                                                 n_points = n_iw) for states in block_states])
-        self._gf_lastloop = self.gf.copy() 
         if not gf_init is None:
+            self.block_names = gf_init.block_names
+            self.block_states = gf_init.block_states
+            self.beta = gf_init.beta
+            self.n_iw = gf_init.n_iw
+            self.gf = BlockGf(name_list = self.block_names,
+                              block_list = [GfImFreq(indices = states,
+                                                     beta = self.beta,
+                                                     n_points = self.n_iw) for states in self.block_states])
             self.gf << g_init
             self._gf_lastloop << g_init
+        else:
+            self.block_names = block_names
+            self.block_states = block_states
+            self.beta = beta
+            self.n_iw = n_iw
+            self.gf = BlockGf(name_list = block_names,
+                              block_list = [GfImFreq(indices = states,
+                                                     beta = beta,
+                                                     n_points = n_iw) for states in block_states])
+        self._gf_lastloop = None
+
 
     def set_gf(self, *args):
         """sets the first non-None argument, dropping the remainers"""
@@ -31,6 +41,9 @@ class MatsubaraGreensFunction:
             elif not gf is None:
                 self.gf << self.gf
                 break
+
+    def prepare_mix(self):
+        self._gf_lastloop = self.gf.copy()
 
     def mix(self, coeff):
         """mixes with the solution of the previous loop, coeff is the weight of the 
@@ -45,6 +58,9 @@ class MatsubaraGreensFunction:
         for symmetry in block_symmetries:
             self._symmetrize_block(symmetry)
 
+    def total_density(self):
+        return self.gf.total_density()
+
     def _symmetrize_block(self, symmetry):
         for s1, b1 in self.gf:
             for blocklabel_sym_part in symmetry:
@@ -58,3 +74,10 @@ class MatsubaraGreensFunction:
                         if sublabel in s2 and s1 != s2 and symlabel_in_s2:
                             b1 << .5 * (b1 + b2)
                             b2 << b1
+
+
+class GImpurity(MatsubaraGreensFunction):
+    
+    def calc_dyson(self, g0, se):
+        self.gf << inverse(inverse(g0.gf) - se.gf)
+

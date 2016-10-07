@@ -21,27 +21,30 @@ class Bethe:
     def init_dmft(self):
         return {"weiss_field": self.g0, "h_int": self.h_int, "g_local": self.initial_g, "mu": self.mu, "self_energy": self.initial_se}
 
-    def init_guess(self, g, self_energy):
+    def set_initial_guess(self, self_energy, mu = None):
         """initializes by previous solution"""
-        self.initial_g.set_gf(g.copy())
+        #self.initial_g.set_gf(g.copy())
         self.initial_se.set_gf(self_energy.copy())
+        if not mu is None:
+            self.mu = mu
 
 
 class SingleSite(Bethe):
 
     def __init__(self, beta, mu, u, t_bethe = 1, n_iw = 1025):
         Bethe.__init__(self, beta, mu, u, t_bethe = 1, n_iw = 1025)
+        self.t = t_bethe
         up = "up"
         dn = "dn"
+        self.block_labels = [up, dn]
         self.gf_struct = [[up, range(1)], [dn, range(1)]]
         self.t_loc = {up: np.zeros([1, 1]), dn: np.zeros([1, 1])}
         h = HubbardSite(u, [up, dn])
         self.h_int = h.get_h_int()
-        self.initial_guess = GLocal(self.block_labels, [[0]]*2, self.beta, n_iw, self.t_loc)
-        self.g0 = WeissField(self.block_labels, [[0]]*8, self.beta, n_iw, self.t, self.t_loc)
-        for s, b in self.initial_guess.gf:
-            b << SemiCircular(self.bandwidth * .5)
-
+        self.initial_g = GLocal(self.block_labels, [[0]]*2, self.beta, n_iw, self.t, self.t_loc)
+        self.initial_se = GLocal(self.block_labels, [[0]]*2, self.beta, n_iw, self.t, self.t_loc)
+        self.g0 = WeissField(self.block_labels, [[0]]*2, self.beta, n_iw, self.t, self.t_loc)
+            
 
 class Plaquette(Bethe):
 
@@ -97,7 +100,7 @@ class MomentumPlaquette(Bethe):
         self.initial_se = GLocal(self.block_labels, [[0]]*8, self.beta, n_iw, self.t, self.t_loc)
 
     def init_noninteracting(self):
-        for sk, b in self.initial_guess.gf:
+        for sk, b in self.initial_g.gf:
             z = lambda iw: iw + (self.mu[sk] - self.t_loc[sk])[0, 0]
             gf = lambda iw: (z(iw) - complex(0, 1) * np.sign(z(iw).imag) * np.sqrt(4*self.t**2 - z(iw)**2))/(2*self.t**2)
             one = np.identity(b.N1)

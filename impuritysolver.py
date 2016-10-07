@@ -20,24 +20,18 @@ class ImpuritySolver:
         self.run_parameters = {}
         self.cthyb = Solver(beta, dict(gf_struct), n_iw, n_tau, n_l, *args, **kwargs)
 
-    def get_g_iw(self, by_tau = True, by_legendre = False):
+    def get_g_iw(self, by_tau = False, by_legendre = True):
         assert by_tau ^ by_legendre, "G_iw can only be set by one G of the solver, since it is used for the next dmft loop"
         if by_tau:
-            return self.get_g_iw_by_tau()
+            return self._get_g_iw_by_tau()
         elif by_legendre:
-            return self.get_g_iw_by_legendre()
+            return self._get_g_iw_by_legendre()
 
     def _init_new_giw(self):
         return BlockGf(name_list = [b[0] for b in self.gf_struct],
                        block_list = [GfImFreq(n_points = self.n_iw, beta = self.beta,
                                               indices = b[1]) for b in self.gf_struct]
                        )
-
-    def get_g_iw(self, by_tau = True):
-        if by_tau:
-            return self._get_g_iw_by_tau()
-        else:
-            return self._get_g_iw_by_legendre()
 
     def _get_g_iw_by_tau(self):
         g_iw = self._init_new_giw()
@@ -52,6 +46,17 @@ class ImpuritySolver:
         for s, b in self.cthyb.G_l:
             g_iw[s] << LegendreToMatsubara(b)
         return g_iw
+
+    def get_se(self, by_tau = False, by_legendre = True):
+        se = self._init_new_giw()
+        if by_tau or not self.run_parameters["measure_g_l"]:
+            for s, b in self.cthyb.Sigma_iw:
+                se[s] << b
+        else:
+            assert by_legendre and self.run_parameters["measure_g_l"], "Need either g_legendre or g_tau to set sigma_iw"
+            g_iw = self._get_g_iw_by_legendre()
+            se << inverse(self.cthyb.G0_iw) - inverse(g_iw)
+        return se
 
     def run(self, weiss_field, hamiltonian, **run_parameters):
         self.cthyb.G0_iw << weiss_field.gf
@@ -72,10 +77,10 @@ class ImpuritySolver:
             results.update({"g_tau": self.cthyb.G_tau})
             if "perform_post_proc" in self.run_parameters.keys():
                 if self.run_parameters["perform_post_proc"]:
-                    results.update({"sigma_iw": self.cthyb.Sigma_iw})
-                    results.update({"g_iw": self.cthyb.G_iw})
+                    results.update({"sigma_sol_iw": self.cthyb.Sigma_iw})
+                    results.update({"g_sol_iw": self.cthyb.G_iw})
         if params["measure_g_l"]:
-            results.update({"g_l": self.cthyb.G_l})
+            results.update({"g_sol_l": self.cthyb.G_l})
         if params["measure_density_matrix"]:
             results.update({"density_matrix": self.cthyb.density_matrix})
         if params["measure_pert_order"]:
@@ -84,6 +89,3 @@ class ImpuritySolver:
         if params["performance_analysis"]:
             results.update({"performance_analysis": self.cthyb.performance_analysis})
         return results
-
-    def get_se(self):
-        return self.cthyb.Sigma_iw

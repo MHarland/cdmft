@@ -7,18 +7,19 @@ class DMFTParameters:
     untouched parameters: random_seed, fit_known_moments
     treated in models: h_int, t, t_loc, mu, u, initial_guess, gf_struct, beta
     """
-    def __init__(self, parameter_dict = {}):
+    def __init__(self, model, parameter_dict = {}):
         self.solver_run = ["n_cycles", "partition_method", "quantum_numbers", "length_cycle", "n_warmup_cycles", "random_name", "max_time", "verbosity", "move_shift", "move_double", "use_trace_estimator", "measure_g_tau", "measure_g_l", "measure_pert_order", "measure_density_matrix", "use_norm_as_weight", "performance_analysis", "proposal_prob", "imag_threshold", "perform_post_proc", "perform_tail_fit", "fit_min_n", "fit_max_n", "fit_min_w", "fit_max_w", "fit_max_moment"]
         all_parameternames = ["beta", "n_iw", "n_tau", "n_l", "gf_struct", "mix", "make_g0_tau_real", "filling", "block_symmetries", "dmu_max"] + self.solver_run
         self.current = dict([(name, None) for name in all_parameternames])
         self.set(parameter_dict)
-        self.model = None
+        self.set_by_model(model)
 
     def set_by_model(self, model):
-        """garantuees compatibility of beta and gf_struct with the chosen model"""
+        """
+        garantuees compatibility of beta and gf_struct with the chosen model
+        """
         self.current["beta"] = model.beta
         self.current["gf_struct"] = model.gf_struct
-        self.model = model
 
     def run_solver(self):
         rs_dict = {}
@@ -46,9 +47,7 @@ class DMFTParameters:
         block_states = [block[1] for block in self.current["gf_struct"]]
         beta = self.current["beta"]
         n_iw = self.current["n_iw"]
-        t = self.model.t
-        t_loc = self.model.t_loc
-        return {"block_names": block_names, "block_states": block_states, "beta": beta, "n_iw": n_iw, "t": t, "t_loc": t_loc}
+        return {"block_names": block_names, "block_states": block_states, "beta": beta, "n_iw": n_iw}
 
     def assert_setup_complete(self):
         """
@@ -110,7 +109,7 @@ class MissingParameters(Exception):
 
 class DefaultDMFTParameters(DMFTParameters):
 
-    def __init__(self, parameter_dict = {}):
+    def __init__(self, model, parameter_dict = {}):
         default = {"n_iw": 1025,
                    "n_tau": 10001,
                    "n_l": 30,
@@ -118,7 +117,7 @@ class DefaultDMFTParameters(DMFTParameters):
                    "make_g0_tau_real": True,
                    "filling": None,
                    "block_symmetries": [],
-                   "dmu_max": 0.1,
+                   "dmu_max": 10,
                    # solver:
                    "n_cycles": 1000,
                    "partition_method": "autopartition", #"quantum_numbers"
@@ -148,4 +147,4 @@ class DefaultDMFTParameters(DMFTParameters):
                    "fit_max_w": None,
                    "fit_max_moment": 3}
         default.update(parameter_dict)
-        DMFTParameters.__init__(self, default)
+        DMFTParameters.__init__(self, model, default)
