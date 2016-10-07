@@ -1,5 +1,7 @@
 from pytriqs.applications.impurity_solvers.cthyb import Solver
 from pytriqs.gf.local import SemiCircular, LegendreToMatsubara, TailGf, BlockGf, GfImFreq, inverse
+from pytriqs.random_generator import random_generator_names_list
+from pytriqs.utility import mpi
 
 
 class ImpuritySolver:
@@ -58,10 +60,18 @@ class ImpuritySolver:
             se << inverse(self.cthyb.G0_iw) - inverse(g_iw)
         return se
 
-    def run(self, weiss_field, hamiltonian, **run_parameters):
+    def _get_internal_parameters(self, loop_nr):
+        par = {}
+        rnames = random_generator_names_list()
+        n_r = len(rnames)
+        par.update({'random_name': rnames[int((loop_nr + mpi.rank) % n_r)]})
+        return par
+
+    def run(self, weiss_field, hamiltonian, loop_nr, **run_parameters):
         self.cthyb.G0_iw << weiss_field.gf
         self.run_parameters["h_int"] = hamiltonian
         self.run_parameters.update(run_parameters)
+        self.run_parameters.update(self._get_internal_parameters(loop_nr))
         self.cthyb.solve(**self.run_parameters)
 
     def get_results(self):

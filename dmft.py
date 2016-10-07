@@ -26,12 +26,13 @@ class DMFT:
     def run_loops(self, n_loops, **parameters_dict):
         self.p.set(parameters_dict)
         for i in range(n_loops):
-            self.report("DMFT loop nr. "+str(self.storage.get_completed_loops())+":")
+            loop_nr = self.storage.get_completed_loops()
+            self.report("DMFT loop nr. "+str(loop_nr)+":")
             loop_time = time()
             self.mu = self.g_loc.set_mu(self.se, self.mu, self.p["fit_min_w"], self.p["fit_max_w"], self.p["filling"], self.p["dmu_max"])
             self.g0.calc_selfconsistency(self.g_loc, self.mu)
             self.prepare_impurity_run()
-            self.imp_solver.run(self.g0, self.h_int, **self.p.run_solver())
+            self.imp_solver.run(self.g0, self.h_int, loop_nr, **self.p.run_solver())
             self.g_imp.set_gf(self.imp_solver.get_g_iw())
             self.process_impurity_results()
             results = {}
