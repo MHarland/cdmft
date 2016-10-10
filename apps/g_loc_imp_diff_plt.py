@@ -7,11 +7,11 @@ from bethe.storage import LoopStorage
 
 nc = len(sys.argv[1:])
 colors = [matplotlib.cm.jet(i/float(max(1,nc-1))) for i in range(nc)]
+fig = plt.figure()
+ax = fig.add_axes([.13,.12,.8,.8])
 for fname, color in zip(sys.argv[1:], colors):
-    fig = plt.figure()
-    ax = fig.add_axes([.13,.12,.8,.8])
     sto = LoopStorage(fname)
-    n_freq = 10
+    n_freq = 20
     n_loops = sto.get_completed_loops()
     x = []
     y = []
@@ -32,10 +32,10 @@ for fname, color in zip(sys.argv[1:], colors):
         dif /= gloc.n_blocks
         x.append(l)
         y.append(dif)
-    ax.plot(x, y, label = fname[:-3], color = color)
+    ax.plot(x, np.log10(y), label = fname[:-3], color = color)
 ax.set_xlabel("$\mathrm{DMFT-Loop}$")
-ax.set_ylabel("$\\sum_{n}^{"+str(n_freq)+"}\,\\sum_{i}\,|G^{loc}_{ii}(i\\omega_n)-G^{imp}_{ii}(i\\omega_n)|\,/\,N$")
-ax.legend(loc = "lower left", fontsize = 8)
+ax.set_ylabel("$\\log_{10}\\sum_{n}^{"+str(n_freq)+"}\,\\sum_{i}\,|G^{loc}_{ii}(i\\omega_n)-G^{imp}_{ii}(i\\omega_n)|\,/\,N$")
+ax.legend(loc = "upper left", fontsize = 8)
 outname = "g_loc_imp_diff.pdf"
 plt.savefig(outname)
 print outname+" ready"
