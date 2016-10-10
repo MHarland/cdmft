@@ -1,0 +1,10 @@
+-*~
+-*#
+-*.pyc
+-*.pdf
+-.gitignore
+-.projectile
+-*.h5
+-*.npy
+-*.npz
+-*.bak
