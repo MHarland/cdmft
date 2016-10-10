@@ -5,10 +5,11 @@ class DMFTParameters:
     """
     always needs gf_struct and beta
     untouched parameters: random_seed, fit_known_moments
-    treated in models: h_int, t, t_loc, mu, u, initial_guess, gf_struct, beta
+    taken from model: h_int, t, t_loc, mu, u, initial_guess, gf_struct,
+    beta, quantum_numbers, move_global
     """
     def __init__(self, model, parameter_dict = {}):
-        self.solver_run = ["n_cycles", "partition_method", "quantum_numbers", "length_cycle", "n_warmup_cycles", "random_name", "max_time", "verbosity", "move_shift", "move_double", "use_trace_estimator", "measure_g_tau", "measure_g_l", "measure_pert_order", "measure_density_matrix", "use_norm_as_weight", "performance_analysis", "proposal_prob", "imag_threshold", "perform_post_proc", "perform_tail_fit", "fit_min_n", "fit_max_n", "fit_min_w", "fit_max_w", "fit_max_moment"]
+        self.solver_run = ["n_cycles", "partition_method", "quantum_numbers", "length_cycle", "n_warmup_cycles", "random_name", "max_time", "verbosity", "move_shift", "move_double", "use_trace_estimator", "measure_g_tau", "measure_g_l", "measure_pert_order", "measure_density_matrix", "use_norm_as_weight", "performance_analysis", "proposal_prob", "imag_threshold", "perform_post_proc", "perform_tail_fit", "fit_min_n", "fit_max_n", "fit_min_w", "fit_max_w", "fit_max_moment", "move_global", "move_global_prob"]
         all_parameternames = ["beta", "n_iw", "n_tau", "n_l", "gf_struct", "mix", "make_g0_tau_real", "filling", "block_symmetries", "dmu_max"] + self.solver_run
         self.current = dict([(name, None) for name in all_parameternames])
         self.set(parameter_dict)
@@ -20,6 +21,8 @@ class DMFTParameters:
         """
         self.current["beta"] = model.beta
         self.current["gf_struct"] = model.gf_struct
+        self.current["quantum_numbers"] = model.get_quantum_numbers()
+        self.current["move_global"] = model.get_global_moves()
 
     def run_solver(self):
         rs_dict = {}
@@ -138,6 +141,8 @@ class DefaultDMFTParameters(DMFTParameters):
                    "performance_analysis": False,
                    "proposal_prob": {},
                    "imag_threshold": 1.e-10,
+                   "move_global": {},
+                   "move_global_prob": 0.05, 
                    # uses solver's fitting to the self-energy
                    "perform_post_proc": True,
                    "perform_tail_fit": True,

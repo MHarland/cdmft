@@ -7,7 +7,7 @@ from bethe.storage import LoopStorage
 mod = Model(10, 1, 2, 1)
 par = {"n_iw": 1025,
        "n_tau": 10001,
-       "mix": .01,
+       "mix": .5,
        "make_g0_tau_real": False,
        "filling": None,
        # solver:
@@ -16,12 +16,12 @@ par = {"n_iw": 1025,
        "length_cycle": 15,
        "n_warmup_cycles": 10000,
        "max_time": -1,
-       "verbosity": 2,
+       "verbosity": 3,
        "move_shift": True,
        "move_double": True,
        "measure_g_tau": False,
        "measure_g_l": True,
-       "n_l": 30,
+       "n_l": 25,
        # uses solver's fitting to the self-energy
        "perform_post_proc": True,
        "perform_tail_fit": True,
@@ -31,4 +31,4 @@ par = {"n_iw": 1025,
 par = DefaultDMFTParameters(mod, par)
 sto = LoopStorage("example.h5")
 dmft = DMFT(sto, par, **mod.init_dmft())
-dmft.run_loops(2)
+dmft.run_loops(1)

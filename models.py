@@ -3,7 +3,7 @@ from pytriqs.gf.local import BlockGf, GfImFreq, SemiCircular, iOmega_n, inverse
 from pytriqs.gf.local.descriptor_base import Function
 
 from glocal import GLocal
-from hamiltonian import HubbardSite, HubbardPlaquette, HubbardPlaquetteMomentum, HubbardPlaquetteMomentumNambu
+from hamiltonian import HubbardSite, HubbardPlaquette, HubbardPlaquetteMomentum, HubbardPlaquetteMomentumNambu, HubbardTriangleMomentum
 from transformation import MatrixTransformation, InterfaceToBlockstructure
 from weissfield import WeissField, WeissFieldNambu
 
@@ -27,6 +27,9 @@ class Bethe:
         if not mu is None:
             self.mu = mu
 
+    def get_global_moves(self):
+        return {}
+
 
 class SingleSite(Bethe):
 
@@ -35,14 +38,22 @@ class SingleSite(Bethe):
         self.t = t_bethe
         up = "up"
         dn = "dn"
+        self.spins = [up, dn]
         self.block_labels = [up, dn]
         self.gf_struct = [[up, range(1)], [dn, range(1)]]
         self.t_loc = {up: np.zeros([1, 1]), dn: np.zeros([1, 1])}
-        h = HubbardSite(u, [up, dn])
-        self.h_int = h.get_h_int()
+        self.operators = HubbardSite(u, [up, dn])
+        self.h_int = self.operators.get_h_int()
         self.initial_g = GLocal(self.block_labels, [[0]]*2, self.beta, n_iw, self.t, self.t_loc)
         self.initial_se = GLocal(self.block_labels, [[0]]*2, self.beta, n_iw, self.t, self.t_loc)
         self.g0 = WeissField(self.block_labels, [[0]]*2, self.beta, n_iw, self.t, self.t_loc)
+
+    def get_quantum_numbers(self):
+        return [self.operators.get_n_tot(), self.operators.get_n_spin(self.spins[0])]
+
+    def get_global_moves(self):
+        globs = {"spin-flip": {("up", 0): ("dn", 0), ("dn", 0): ("up", 0)}}
+        return globs
             
 
 class Plaquette(Bethe):
@@ -116,6 +127,12 @@ class MomentumPlaquette(Bethe):
     def get_quantum_numbers(self):
         return [self.operators.get_n_tot(), self.operators.get_n_per_spin(self.spins[0])]
 
+    def get_global_moves(self):
+        xy = ["X", "Y"]
+        globs = {"spin-flip": dict([((s1+"-"+k, 0), (s2+"-"+k, 0)) for k in self.momenta for s1, s2 in itt.product(self.spins, self.spins) if s1 != s2]),
+                 "XY-flip": dict([((s+"-"+k1, 0), (s+"-"+k2, 0)) for s in self.spins for k1, k2 in itt.product(xy, xy) if k1 != k2])}
+        return globs
+                
 
 class NambuMomentumPlaquette(Bethe):
 
@@ -195,3 +212,45 @@ class NambuMomentumPlaquette(Bethe):
     def _set_particlehole_noninteracting(self):
         """sets up the exact solution for U=0"""
         pauli3 = np.array([[1,0],[0,-1]])
+
+
+class MomentumTriangle(Bethe):
+    """Contributions by Kristina Klafka"""
+    def __init__(self, beta, mu, u, t_triangle, t = 1, n_iw = 1025):
+        Bethe.__init__(self, beta, mu, u, t_bethe = 1, n_iw = 1025)
+        self.dim = 2
+        self.beta = beta
+        self.momenta = ["E", "A2", "A1"]
+        up = "up"
+        dn = "dn"
+        self.spins = [up, dn]
+        self.sites = range(3)
+        self.block_labels = [spin+"-"+k for spin in self.spins for k in self.momenta]
+        self.gf_struct = [[l, range(1)] for l in self.block_labels]
+        self.gf_struct_site = [[s, self.sites] for s in self.spins]
+        self.u = u
+        transformation_matrix = np.array([[1/np.sqrt(3),1/np.sqrt(3),1/np.sqrt(3)],
+                                          [0,-1/np.sqrt(2),1/np.sqrt(2)],
+                                          [-np.sqrt(2./3.),1/np.sqrt(6),1/np.sqrt(6)]])
+        self.transformation = dict([(s, transformation_matrix) for s in self.spins])
+        mom_transf = MatrixTransformation(self.gf_struct_site, self.transformation, self.gf_struct)
+        a = t_triangle
+        t_loc = np.array([[0,a,a],[a,0,a],[a,a,0]])
+        t_loc = {up: np.array(t_loc), dn: np.array(t_loc)}
+        self.t_loc = mom_transf.reblock(mom_transf.transform_matrix(t_loc))
+        mu = {up: mu * np.identity(3), dn: mu * np.identity(3)}
+        self.mu = mom_transf.reblock(mom_transf.transform_matrix(mu))
+        self.operators = HubbardTriangleMomentum(u, self.spins, self.momenta, self.transformation)
+        self.h_int = self.operators.get_h_int()
+        self.initial_g =  GLocal(self.block_labels, [[0]]*6, self.beta, n_iw, self.t, self.t_loc)
+        self.g0 =  WeissField(self.block_labels, [[0]]*6, self.beta, n_iw, self.t, self.t_loc)
+        self.initial_se = GLocal(self.block_labels, [[0]]*6, self.beta, n_iw, self.t, self.t_loc)
+
+    def get_quantum_numbers(self):
+        return [self.operators.get_n_tot(), self.operators.get_n_per_spin(self.spins[0])]
+
+    def get_global_moves(self):
+        a1a2 = ["A1", "A2"]
+        globs = {"spin-flip": dict([((s1+"-"+k, 0), (s2+"-"+k, 0)) for k in self.momenta for s1, s2 in itt.product(self.spins, self.spins) if s1 != s2]),
+                 "a1a2-flip": dict([((s+"-"+k1, 0), (s+"-"+k2, 0)) for s in self.spins for k1, k2 in itt.product(a1a2, a1a2) if k1 != k2])}
+        return globs
