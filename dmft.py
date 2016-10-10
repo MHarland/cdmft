@@ -28,7 +28,7 @@ class DMFT:
         for i in range(n_loops):
             loop_nr = self.storage.get_completed_loops()
             self.report("DMFT loop nr. "+str(loop_nr)+":")
-            loop_time = time()
+            start_time = time()
             self.mu = self.g_loc.set_mu(self.se, self.mu, self.p["fit_min_w"], self.p["fit_max_w"], self.p["filling"], self.p["dmu_max"])
             self.g0.calc_selfconsistency(self.g_loc, self.mu)
             self.prepare_impurity_run()
@@ -43,10 +43,11 @@ class DMFT:
                             "density0": self.g_loc.total_density(),
                             "mu": self.mu,
                             "density": self.g_imp.total_density(),
-                            "loop_time": loop_time - time()})
+                            "loop_time": time() - start_time})
             self.storage.save_loop(results)
             self.report_variable(average_sign = results["average_sign"],
-                                 density = results["density"])
+                                 density = results["density"],
+                                 loop_time = results["loop_time"])
             self.report("Loop done.")
 
     def process_impurity_results(self):
