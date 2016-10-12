@@ -128,10 +128,13 @@ class LoopStorage:
                 self.dmft_results[appended_loop_nr][key] = val
         self.dmft_results["n_dmft_loops"] +=  n_loops_sto2
             
-    def provide_initial_guess(self):
+    def provide_initial_guess(self, provide_mu = True):
         try:
             sigma = self.load("se_imp_iw")
         except KeyError:
             sigma = self.load("sigma_iw") #backward compatibility
-        mu = self.load("mu")
-        return {"self_energy": sigma, "mu": mu}
+        if provide_mu:
+            mu = self.load("mu")
+            return {"self_energy": sigma, "mu": mu}
+        else:
+            return {"self_energy": sigma}
