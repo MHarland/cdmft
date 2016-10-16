@@ -20,3 +20,12 @@ def sum(summands_list):
     for el in summands_list:
         result += el
     return result
+
+def trace(block_gf, tr_gf):
+    tr_gf.zero()
+    n = 0
+    for s, b in block_gf:
+        for i in b.indices:
+            n += 1
+            tr_gf << tr_gf + b[i, i]
+    tr_gf << tr_gf /float(n)
