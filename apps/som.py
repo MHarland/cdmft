@@ -41,3 +41,4 @@ for archive_name in sys.argv[1:]:
         res['g_rec_l'] = g_rec
         res['g_w'] = gw
         res['histograms'] = som.histograms
+        res['parameters'] = run_params
