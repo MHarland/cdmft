@@ -3,7 +3,6 @@ mpl.use("PDF")
 from matplotlib import pyplot as plt
 from pytriqs.gf.local import GfReFreq
 from pytriqs.archive import HDFArchive
-#from triqs_som.histograms import Histogram
 
 
 fig = plt.figure()
@@ -15,11 +14,10 @@ for archive_name, color in zip(sys.argv[1:], colors):
     g_w = archive['som_results']['g_w']
     mesh = np.array([w for w in g_w.mesh])
     ax.plot(mesh.real, -g_w.data[:,0,0].imag/np.pi, label = archive_name[:-3], color = color)
-
 ax.legend(fontsize = 8)
 ax.set_xlabel("$\\omega$")
 ax.set_ylabel("$A(\\omega)$")
-#ax.set_xlim(-10,10)
 ax.set_ylim(bottom = 0)
 plt.savefig("som.pdf")
+print "som.pdf ready"
 plt.close()
