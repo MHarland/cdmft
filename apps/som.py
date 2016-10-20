@@ -3,6 +3,7 @@ from pytriqs.archive import HDFArchive
 from pytriqs.gf.local import GfReFreq, GfLegendre
 from pytriqs.utility import mpi
 from triqs_som.som import Som
+from time import time
 
 from bethe.storage import LoopStorage
 from bethe.gfoperations import trace
@@ -18,7 +19,10 @@ run_params['adjust_f'] = True
 run_params['l'] = 500
 run_params['adjust_l'] = False
 run_params['make_histograms'] = True
+run_params['hist_max'] = 10
+run_params['hist_n_bins'] = 500
 for archive_name in sys.argv[1:]:
+    start_time = time()
     sto = LoopStorage(archive_name)
     g = sto.load("g_sol_l")
     npts = len([x for x in g.mesh])
@@ -42,3 +46,4 @@ for archive_name in sys.argv[1:]:
         res['g_w'] = gw
         res['histograms'] = som.histograms
         res['parameters'] = run_params
+        res["calculation_time"] = time() - start_time
