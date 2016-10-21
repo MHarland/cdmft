@@ -23,12 +23,14 @@ for archive_name in sys.argv[1:]:
     ax.set_ylim(bottom=0)
 
     ax = fig.add_axes([.12,.1,.83,.82-.45])
-    grec = archive[results_groupname]['g_rec_l']
-    gori = archive[results_groupname]['g_l']
+    grec = archive[results_groupname]['g_rec']
+    gori = archive[results_groupname]['g_in']
+    s = archive[results_groupname]['s']
     mesh = [x.real for x in grec.mesh]
     if isinstance(gori, GfLegendre):
         ax.plot(mesh, np.log(abs(gori.data[:,0,0].real)), label = "original", marker = "+")
         ax.plot(mesh, np.log(abs(grec.data[:,0,0].real)), ls = '--', label = "reconstructed", marker = 'x')
+        ax.plot(mesh, np.log(abs(s.data[:,0,0].real)), ls = ':', label = "s")
         ax.set_xlabel("$l$")
         ax.set_ylabel("$\\mathrm{log}\,|G(l)|$")
     elif isinstance(gori, GfImTime):

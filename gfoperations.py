@@ -1,4 +1,5 @@
-import itertools as itt
+import itertools as itt, numpy as np
+from pytriqs.gf.local import BlockGf, GfLegendre
 
 
 def double_dot_product(matrix1, gf, matrix2):
@@ -29,3 +30,9 @@ def trace(block_gf, tr_gf):
             n += 1
             tr_gf << tr_gf + b[i, i]
     tr_gf << tr_gf /float(n)
+
+def cut_coefficients(glegendre, n_remaining_coeffs):
+    g_cut = GfLegendre(indices = [i for i in glegendre.indices], beta = glegendre.beta, n_points = n_remaining_coeffs)
+    g_cut.data[:,:,:] = glegendre.data[:n_remaining_coeffs,:,:]
+    g_cut.enforce_discontinuity(np.identity(g_cut.N1))
+    return g_cut
