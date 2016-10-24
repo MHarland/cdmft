@@ -18,7 +18,7 @@ for fname in sys.argv[1:]:
         x.append(l)
     ax.plot(x, y, marker = "+")
     ax.set_xlabel("$\mathrm{DMFT-Loop}$")
-    ax.set_ylabel("$t[h]$")
+    ax.set_ylabel("$t[min]$")
     plt.savefig(fname[:-3]+"_looptime.pdf")
     print fname[:-3]+"_looptime.pdf ready"
     plt.close()
