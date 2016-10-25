@@ -23,7 +23,7 @@ class GLocal(MatsubaraGreensFunction):
         self.last_found_mu_number = None
         self.last_found_density = None
 
-    def set_mu(self, selfenergy, mu, w1, w2, filling = None, dmu_max = None, *args, **kwargs):
+    def set(self, selfenergy, mu, w1, w2, filling = None, dmu_max = None, *args, **kwargs):
         if filling is None:
             assert type(mu) == float or isinstance(mu, dict), "Unexpected type or class of mu."
             if type(mu) == float:
@@ -88,3 +88,14 @@ class GLocal(MatsubaraGreensFunction):
         if abs(x - x0) > dxlim:
             return x0 + dxlim * np.sign(x - x0)
         return x
+
+
+class GLocalNambu(GLocal):
+
+    def __init__(self, block_names, block_states, beta, n_iw, t, t_loc, g0_reference, g_loc = None):
+        GLocal.__init__(self, block_names, block_states, beta, n_iw, t, t_loc, g_loc = None)
+        self.g0_reference = g0_reference
+        
+    def set(self, selfenergy, mu, w1, w2, filling = None, dmu_max = None, *args, **kwargs):
+        self.gf << inverse(inverse(self.g0_reference.gf) - selfenergy.gf)
+        return mu

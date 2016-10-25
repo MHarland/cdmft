@@ -28,27 +28,30 @@ class DMFT:
         for i in range(n_loops):
             loop_nr = self.storage.get_completed_loops()
             self.report("DMFT loop nr. "+str(loop_nr)+":")
-            start_time = time()
-            self.mu = self.g_loc.set_mu(self.se, self.mu, self.p["fit_min_w"], self.p["fit_max_w"], self.p["filling"], self.p["dmu_max"])
+            self.start_time = time()
+            self.mu = self.g_loc.set(self.se, self.mu, self.p["fit_min_w"], self.p["fit_max_w"], self.p["filling"], self.p["dmu_max"])
             self.g0.calc_selfconsistency(self.g_loc, self.mu)
             self.prepare_impurity_run()
             self.imp_solver.run(self.g0, self.h_int, loop_nr, **self.p.run_solver())
             self.g_imp.set_gf(self.imp_solver.get_g_iw())
             self.process_impurity_results()
-            results = {}
-            results.update(self.imp_solver.get_results())
-            results.update({"g_loc_iw": self.g_loc.gf,
-                            "se_imp_iw": self.se.gf,
-                            "g_imp_iw": self.g_imp.gf,
-                            "density0": self.g_loc.total_density(),
-                            "mu": self.mu,
-                            "density": self.g_imp.total_density(),
-                            "loop_time": time() - start_time})
-            self.storage.save_loop(results)
-            self.report_variable(average_sign = results["average_sign"],
-                                 density = results["density"],
-                                 loop_time = results["loop_time"])
+            self.save()
             self.report("Loop done.")
+
+    def save(self):
+        results = {}
+        results.update(self.imp_solver.get_results())
+        results.update({"g_loc_iw": self.g_loc.gf,
+                        "se_imp_iw": self.se.gf,
+                        "g_imp_iw": self.g_imp.gf,
+                        "density0": self.g_loc.total_density(),
+                        "mu": self.mu,
+                        "density": self.g_imp.total_density(),
+                        "loop_time": time() - self.start_time})
+        self.storage.save_loop(results)
+        self.report_variable(average_sign = results["average_sign"],
+                             density = results["density"],
+                             loop_time = results["loop_time"])
 
     def process_impurity_results(self):
         """

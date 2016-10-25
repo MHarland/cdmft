@@ -2,7 +2,7 @@ import numpy as np, itertools as itt
 from pytriqs.gf.local import BlockGf, GfImFreq, SemiCircular, iOmega_n, inverse
 from pytriqs.gf.local.descriptor_base import Function
 
-from glocal import GLocal
+from glocal import GLocal, GLocalNambu
 from hamiltonian import HubbardSite, HubbardPlaquette, HubbardPlaquetteMomentum, HubbardPlaquetteMomentumNambu, HubbardTriangleMomentum
 from transformation import MatrixTransformation, InterfaceToBlockstructure
 from weissfield import WeissField, WeissFieldNambu
@@ -26,6 +26,9 @@ class Bethe:
         self.initial_se.set_gf(self_energy.copy())
         if not mu is None:
             self.mu = mu
+
+    def get_quantum_numbers(self):
+        return []
 
     def get_global_moves(self):
         return {}
@@ -165,53 +168,50 @@ class NambuMomentumPlaquette(Bethe):
         self.t_loc = mom_transf.reblock_by_map(mom_transf.transform_matrix(t_loc), reblock_map)
         mu = {up: mu * np.identity(4), dn: mu * np.identity(4)}
         self.mu = mom_transf.reblock_by_map(mom_transf.transform_matrix(mu), reblock_map)
-        h = HubbardPlaquetteMomentumNambu(u, self.spins, self.momenta, self.transformation)
-        self.h_int = h.get_h_int()
+        self.operators = HubbardPlaquetteMomentumNambu(u, self.spins, self.momenta, self.transformation)
+        self.h_int = self.operators.get_h_int()
         self.g0 = WeissFieldNambu(self.momenta, [self.spinors]*4, self.beta, n_iw, self.t, self.t_loc)
-        self.initial_g = GLocal(self.momenta, [self.spinors]*4, self.beta, n_iw, self.t, self.t_loc)
+        self.initial_g = GLocalNambu(self.momenta, [self.spinors]*4, self.beta, n_iw, self.t, self.t_loc, self.g0)
         self.initial_se = GLocal(self.momenta, [self.spinors]*4, self.beta, n_iw, self.t, self.t_loc)
 
-    def init_guess(self, g_momentumplaquettebethe = None, anom_field_factor = None,
-                   g_nambumomentumplaquettebethe = None):
+    def set_initial_guess(self, selfenergy, g0, anom_field_factor = 0, transform = True):
         """initializes by previous non-nambu solution and anomalous field or by 
         nambu-solution"""
-        if g_nambumomentumplaquettebethe is None:
-            self._set_particlehole(g_momentumplaquettebethe)
+        if transform:
+            self._transform_particlehole(selfenergy, self.initial_se)
+            self._transform_particlehole(g0, self.g0)
             self._set_anomalous(anom_field_factor)
         else:
-            self.initial_guess.set_gf(g_nambumomentumplaquettebethe.copy())
+            self.initial_se.set_gf(selfenergy)
+            self.g0.set_gf(g0)
 
     def _set_anomalous(self, factor):
         """d-wave, singlet"""
         xi = self.momenta[1]
         yi = self.momenta[2]
-        g = self.initial_guess.gf
+        g = self.initial_se.gf
         n_points = len([iwn for iwn in g.mesh])/2
         for offdiag in [[0,1], [1,0]]:
-            for n in [n_points, n_points-1]:
+            for n  in [n_points, n_points-1]:
                 inds = tuple([n] + offdiag)
                 g[xi].data[inds] = factor * g.beta * .5
             offdiag = tuple(offdiag)
             g[yi][offdiag] << -1 * g[xi][offdiag]
 
-    def _set_particlehole(self, g_mpb):
+    def _transform_particlehole(self, g_sm, g_nambu):
         """gets a non-nambu greensfunction to initialize nambu"""
-        gf_struct_mom = dict([(s+k, [0]) for s in self.spins for k in self.momenta])
+        gf_struct_mom = dict([(s+'-'+k, [0]) for s in self.spins for k in self.momenta])
         to_nambu = MatrixTransformation(gf_struct_mom, None, self.gf_struct)
         up, dn = self.spins
-        #g_nambuspace = InterfaceToBlockstructure(g_mpb, gf_struct_mom, self.gf_struct)
         reblock_map = [[(up+'-'+k,0,0), (k,0,0)] for k in self.momenta]
         reblock_map += [[(dn+'-'+k,0,0), (k,1,1)]  for k in self.momenta]
         reblock_map = dict(reblock_map)
-        g_mpb = to_nambu.reblock_by_map(g_mpb, reblock_map)
-        for block in self.gf_struct:
-            blockname, blockindices = block
-            self.initial_guess.gf[blockname][0, 0] << g_mpb[blockname][0, 0]
-            self.initial_guess.gf[blockname][1, 1] << -1 * g_mpb[blockname][1, 1].conjugate()
-
-    def _set_particlehole_noninteracting(self):
-        """sets up the exact solution for U=0"""
-        pauli3 = np.array([[1,0],[0,-1]])
+        for b, i, j in g_sm.all_indices:
+            b_nam, i_nam, j_nam = reblock_map[(b, int(i), int(j))]
+            if i_nam == 0 and j_nam == 0:
+                g_nambu.gf[b_nam][i_nam, j_nam] << g_sm[b][i, j]
+            if i_nam == 1 and j_nam == 1:
+                g_nambu.gf[b_nam][i_nam, j_nam] << -1 * g_sm[b][i, j].conjugate()
 
 
 class MomentumTriangle(Bethe):
