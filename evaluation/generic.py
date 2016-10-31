@@ -7,7 +7,7 @@ from bethe.storage import LoopStorage
 class Evaluation:
     
     def __init__(self, archive):
-        self.archive = LoopStorage(archive)
+        self.archive = archive
         self.n_loops = self.archive.get_completed_loops()
 
     def get_sign_loop(self):
