@@ -3,15 +3,16 @@ matplotlib.use("PDF")
 from matplotlib import pyplot as plt
 
 from bethe.evaluation.generic import Evaluation
+from bethe.storage import LoopStorage
 
 
-n_bins = 400
-omega_max = .5
+n_bins = 800
+omega_max = .8
 log = False
 offdiag_rows = []
-plot_atomic = True
-atomic_loop = 0
-degeneracy_labels = False
+plot_atomic = False
+atomic_loop = -1
+degeneracy_labels = True
 atomic_beta = 1
 labels = ["$\\rho_{ii}$"]
 for nr in offdiag_rows:
@@ -21,7 +22,8 @@ for nr in offdiag_rows:
 #offdiag_rows = [84,1,100]
 #offdiag_rows = [38,62,132,136]
 for arch in sys.argv[1:]:
-    ev = Evaluation(arch)
+    sto = LoopStorage(arch)
+    ev = Evaluation(sto)
     rho = ev.get_density_matrix_diag()
     rhorows = [ev.get_density_matrix_row(nr) for nr in offdiag_rows]
     n_plots = 1 + len(rhorows)
