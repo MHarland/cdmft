@@ -78,33 +78,16 @@ class GLocal(MatsubaraGreensFunction):
         if not filling is None:
             self.filling_with_old_mu = self.total_density()
             f = lambda mu: self.set_mu_get_filling(mu, selfenergy, w1, w2)
-            mu0_number = self._mu_number(mu0)
-            self.last_found_mu_number, self.last_found_density = bound_and_bisect(f, mu0_number, filling, x_name = "mu", y_name = "filling", maxiter = 10000, *args, **kwargs)
-            new_mu_number, limit_applied = self.limit(self.last_found_mu_number, mu0_number, dmu_max)
-            new_mu = self._mu_matrix(new_mu_number)
-            if limit_applied:
-                self.calculate(new_mu, selfenergy, w1, w2)
-            return new_mu
+            self.last_found_mu_number, self.last_found_density = bound_and_bisect(f, mu0, filling, x_name = "mu", y_name = "filling", maxiter = 10000, *args, **kwargs)
+            return self.limit(self.last_found_mu_number, mu0, dmu_max)
 
     def calc_dyson(self, g0, se):
         self.gf << inverse(inverse(g0.gf) - se.gf)
 
     def limit(self, x, x0, dxlim):
         if abs(x - x0) > dxlim:
-            return x0 + dxlim * np.sign(x - x0), True
-        return x, False
-
-    def _mu_number(self, mu):
-        for key, val in mu.items():
-            mu_number = val[0, 0]
-            break
-        return mu_number
-
-    def _mu_matrix(self, mu_number):
-        mu = dict()
-        for bname, bstates in zip(self.block_names, self.block_states):
-            mu[bname] = np.identity(len(bstates)) * mu_number
-        return mu
+            return x0 + dxlim * np.sign(x - x0)
+        return x
 
 
 class GLocalNambu(GLocal):
