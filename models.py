@@ -3,7 +3,7 @@ from pytriqs.gf.local import BlockGf, GfImFreq, SemiCircular, iOmega_n, inverse
 from pytriqs.gf.local.descriptor_base import Function
 
 from glocal import GLocal, GLocalNambu
-from hamiltonian import HubbardSite, HubbardPlaquette, HubbardPlaquetteMomentum, HubbardPlaquetteMomentumNambu, HubbardTriangleMomentum
+from hamiltonian import Site as SiteOps, Plaquette as PlaquetteOps, PlaquetteMomentum as PlaquetteMomentumOps, HubbardPlaquetteMomentumNambu, HubbardTriangleMomentum
 from transformation import MatrixTransformation, InterfaceToBlockstructure
 from weissfield import WeissField, WeissFieldNambu
 
@@ -38,14 +38,16 @@ class SingleSite(Bethe):
 
     def __init__(self, beta, mu, u, t_bethe = 1, n_iw = 1025):
         Bethe.__init__(self, beta, mu, u, t_bethe = 1, n_iw = 1025)
+        
         self.t = t_bethe
         up = "up"
         dn = "dn"
         self.spins = [up, dn]
         self.block_labels = [up, dn]
         self.gf_struct = [[up, range(1)], [dn, range(1)]]
+        self.mu = {up: mu * np.identity(1), dn: mu * np.identity(1)}
         self.t_loc = {up: np.zeros([1, 1]), dn: np.zeros([1, 1])}
-        self.operators = HubbardSite(u, [up, dn])
+        self.operators = SiteOps(u, [up, dn])
         self.h_int = self.operators.get_h_int()
         self.initial_g = GLocal(self.block_labels, [[0]]*2, self.beta, n_iw, self.t, self.t_loc)
         self.initial_se = GLocal(self.block_labels, [[0]]*2, self.beta, n_iw, self.t, self.t_loc)
@@ -72,7 +74,7 @@ class Plaquette(Bethe):
         t_loc = [[0,a,a,b],[a,0,b,a],[a,b,0,a],[b,a,a,0]]
         self.t_loc = {up: np.array(t_loc), dn: np.array(t_loc)}
         self.mu = {up: mu * np.identity(4), dn: mu * np.identity(4)}
-        h = HubbardPlaquette(u, [up, dn])
+        h = PlaquetteOps(u, [up, dn])
         self.h_int = h.get_h_int()
         self.t = t_bethe
         self.initial_g = GLocal(self.block_labels, [range(4)]*2, self.beta, n_iw, self.t_loc)
@@ -105,7 +107,7 @@ class MomentumPlaquette(Bethe):
         self.t_loc = mom_transf.reblock(mom_transf.transform_matrix(t_loc))
         mu = {up: mu * np.identity(4), dn: mu * np.identity(4)}
         self.mu = mom_transf.reblock(mom_transf.transform_matrix(mu))
-        self.operators = HubbardPlaquetteMomentum(u, self.spins, self.momenta, self.transformation)
+        self.operators = PlaquetteMomentumOps(u, self.spins, self.momenta, self.transformation)
         self.h_int = self.operators.get_h_int()
         self.initial_g = GLocal(self.block_labels, [[0]]*8, self.beta, n_iw, self.t, self.t_loc)
         self.g0 = WeissField(self.block_labels, [[0]]*8, self.beta, n_iw, self.t, self.t_loc)
