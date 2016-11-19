@@ -14,7 +14,7 @@ class ImpuritySolver:
         standard: n_iw = 1025, n_tau = 10001, n_l = 50
         run:
         required: h_int n_cycles
-        optional: partition_method, quantum_numbers, length_cycle, n_warmup_cycles, random_seed, random_name, max_time, verbosity, move_shift, move_double, use_trace_estimator, measure_g_tau, measure_g_l, measure_pert_order, measure_density_matrix, use_norm_as_weight, performance_analysis, proposal_prob, imag_threshold
+        optional: partition_method, quantum_numbers, length_cycle, n_warmup_cycles, random_seed, random_name, max_time, verbosity, move_shift, move_double, use_trace_estimator, measure_g_tau, measure_g_l, measure_pert_order, measure_density_matrix, use_norm_as_weight, performance_analysis, proposal_prob, imag_threshold, measure_g_pp_tau
         """
         self.gf_struct = gf_struct
         self.beta = beta
@@ -98,4 +98,6 @@ class ImpuritySolver:
             results.update({"perturbation_order": self.cthyb.perturbation_order})
         if params["performance_analysis"]:
             results.update({"performance_analysis": self.cthyb.performance_analysis})
+        if params["measure_g_pp_tau"]:
+            results.update({"g_pp_tau": dict([(str(i_pp), self.cthyb.G_pp_tau[i_pp]) for i_pp in range(self.cthyb.G_pp_tau.shape[0])])})
         return results

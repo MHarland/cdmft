@@ -92,7 +92,9 @@ class Plaquette(Hubbard):
 
 
 class PlaquetteMomentum(Hubbard):
-
+    """
+    transformation is a 4by4 matrix applied to the site-space
+    """
     def __init__(self, u = None, spins = ["up", "dn"], momenta = ["G", "X", "Y", "M"], transformation = {"up": .5*np.array([[1,1,1,1],[1,-1,1,-1],[1,1,-1,-1],[1,-1,-1,1]]), "dn": .5*np.array([[1,1,1,1],[1,-1,1,-1],[1,1,-1,-1],[1,-1,-1,1]])}):
         self.u = u
         self.up = spins[0]
@@ -103,7 +105,6 @@ class PlaquetteMomentum(Hubbard):
         self.block_labels = [spin+"-"+k for spin in spins for k in momenta]
         self.gf_struct = [[l, range(1)] for l in self.block_labels]
         self._to_mom = GfStructTransformationIndex(self.gf_struct, [[self.up, self.sites], [self.dn, self.sites]])
-        #self.h_int = np.sum([u * self._c_dag(self.up, i) * self._c(self.up, i) * self._c_dag(self.dn, i) * self._c(self.dn, i) for i in self.sites], axis = 0)
 
     def _c(self, spin, site):
         return sum([self.transformation[spin][site, k_index] * C(*self._to_mom(spin, k_index)) for k_index in range(4)])

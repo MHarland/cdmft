@@ -24,6 +24,9 @@ class DMFT:
         self.se = self_energy
 
     def run_loops(self, n_loops, **parameters_dict):
+        """
+        parameters are taken from initialization, but can also be updated using the optional argument
+        """
         self.p.set(parameters_dict)
         for i in range(n_loops):
             loop_nr = self.storage.get_completed_loops()
