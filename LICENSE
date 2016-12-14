@@ -1,4 +1,4 @@
-Implementation of ClusterDMFT.
+bethe - an implementation of the DMFT.
 Copyright (C) 2016  Malte Harland
 
 This program is free software; you can redistribute it and/or modify
