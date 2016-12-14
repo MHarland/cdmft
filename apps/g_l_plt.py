@@ -2,13 +2,13 @@ import matplotlib, sys, numpy as np
 matplotlib.use("PDF")
 from matplotlib import pyplot as plt
 
-from bethe.storage import LoopStorage
+from bethe.h5interface import Storage
 
 
 for fname in sys.argv[1:]:
     fig = plt.figure()
     ax = fig.add_axes([.12,.12,.85,.85])
-    sto = LoopStorage(fname)
+    sto = Storage(fname)
     loop_nr = sto.get_last_loop_nr()
     g = sto.load("g_sol_l", loop_nr)
     x = [l.real for l in g.mesh]

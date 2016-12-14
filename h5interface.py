@@ -6,8 +6,12 @@ from pytriqs.gf.local import BlockGf
 from pytriqs.utility import mpi
 
 
-class LoopStorage:
-
+class Storage:
+    """
+    conveniently stores a bunch of objects into some default hdf5 structure
+    takes care of the open/close status of the archive, especially in parallel computations
+    internal functions have a leading underscore, avoid using them explicitly
+    """
     def __init__(self, file_name, objects_to_store = {}):
         self.disk = None
         self.dmft_results = None
@@ -68,6 +72,10 @@ class LoopStorage:
         return loop_nr
 
     def load(self, quantity_name, loop_nr = None, bcast = True):
+        """
+        allows for negative loop numbers counting backwards from the end
+        don't bcast, if you want to load an AtomDiag of TRIQS
+        """
         quantity = None
         if mpi.is_master_node():
             self._open_archive(True)
@@ -109,6 +117,9 @@ class LoopStorage:
         del results[old_label]
         
     def cut_loop(self, loop):
+        """
+        deletes a loop
+        """
         self._open_archive()
         loop = self._asc_loop_nr(loop)
         self._drop_loop(loop)
@@ -119,14 +130,21 @@ class LoopStorage:
         self._close_archive()
 
     def merge(self, storage_to_append):
+        """
+        appends a storage on another
+        """
         n_loops_sto2 = storage_to_append.get_completed_loops()
         n_loops_sto = self.get_completed_loops()
+        self._open_archive()
+        storage_to_append._open_archive()
         for l in range(n_loops_sto2):
             appended_loop_nr = str(n_loops_sto + l)
             self.dmft_results.create_group(appended_loop_nr)
             for key, val in storage_to_append.dmft_results[str(l)].items():
                 self.dmft_results[appended_loop_nr][key] = val
         self.dmft_results["n_dmft_loops"] +=  n_loops_sto2
+        self._close_archive()
+        storage_to_append._close_archive()        
             
     def provide_initial_guess(self, provide_mu = True):
         try:

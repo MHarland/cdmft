@@ -2,13 +2,13 @@ import matplotlib, sys, numpy as np
 matplotlib.use("PDF")
 from matplotlib import pyplot as plt
 
-from bethe.storage import LoopStorage
+from bethe.h5interface import Storage
 
 
 for fname in sys.argv[1:]:
     fig = plt.figure()
     ax = fig.add_axes([.12,.12,.75,.8])
-    sto = LoopStorage(fname)
+    sto = Storage(fname)
     y = []
     x = []
     n_loops = sto.get_completed_loops()

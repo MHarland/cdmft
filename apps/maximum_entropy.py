@@ -4,7 +4,7 @@ from pytriqs.gf.local import BlockGf
 from pytriqs.utility import mpi
 from maxent.bryanToTRIQS import MaximumEntropy
 
-from bethe.storage import LoopStorage
+from bethe.h5interface import Storage
 
 
 ntau = 500
@@ -16,7 +16,7 @@ par = {"ntau": ntau,
        "bandwidth": bandwidth,
        "sigma": sigma}
 for archive_name in sys.argv[1:]:
-    sto = LoopStorage(archive_name)
+    sto = Storage(archive_name)
     g = sto.load("g_tau")
     maxent = MaximumEntropy(g, ntau)
     if sigma:

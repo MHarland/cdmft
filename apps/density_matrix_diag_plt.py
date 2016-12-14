@@ -3,7 +3,7 @@ matplotlib.use("PDF")
 from matplotlib import pyplot as plt
 
 from bethe.evaluation.generic import Evaluation
-from bethe.storage import LoopStorage
+from bethe.h5interface import Storage
 
 
 n_bins = 800
@@ -22,7 +22,7 @@ for nr in offdiag_rows:
 #offdiag_rows = [84,1,100]
 #offdiag_rows = [38,62,132,136]
 for arch in sys.argv[1:]:
-    sto = LoopStorage(arch)
+    sto = Storage(arch)
     ev = Evaluation(sto)
     rho = ev.get_density_matrix_diag()
     rhorows = [ev.get_density_matrix_row(nr) for nr in offdiag_rows]

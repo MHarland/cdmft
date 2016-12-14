@@ -1,8 +1,8 @@
 import sys
 
-from bethe.storage import LoopStorage
+from bethe.h5interface import Storage
 
 arch_name = sys.argv[1]
 loop = int(sys.argv[2])
-sto = LoopStorage(arch_name)
+sto = Storage(arch_name)
 sto.cut_loop(loop)

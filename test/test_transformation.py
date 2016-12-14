@@ -29,9 +29,12 @@ class TestTransformation(unittest.TestCase):
         transf_mat = dict([(s, transf_mat) for s in spins])
         gf_struct_new = [[s+"-"+k, range(1)] for s in spins for k in momenta]
         site_to_momentum = MatrixTransformation(gf_struct, transf_mat, gf_struct_new)
-        t = np.array([[0,1,1,2],[1,0,2,1],[1,2,0,1],[2,1,1,0]])
+        t = np.array([[0,-2,-2,1],[-2,0,1,-2],[-2,1,0,-2],[1,-2,-2,0]])
         t = dict([(s, t) for s in spins])
         eps = site_to_momentum.reblock(site_to_momentum.transform_matrix(t))
+        res = {'dn-G': -3, 'up-G': -3, 'dn-M': 5, 'up-M': 5, 'dn-X': -1, 'dn-Y': -1, 'up-X': -1, 'up-Y': -1}
+        for n, b in eps.items():
+            self.assertEqual(b[0,0], res[n])
 
     def test_InterfaceToBlockstructure(self):
         spins = ["up", "dn"]

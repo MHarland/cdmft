@@ -2,14 +2,14 @@ import matplotlib, sys, numpy as np
 matplotlib.use("PDF")
 from matplotlib import pyplot as plt
 
-from bethe.storage import LoopStorage
+from bethe.h5interface import Storage
 
 
 for fname in sys.argv[1:]:
     fig = plt.figure()
     ax = fig.add_axes([.12,.12,.85,.85])
     w_max = 10
-    sto = LoopStorage(fname)
+    sto = Storage(fname)
     g = sto.load("g_imp_iw")
     supermesh = np.array([iw.imag for iw in g.mesh])
     n_iw0 = int(len(supermesh)*.5)

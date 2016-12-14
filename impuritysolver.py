@@ -1,7 +1,9 @@
 from pytriqs.applications.impurity_solvers.cthyb import Solver
-from pytriqs.gf.local import SemiCircular, LegendreToMatsubara, TailGf, BlockGf, GfImFreq, inverse
+from pytriqs.gf.local import LegendreToMatsubara, BlockGf, GfImFreq, inverse
 from pytriqs.random_generator import random_generator_names_list
 from pytriqs.utility import mpi
+
+from greensfunctions import MatsubaraGreensFunction
 
 
 class ImpuritySolver:
@@ -21,8 +23,14 @@ class ImpuritySolver:
         self.n_iw = n_iw
         self.run_parameters = {}
         self.cthyb = Solver(beta, dict(gf_struct), n_iw, n_tau, n_l, *args, **kwargs)
+        self.blocknames = [bn for bn in gf_struct.keys()] # careful: blockorder is gone!
+        self.blocksizes = [len(b) for b in gf_struct.values()]
 
     def get_g_iw(self, by_tau = False, by_legendre = True):
+        """
+        by_tau and by_legendre decide whether the DMFT loops depend on the legendre or on the
+        tau measurement
+        """
         assert by_tau ^ by_legendre, "G_iw can only be set by one G of the solver, since it is used for the next dmft loop"
         if by_tau:
             return self._get_g_iw_by_tau()
@@ -30,15 +38,13 @@ class ImpuritySolver:
             return self._get_g_iw_by_legendre()
 
     def _init_new_giw(self):
-        return BlockGf(name_list = [b[0] for b in self.gf_struct],
-                       block_list = [GfImFreq(n_points = self.n_iw, beta = self.beta,
-                                              indices = b[1]) for b in self.gf_struct]
-                       )
+        return MatsubaraGreensFunction(self.blocknames, self.blocksizes, self.beta, self.n_iw)
 
     def _get_g_iw_by_tau(self):
         g_iw = self._init_new_giw()
         if self.run_parameters["perform_post_proc"]:
-            g_iw << inverse(inverse(self.cthyb.G0_iw) - self.cthyb.Sigma_iw)
+            for bn, b in g_iw:
+                g_iw[bn] << inverse(inverse(self.cthyb.G0_iw[bn]) - self.cthyb.Sigma_iw[bn])
         else:
             g_iw << self.cthyb.G_iw
         return g_iw
@@ -50,6 +56,9 @@ class ImpuritySolver:
         return g_iw
 
     def get_se(self, by_tau = False, by_legendre = True):
+        """
+        returns the selfenergy consistent with the impurity greens function used for the dmft cycle
+        """
         se = self._init_new_giw()
         if by_tau or not self.run_parameters["measure_g_l"]:
             for s, b in self.cthyb.Sigma_iw:
@@ -57,7 +66,8 @@ class ImpuritySolver:
         else:
             assert by_legendre and self.run_parameters["measure_g_l"], "Need either g_legendre or g_tau to set sigma_iw"
             g_iw = self._get_g_iw_by_legendre()
-            se << inverse(self.cthyb.G0_iw) - inverse(g_iw)
+            for bn, b in g_iw:
+                se[bn] << inverse(self.cthyb.G0_iw[bn]) - inverse(g_iw[bn])
         return se
 
     def _get_internal_parameters(self, loop_nr):
@@ -68,7 +78,7 @@ class ImpuritySolver:
         return par
 
     def run(self, weiss_field, hamiltonian, loop_nr, **run_parameters):
-        self.cthyb.G0_iw << weiss_field.gf
+        self.cthyb.G0_iw << weiss_field
         self.run_parameters["h_int"] = hamiltonian
         self.run_parameters.update(run_parameters)
         self.run_parameters.update(self._get_internal_parameters(loop_nr))

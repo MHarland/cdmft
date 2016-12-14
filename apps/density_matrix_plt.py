@@ -3,10 +3,12 @@ matplotlib.use("PDF")
 from matplotlib import pyplot as plt
 
 from bethe.evaluation.generic import Evaluation
+from bethe.h5interface import Storage
 
 
 for arch in sys.argv[1:]:
-    ev = Evaluation(arch)
+    sto = Storage(arch)
+    ev = Evaluation(sto)
     roh = ev.get_density_matrix()
     fig = plt.figure()
     ax = fig.add_axes([.1,.1,.85,.85])

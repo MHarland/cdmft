@@ -2,7 +2,7 @@ import matplotlib, sys, numpy as np
 matplotlib.use("PDF")
 from matplotlib import pyplot as plt
 
-from bethe.storage import LoopStorage
+from bethe.h5interface import Storage
 
 
 for fname in sys.argv[1:]:
@@ -11,7 +11,7 @@ for fname in sys.argv[1:]:
     index = None
     w_max = 20
     orb_nr = 2
-    sto = LoopStorage(fname)
+    sto = Storage(fname)
     n_loops = sto.get_completed_loops()
     colors = [matplotlib.cm.jet(i/float(max(1,n_loops-1))) for i in range(n_loops)]
     for l, c in zip(range(n_loops), colors):
