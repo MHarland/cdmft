@@ -10,8 +10,12 @@ class SelfConsistencyCycle:
 
     def __init__(self, loopstorage, parameters, h_int, g_local, weiss_field, self_energy, mu):
         """
-        mu and self-energy data initialize the first loop. g_local is required
-        due to the self-consistency equation, that belongs to that class.
+        mu and self-energy data initialize the first loop. g_local.set() and
+        weiss_field.calc_selfconsistency define the scheme/approximation
+        h_int contains the impurity interaction, i.e. only the part that is not part of g
+        mu will be ignored/recalculated if filling is set to some value
+        for the dmft setup mu is written into g. It temporarily gets shifted by the solver,
+        but this doesn't change anything.
         """
         self.h_int = h_int
         p = self.p = parameters
