@@ -31,10 +31,26 @@ class TestTransformation(unittest.TestCase):
         site_to_momentum = MatrixTransformation(gf_struct, transf_mat, gf_struct_new)
         t = np.array([[0,-2,-2,1],[-2,0,1,-2],[-2,1,0,-2],[1,-2,-2,0]])
         t = dict([(s, t) for s in spins])
-        eps = site_to_momentum.reblock(site_to_momentum.transform_matrix(t))
+        eps = site_to_momentum.transform_matrix(t)
         res = {'dn-G': -3, 'up-G': -3, 'dn-M': 5, 'up-M': 5, 'dn-X': -1, 'dn-Y': -1, 'up-X': -1, 'up-Y': -1}
         for n, b in eps.items():
             self.assertEqual(b[0,0], res[n])
+        tnew = site_to_momentum.backtransform_matrix(eps)
+        for s, b in t.items():
+            self.assertTrue(np.allclose(b, tnew[s]))
+        up, dn, a, b, c, d = 'up', 'dn', 'G', 'X', 'Y', 'M'
+        reblock_map = {(up,0,0): (up+'-'+a,0,0), (up,1,1): (up+'-'+b,0,0),
+                       (up,2,2): (up+'-'+c,0,0), (up,3,3): (up+'-'+d,0,0),
+                       (dn,0,0): (dn+'-'+a,0,0), (dn,1,1): (dn+'-'+b,0,0),
+                       (dn,2,2): (dn+'-'+c,0,0), (dn,3,3): (dn+'-'+d,0,0)}
+        site_to_momentum = MatrixTransformation(gf_struct, transf_mat, gf_struct_new, reblock_map)
+        eps = site_to_momentum.transform_matrix(t)
+        res = {'dn-G': -3, 'up-G': -3, 'dn-M': 5, 'up-M': 5, 'dn-X': -1, 'dn-Y': -1, 'up-X': -1, 'up-Y': -1}
+        for n, b in eps.items():
+            self.assertEqual(b[0,0], res[n])
+        tnew = site_to_momentum.backtransform_matrix(eps)
+        for s, b in t.items():
+            self.assertTrue(np.allclose(b, tnew[s]))
 
     def test_InterfaceToBlockstructure(self):
         spins = ["up", "dn"]

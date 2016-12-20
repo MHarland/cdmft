@@ -17,8 +17,8 @@ for fname, c in zip(sys.argv[1:], colors):
     for l in range(n_loops):
         mu = sto.load("mu", l)
         if isinstance(mu, dict):
-            for key, val in mu.items():
-                mu = val[0,0]
+            for s, b in mu.items():
+                mu = b[0, 0]
                 break
         y.append(mu)
         x.append(l)

@@ -22,7 +22,7 @@ class GLocal(GLocalGeneric):
         mu = self.mu_matrix(mu)
         g = self.get_as_BlockGf() # TODO need BlockGf for __iadd__ and reduce
         g.zero()
-        for k, w, d in itt.izip(*[mpi.slice_array(x) for x in self.bz]):
+        for k, w, d in itt.izip(*[mpi.slice_array(x) for x in self.bz]): # TODO c++
             for bn, b in g:
                 b << b + w * inverse(iOmega_n + mu[bn] - d[bn] - selfenergy[bn])
         self << mpi.all_reduce(mpi.world, g, lambda x, y: x + y)
