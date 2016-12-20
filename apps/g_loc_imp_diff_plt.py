@@ -35,7 +35,7 @@ for fname, color in zip(sys.argv[1:], colors):
     ax.plot(x, np.log10(y), label = fname[:-3], color = color)
 ax.set_xlabel("$\mathrm{DMFT-Loop}$")
 ax.set_ylabel("$\\log_{10}\\sum_{n}^{"+str(n_freq)+"}\,\\sum_{i}\,|G^{loc}_{ii}(i\\omega_n)-G^{imp}_{ii}(i\\omega_n)|\,/\,N$")
-ax.legend(loc = "upper left", fontsize = 8)
+ax.legend(loc = "upper right", fontsize = 8)
 outname = "g_loc_imp_diff.pdf"
 plt.savefig(outname)
 print outname+" ready"

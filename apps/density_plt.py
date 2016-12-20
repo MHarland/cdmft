@@ -22,7 +22,7 @@ for fname in sys.argv[1:]:
     ax.plot(x, y, marker = "+", label = "density of G_imp")
     ax.set_xlabel("$\mathrm{DMFT-Loop}$")
     ax.set_ylabel("$N$")
-    ax.legend()
+    ax.legend(fontsize = 8, loc = "lower center")
     plt.savefig(fname[:-3]+"_density.pdf")
     print fname[:-3]+"_density.pdf ready"
     plt.close()

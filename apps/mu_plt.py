@@ -4,20 +4,28 @@ from matplotlib import pyplot as plt
 
 from bethe.storage import LoopStorage
 
-
-for fname in sys.argv[1:]:
-    fig = plt.figure()
-    ax = fig.add_axes([.12,.12,.75,.8])
+fig = plt.figure()
+ax = fig.add_axes([.12,.12,.75,.8])
+nc = len(sys.argv[1:])
+colors = [matplotlib.cm.jet(i/float(max(1,nc-1))) for i in range(nc)]
+for fname, c in zip(sys.argv[1:], colors):
     sto = LoopStorage(fname)
     y = []
     x = []
     n_loops = sto.get_completed_loops()
     for l in range(n_loops):
-        y.append(sto.load("mu", l))
+        mu = sto.load("mu", l)
+        if isinstance(mu, dict):
+            for key, val in mu.items():
+                mu = val[0,0]
+                break
+        y.append(mu)
         x.append(l)
-    ax.plot(x, y, marker = "+")
-    ax.set_xlabel("$\mathrm{DMFT-Loop}$")
-    ax.set_ylabel("$\\mu$")
-    plt.savefig(fname[:-3]+"_mu.pdf")
-    print fname[:-3]+"_mu.pdf ready"
-    plt.close()
+    ax.plot(x, y, marker = "+", label = fname[:-3], color = c)
+ax.legend(fontsize = 8, loc = "lower center")
+ax.set_xlabel("$\mathrm{DMFT-Loop}$")
+ax.set_ylabel("$\\mu$")
+#plt.savefig(fname[:-3]+"_mu.pdf")
+plt.savefig("mu.pdf")
+print "mu.pdf ready"
+plt.close()

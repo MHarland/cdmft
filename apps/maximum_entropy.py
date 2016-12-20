@@ -1,6 +1,6 @@
 import sys
 from pytriqs.archive import HDFArchive
-from pytriqs.gf.local import BlockGf
+from pytriqs.gf.local import BlockGf, GfImTime
 from pytriqs.utility import mpi
 from maxent.bryanToTRIQS import MaximumEntropy
 
@@ -17,7 +17,13 @@ par = {"ntau": ntau,
        "sigma": sigma}
 for archive_name in sys.argv[1:]:
     sto = LoopStorage(archive_name)
-    g = sto.load("g_tau")
+    #g = sto.load("g_tau")
+    #"""
+    gw = sto.load("g_imp_iw")
+    g = BlockGf(name_block_generator = [(s, GfImTime(indices = [i for i in b.indices], beta = gw.beta, n_points = len(gw.mesh)*2))for s, b in gw])
+    for s, b in gw:
+        g[s].set_from_inverse_fourier(b)
+    #"""
     maxent = MaximumEntropy(g, ntau)
     if sigma:
         maxent.calculateTotDOS(nomega, bandwidth, sigma)

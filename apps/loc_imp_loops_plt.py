@@ -5,12 +5,12 @@ from matplotlib import pyplot as plt
 from bethe.storage import LoopStorage
 
 
+index = None
+w_max = 10
+orb_nr = 1
 for fname in sys.argv[1:]:
     fig = plt.figure()
     ax = fig.add_axes([.12,.12,.85,.85])
-    index = None
-    w_max = 20
-    orb_nr = 2
     sto = LoopStorage(fname)
     n_loops = sto.get_completed_loops()
     colors = [matplotlib.cm.jet(i/float(max(1,n_loops-1))) for i in range(n_loops)]
