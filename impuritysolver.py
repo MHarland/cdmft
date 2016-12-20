@@ -108,6 +108,6 @@ class ImpuritySolver:
             results.update({"perturbation_order": self.cthyb.perturbation_order})
         if params["performance_analysis"]:
             results.update({"performance_analysis": self.cthyb.performance_analysis})
-        if params["measure_g_pp_tau"]:
-            results.update({"g_pp_tau": dict([(str(i_pp), self.cthyb.G_pp_tau[i_pp]) for i_pp in range(self.cthyb.G_pp_tau.shape[0])])})
+        #if params["measure_g_pp_tau"]:
+        #    results.update({"g_pp_tau": dict([(str(i_pp), self.cthyb.G_pp_tau[i_pp]) for i_pp in range(self.cthyb.G_pp_tau.shape[0])])})
         return results

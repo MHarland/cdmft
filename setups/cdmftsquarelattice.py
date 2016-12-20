@@ -3,7 +3,7 @@ import numpy as np, itertools as itt
 from bethe.setups.generic import CycleSetupGeneric
 from bethe.operators.hubbard import PlaquetteMomentum
 from bethe.schemes.cdmft import GLocal, SelfEnergy, WeissField
-from bethe.tightbinding import SquarelatticeDispersion as LatticeDispersion
+from bethe.tightbinding import LatticeDispersion#SquarelatticeDispersion as LatticeDispersion
 from bethe.transformation import MatrixTransformation
 
 
