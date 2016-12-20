@@ -3,28 +3,19 @@ import itertools as itt
 
 class DMFTParameters:
     """
-    always needs gf_struct and beta
-    untouched parameters: random_seed, fit_known_moments
-    taken from model: h_int, t, t_loc, mu, u, initial_guess, gf_struct,
-    beta, quantum_numbers, move_global
+    Collects all dmft parameters. Furthermore it is used by the dmft class to (partially) initialize objects, i.e. the solver and greens functions.
+    Untouched parameters: random_seed, fit_known_moments.
     """
-    def __init__(self, model, parameter_dict = {}):
-        self.solver_run = ["n_cycles", "partition_method", "quantum_numbers", "length_cycle", "n_warmup_cycles", "random_name", "max_time", "verbosity", "move_shift", "move_double", "use_trace_estimator", "measure_g_tau", "measure_g_l", "measure_pert_order", "measure_density_matrix", "use_norm_as_weight", "performance_analysis", "proposal_prob", "imag_threshold", "perform_post_proc", "perform_tail_fit", "fit_min_n", "fit_max_n", "fit_min_w", "fit_max_w", "fit_max_moment", "move_global", "move_global_prob"]
-        all_parameternames = ["beta", "n_iw", "n_tau", "n_l", "gf_struct", "mix", "make_g0_tau_real", "filling", "block_symmetries", "dmu_max"] + self.solver_run
+    def __init__(self, parameter_dict = {}):
+        self.solver_run = ["n_cycles", "partition_method", "quantum_numbers", "length_cycle", "n_warmup_cycles", "random_name", "max_time", "verbosity", "move_shift", "move_double", "use_trace_estimator", "measure_g_tau", "measure_g_l", "measure_pert_order", "measure_density_matrix", "use_norm_as_weight", "performance_analysis", "proposal_prob", "imag_threshold", "perform_post_proc", "perform_tail_fit", "fit_min_n", "fit_max_n", "fit_min_w", "fit_max_w", "fit_max_moment", "move_global", "move_global_prob", "measure_g_pp_tau"]
+        all_parameternames = ["beta", "n_iw", "n_tau", "n_l", "mix", "make_g0_tau_real", "filling", "block_symmetries", "dmu_max"] + self.solver_run
         self.current = dict([(name, None) for name in all_parameternames])
         self.set(parameter_dict)
-        self.set_by_model(model)
-
-    def set_by_model(self, model):
-        """
-        garantuees compatibility of beta and gf_struct with the chosen model
-        """
-        self.current["beta"] = model.beta
-        self.current["gf_struct"] = model.gf_struct
-        self.current["quantum_numbers"] = model.get_quantum_numbers()
-        self.current["move_global"] = model.get_global_moves()
 
     def run_solver(self):
+        """
+        Returns all valid parameters for the solver.run().
+        """
         rs_dict = {}
         for par, val in self.current.items():
             if self._check_run_parameter(par, val):
@@ -42,15 +33,12 @@ class DMFTParameters:
             return False
         return True
 
-    def init_solver(self):
-        return [self.current["beta"], self.current["gf_struct"], self.current["n_iw"], self.current["n_tau"], self.current["n_l"]]
-
-    def init_gf_iw(self):
-        block_names = [block[0] for block in self.current["gf_struct"]]
-        block_states = [block[1] for block in self.current["gf_struct"]]
+    def init_g_iw(self): # TODO deprecated?
+        blocknames = [block[0] for block in self.current["gf_struct"]] # gf_struct removed!
+        blocksizes = [len(block[1]) for block in self.current["gf_struct"]]
         beta = self.current["beta"]
         n_iw = self.current["n_iw"]
-        return {"block_names": block_names, "block_states": block_states, "beta": beta, "n_iw": n_iw}
+        return {"blocknames": blocknames, "blocksizes": blocksizes, "beta": beta, "n_iw": n_iw}
 
     def assert_setup_complete(self):
         """
@@ -112,24 +100,24 @@ class MissingParameters(Exception):
 
 class DefaultDMFTParameters(DMFTParameters):
 
-    def __init__(self, model, parameter_dict = {}):
+    def __init__(self, parameter_dict = {}):
         default = {"n_iw": 1025,
                    "n_tau": 10001,
                    "n_l": 30,
                    "mix": 1,
-                   "make_g0_tau_real": True,
+                   "make_g0_tau_real": False,
                    "filling": None,
                    "block_symmetries": [],
                    "dmu_max": 10,
                    # solver:
-                   "n_cycles": 1000,
+                   "n_cycles": 10**5,
                    "partition_method": "autopartition", #"quantum_numbers"
                    "quantum_numbers": [],
-                   "length_cycle": 10,
-                   "n_warmup_cycles": 500,
+                   "length_cycle": 50,
+                   "n_warmup_cycles": 5*10**3,
                    "random_name": "",
                    "max_time": -1,
-                   "verbosity": 0,
+                   "verbosity": 2,
                    "move_shift": True,
                    "move_double": True,
                    "use_trace_estimator": False,
@@ -137,6 +125,7 @@ class DefaultDMFTParameters(DMFTParameters):
                    "measure_g_l": False,
                    "measure_pert_order": False,
                    "measure_density_matrix": False,
+                   "measure_g_pp_tau": False,
                    "use_norm_as_weight": False,
                    "performance_analysis": False,
                    "proposal_prob": {},
@@ -152,4 +141,50 @@ class DefaultDMFTParameters(DMFTParameters):
                    "fit_max_w": None,
                    "fit_max_moment": 3}
         default.update(parameter_dict)
-        DMFTParameters.__init__(self, model, default)
+        DMFTParameters.__init__(self, default)
+
+
+class TestDMFTParameters(DMFTParameters):
+
+    def __init__(self, parameter_dict = {}):
+        default = {"n_iw": 1025,
+                   "n_tau": 10001,
+                   "n_l": 30,
+                   "mix": 1,
+                   "make_g0_tau_real": False,
+                   "filling": None,
+                   "block_symmetries": [],
+                   "dmu_max": 10,
+                   # solver:
+                   "n_cycles": 2*10**5,
+                   "partition_method": "autopartition", #"quantum_numbers"
+                   "quantum_numbers": [],
+                   "length_cycle": 15,
+                   "n_warmup_cycles": 5*10**3,
+                   "random_name": "",
+                   "max_time": -1,
+                   "verbosity": 0,
+                   "move_shift": True,
+                   "move_double": True,
+                   "use_trace_estimator": False,
+                   "measure_g_tau": True,
+                   "measure_g_l": False,
+                   "measure_pert_order": False,
+                   "measure_density_matrix": False,
+                   "measure_g_pp_tau": False,
+                   "use_norm_as_weight": False,
+                   "performance_analysis": False,
+                   "proposal_prob": {},
+                   "imag_threshold": 1.e-10,
+                   "move_global": {},
+                   "move_global_prob": 0.05, 
+                   # uses solver's fitting to the self-energy
+                   "perform_post_proc": True,
+                   "perform_tail_fit": True,
+                   "fit_min_n": 800,
+                   "fit_max_n": 1025,
+                   "fit_min_w": 10,
+                   "fit_max_w": 20,
+                   "fit_max_moment": 3}
+        default.update(parameter_dict)
+        DMFTParameters.__init__(self, default)

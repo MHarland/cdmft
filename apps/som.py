@@ -7,7 +7,7 @@ import numpy as np
 from time import time
 from scipy.interpolate import interp1d
 
-from bethe.storage import LoopStorage
+from bethe.h5interface import Storage
 from bethe.gfoperations import trace, cut_coefficients
 
 
@@ -29,7 +29,7 @@ run_params['hist_max'] = 2
 run_params['hist_n_bins'] = 100
 for archive_name in sys.argv[1:]:
     start_time = time()
-    sto = LoopStorage(archive_name)
+    sto = Storage(archive_name)
     if domain == "tau":
         g = sto.load("g_tau")
         if npts is not None: g = BlockGf(name_block_generator = [(s, rebinning_tau(b, npts)) for s, b in g])

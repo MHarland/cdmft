@@ -2,7 +2,8 @@ import matplotlib, sys, numpy as np
 matplotlib.use("PDF")
 from matplotlib import pyplot as plt
 
-from bethe.storage import LoopStorage
+from bethe.h5interface import Storage
+
 
 n = len(sys.argv[1:])
 colors = [matplotlib.cm.jet(i/float(max(1,n-1))) for i in range(n)]

@@ -2,7 +2,7 @@ import matplotlib, sys, numpy as np
 matplotlib.use("PDF")
 from matplotlib import pyplot as plt
 
-from bethe.storage import LoopStorage
+from bethe.h5interface import Storage
 
 
 for fname in sys.argv[1:]:
@@ -10,7 +10,7 @@ for fname in sys.argv[1:]:
     ax = fig.add_axes([.12,.12,.75,.8])
     ax2 = ax.twinx()
     indices = None
-    sto = LoopStorage(fname)
+    sto = Storage(fname)
     ys = []
     x = np.array(range(sto.get_completed_loops()))
     for l in range(sto.get_completed_loops()):

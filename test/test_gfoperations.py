@@ -2,6 +2,7 @@ import unittest, numpy as np, itertools as itt
 
 from bethe.gfoperations import double_dot_product, sum
 
+
 class TestGfOperations(unittest.TestCase):
 
     def test_sum(self):
@@ -16,4 +17,4 @@ class TestGfOperations(unittest.TestCase):
         x2 = a.dot(b.dot(c))
         inds = range(x1.shape[0])
         for i, j in itt.product(inds, inds):
-            self.assertEqual(x1[i, j], x2[i, j])
+            self.assertAlmostEqual(x1[i, j], x2[i, j])

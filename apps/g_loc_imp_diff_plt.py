@@ -2,7 +2,7 @@ import matplotlib, sys, numpy as np
 matplotlib.use("PDF")
 from matplotlib import pyplot as plt
 
-from bethe.storage import LoopStorage
+from bethe.h5interface import Storage
 
 
 nc = len(sys.argv[1:])
@@ -10,7 +10,7 @@ colors = [matplotlib.cm.jet(i/float(max(1,nc-1))) for i in range(nc)]
 fig = plt.figure()
 ax = fig.add_axes([.13,.12,.8,.8])
 for fname, color in zip(sys.argv[1:], colors):
-    sto = LoopStorage(fname)
+    sto = Storage(fname)
     n_freq = 20
     n_loops = sto.get_completed_loops()
     x = []

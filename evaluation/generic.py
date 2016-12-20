@@ -1,8 +1,6 @@
 import numpy as np, itertools as itt
 from pytriqs.applications.impurity_solvers.cthyb import AtomDiag, atomic_density_matrix
 
-from bethe.storage import LoopStorage
-
 
 class Evaluation:
     

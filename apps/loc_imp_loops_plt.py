@@ -2,7 +2,7 @@ import matplotlib, sys, numpy as np
 matplotlib.use("PDF")
 from matplotlib import pyplot as plt
 
-from bethe.storage import LoopStorage
+from bethe.h5interface import Storage
 
 
 index = None
