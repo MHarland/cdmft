@@ -7,6 +7,9 @@ from bethe.parameters import DefaultDMFTParameters
 setup = MomentumPlaquetteSetup(10, 2, 4, -1, 0, 16)
 sto = Storage('ex_cdmft.h5')
 par = DefaultDMFTParameters()
+par['n_l'] = 35
+par['measure_g_l'] = True
+par['measure_g_tau'] = False
 cyc = Cycle(sto, par, **setup.initialize_cycle())
-cyc.run(1, n_cycles = 10**5, perform_tail_fit = False, filling = 4)
+cyc.run(5, n_cycles = int(2.5*10**5), filling = None)
 

@@ -71,7 +71,8 @@ class SquarelatticeDispersion(LatticeDispersion):
     def create_grid(self, *args, **kwargs):
         LatticeDispersion.create_grid(self, *args, **kwargs)
         rotate = lambda phi: np.array([[np.cos(phi), -np.sin(phi)], [np.sin(phi), np.cos(phi)]])
-        symmetry_ops = [rotate(i * 2 * np.pi / 4.) for i in range(4)] + [np.array([[-1,0],[0,1]])]
+        #symmetry_ops = [rotate(i * 2 * np.pi / 4.) for i in range(4)] + [np.array([[-1,0],[0,1]])]
+        symmetry_ops = [np.array([[-1,0],[0,1]])]
         self.equivalent_k = [[k] for k in self.bz_points]
         for op in symmetry_ops: # TODO c++
             for k in self.bz_points:
@@ -110,8 +111,8 @@ class SquarelatticeDispersion(LatticeDispersion):
         for kclass in self.equivalent_k:
             term = 0
             for t, r in itt.izip(self.hopping_elements, self.translations):
-                term += np.sum([t * np.exp(complex(0,-2*np.pi*k.dot(r))) for k in kclass], axis = 0)  / len(kclass)
-                #term += t * np.exp(complex(0,-2*np.pi*kclass[0].dot(r)))
+                #term += np.sum([t * np.exp(complex(0,-2*np.pi*k.dot(r))) for k in kclass], axis = 0)  / len(kclass)
+                term += t * np.exp(complex(0,-2*np.pi*kclass[0].dot(r)))
             if self.force_real:
                 term = term.real
             self.energies.append(term)
