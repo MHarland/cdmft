@@ -43,7 +43,7 @@ class MatsubaraGreensFunction(BlockGf):
         g << self
         return g
 
-    def __init__(self, blocknames = None, blocksizes = None, beta = None, n_iw = None, name = '', gf_init = None, verbosity = 0, **kwargs):
+    def __init__(self, blocknames = None, blocksizes = None, beta = None, n_iw = 1025, name = '', gf_init = None, gf_struct = None, verbosity = 0, **kwargs):
         kwargskeys = [k for k in kwargs.keys()]
         if type(gf_init) == BlockGf:
             blocknames = [i for i in gf_init.indices]
@@ -70,8 +70,15 @@ class MatsubaraGreensFunction(BlockGf):
             beta = kwargs['block_list'][0].beta
             n_iw = int(len(kwargs['block_list'][0].mesh) * .5)
             BlockGf.__init__(self, **kwargs)
+        elif gf_struct is not None:
+            assert type(gf_struct) == list, "gf_struct must be of list-type here"
+            blocknames = [b[0] for b in gf_struct]
+            blocksizes = [len(b[1]) for b in gf_struct]
+            beta = beta
+            n_iw = n_iw
+            BlockGf.__init__(self, name_block_generator = [(bn, GfImFreq(beta = beta, n_points = n_iw, indices = range(bs))) for bn, bs in zip(blocknames, blocksizes)], name = name)
         else:
-            assert blocknames is not None and blocksizes is not None and beta is not None and n_iw is not None, "Missing parameter for initialization without gf_init"
+            assert blocknames is not None and blocksizes is not None and beta is not None and n_iw is not None, "Missing parameter for initialization without gf_init and gf_struct"
             assert len(blocknames) == len(blocksizes), "Number of Block-names and blocks have to equal"
             BlockGf.__init__(self, name_block_generator = [(bn, GfImFreq(beta = beta, n_points = n_iw, indices = range(bs))) for bn, bs in zip(blocknames, blocksizes)], name = name)
         self.blocknames = blocknames
@@ -140,6 +147,10 @@ class MatsubaraGreensFunction(BlockGf):
             self[bname].set_from_fourier(b)
 
     def fit_tail2(self, w_start_fit, w_stop_fit, max_mom_to_fit = 3, known_moments = [(1, np.identity(1))]):
+        """
+        (simplified) interface to TRIQS fit_tail for convenience.
+        TRIQS fit_tail is also directly available
+        """
         for s, b in self:
             n1 = int(self.beta/(2*np.pi)*w_start_fit -.5)
             n2 = int(self.beta/(2*np.pi)*w_stop_fit -.5)

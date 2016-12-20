@@ -33,66 +33,112 @@ class GfStructTransformationIndex:
 class MatrixTransformation:
     """
     G mapsto UGU^dag
-    if backtransform: G mapsto U^dagGU
     where U is the transformation_matrix given in gf_struct block structure
     subsequent reblocking into gf_struct_new is optional
+    TRIQS Blockstructure makes calculations more efficient. Values outside the blocks are zero. This
+    transformation class supports a change of the blockstructure. It can be defined explicitly by
+    reblock_map or be calculated automatically or be suppressed.
     """
-    def __init__(self, gf_struct, transformation_matrix = None, gf_struct_new = None):
+    def __init__(self, gf_struct, transformation_matrix = None, gf_struct_new = None, reblock_map = None):
         self.gf_struct = gf_struct
         self.blocksizes = [len(block[1]) for block in self.gf_struct]
         self.mat = transformation_matrix
         self.gf_struct_new = gf_struct_new
         self.gf_struct_names_new = [b[0] for b in self.gf_struct_new]
+        self.reblock_map = reblock_map
 
-    def transform_matrix(self, matrix):
+    def transform_matrix(self, matrix, reblock = True):
         result = {}
         for block in self.gf_struct:
             bname = block[0]
             result[bname] = self.mat[bname].dot(matrix[bname]).dot(self.mat[bname].transpose().conjugate())
+        if reblock and self.reblock_map is not None:
+            result = self.reblock_by_map(result, self.reblock_map)
+        elif reblock:
+            result = self.reblock(result, self.gf_struct, self.gf_struct_new)
         return result
 
-    def transform_gf_iw(self, gf, backtransform = False):
+    def backtransform_matrix(self, matrix, reblock = True):
+        if reblock and self.reblock_map is not None:
+            result = self.reblock_by_map(matrix, self.reblock_map, True)
+        elif reblock:
+            result = self.reblock(matrix, self.gf_struct_new, self.gf_struct)
+        tmp = result.copy()
+        result = {}
+        for block in self.gf_struct:
+            bname = block[0]
+            result[bname] = self.mat[bname].transpose().conjugate().dot(tmp[bname]).dot(self.mat[bname])
+        return result
+    
+    def transform_g(self, gf, reblock = True):
         blocknames = [ind for ind in gf.indices]
-        result = BlockGf(name_list = self.gf_struct_names_new, block_list = [GfImFreq(indices = block[1], mesh = gf.mesh) for block in self.gf_struct_new])
+        result = gf.__class__(gf_init = gf)
         result.zero()
         for bname in blocknames:
             indices = [int(ind) for ind in gf[bname].indices]
             for i1, i2, j1, j2 in itt.product(*[indices]*4):
-                if backtransform:
-                    result[bname][i1, i2] += self.mat[bname].transpose().conjugate()[i1, j1] * gf[bname][j1, j2] * self.mat[bname][j2,i2]
-                else:
-                    result[bname][i1, i2] += self.mat[bname][i1, j1] * gf[bname][j1, j2] * self.mat[bname].transpose().conjugate()[j2,i2]
+                result[bname][i1, i2] += self.mat[bname][i1, j1] * gf[bname][j1, j2] * self.mat[bname].transpose().conjugate()[j2, i2]
+        if reblock and self.reblock_map is not None:
+            result = self.reblock_by_map(result, self.reblock_map)
+        elif reblock:
+            result = self.reblock(result, self.gf_struct, self.gf_struct_new)
         return result
 
-    def reblock(self, matrix):
+    def backtransform_g(self, gf, reblock = True):
+        if reblock and self.reblock_map is not None:
+            result = self.reblock_by_map(gf, self.reblock_map, backtransform = True)
+        elif reblock:
+            result = self.reblock(gf, self.gf_struct_new, self.gf_struct)
+        tmp = result.copy()
+        result.zero()
+        blocknames = [ind for ind in result.indices]
+        for bname in blocknames:
+            indices = [int(ind) for ind in result[bname].indices]
+            for i1, i2, j1, j2 in itt.product(*[indices]*4):
+                result[bname][i1, i2] += self.mat[bname].transpose().conjugate()[i1, j1] * tmp[bname][j1, j2] * self.mat[bname][j2, i2]
+        return result
+
+    def reblock(self, matrix, struct_old, struct_new):
         """values outside the new blockstructure are dropped, values missing in the (old) blockstructure are zero"""
-        interface_matrix = InterfaceToBlockstructure(matrix, self.gf_struct, self.gf_struct_new)
+        interface_matrix = InterfaceToBlockstructure(matrix, struct_old, struct_new)
         if isinstance(matrix, BlockGf):
-            result = BlockGf(name_list = self.gf_struct_names_new, block_list = [GfImFreq(indices = block[1], mesh = matrix.mesh) for block in self.gf_struct_new])
+            if type(matrix) == BlockGf:
+                n_iw = int(len(matrix.mesh)*.5)
+                result = BlockGf(name_block_generator = [(s, GfImFreq(beta = matrix.beta, n_points = n_iw, indices = b)) for s, b in struct_new])
+            else:
+                result = matrix.__class__(gf_struct = struct_new, beta = matrix.beta, n_iw = matrix.n_iw)
         else:
-            result = dict([[block[0], np.zeros([len(block[1]), len(block[1])])] for block in self.gf_struct_new])
-        for block in self.gf_struct_new:
+            result = dict([[block[0], np.zeros([len(block[1]), len(block[1])])] for block in struct_new])
+        for block in struct_new:
             b_new = block[0]
             indices_new = block[1]
             for i1_new, i2_new in itt.product(indices_new, indices_new):
                 result[b_new][i1_new, i2_new] = interface_matrix[b_new, i1_new, i2_new]
         return result
 
-    def reblock_by_map(self, matrix, map_dict):
+    def reblock_by_map(self, matrix, map_dict, backtransform = False):
         """returns a new BlockGf with gf_struct_new. map_dict maps old 3-tupel (block, index1, index2) to a new 3-tupel"""
+        if backtransform:
+            map_dict = dict([(b, a) for a, b in self.reblock_map.items()])
         if isinstance(matrix, BlockGf):
-            return self._reblock_gf_by_map(matrix, map_dict)
+            return self._reblock_gf_by_map(matrix, map_dict, backtransform)
         else:
-            return self._reblock_matrix_by_map(matrix, map_dict)
+            return self._reblock_matrix_by_map(matrix, map_dict, backtransform)
 
-    def _reblock_gf_by_map(self, gf, map_dict):
-        result = BlockGf(name_list = self.gf_struct_names_new, block_list = [GfImFreq(indices = block[1], mesh = gf.mesh) for block in self.gf_struct_new])
+    def _reblock_gf_by_map(self, gf, map_dict, backtransform):
+        if not backtransform:
+            result = BlockGf(name_list = self.gf_struct_names_new, block_list = [GfImFreq(indices = block[1], mesh = gf.mesh) for block in self.gf_struct_new])
+        else:
+            result = BlockGf(name_list = [block[0] for block in self.gf_struct], block_list = [GfImFreq(indices = block[1], mesh = gf.mesh) for block in self.gf_struct])
         for old, new in map_dict.items():
             result[new[0]][new[1], new[2]] << gf[old[0]][old[1], old[2]]
         return result
 
-    def _reblock_matrix_by_map(self, matrix, map_dict):
-        result = dict([[block[0], np.zeros([len(block[1]), len(block[1])])] for block in self.gf_struct_new])
+    def _reblock_matrix_by_map(self, matrix, map_dict, backtransform):
+        if not backtransform:
+            result = dict([[block[0], np.zeros([len(block[1]), len(block[1])])] for block in self.gf_struct_new])
+        else:
+            result = dict([[block[0], np.zeros([len(block[1]), len(block[1])])] for block in self.gf_struct])
         for old, new in map_dict.items():
             result[new[0]][new[1], new[2]] = matrix[old[0]][old[1], old[2]]
         return result

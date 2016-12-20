@@ -13,7 +13,12 @@ for fname in sys.argv[1:]:
     x = []
     n_loops = sto.get_completed_loops()
     for l in range(n_loops):
-        y.append(sto.load("mu", l))
+        mu = sto.load("mu", l)
+        if isinstance(mu, dict):
+            for s, b in mu.items():
+                mu = b[0, 0]
+                break
+        y.append(mu)
         x.append(l)
     ax.plot(x, y, marker = "+")
     ax.set_xlabel("$\mathrm{DMFT-Loop}$")

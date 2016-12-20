@@ -48,7 +48,7 @@ class TriangleBetheSetup(CycleSetupGeneric):
         a = t_triangle
         t_loc_per_spin = np.array([[0,a,a],[a,0,a],[a,a,0]])
         t_loc = {up: t_loc_per_spin, dn: t_loc_per_spin}
-        t_loc = transf.reblock(transf.transform_matrix(t_loc))
+        t_loc = transf.transform_matrix(t_loc)
         hubbard = TriangleMomentum(u, spins, orbital_labels, transfbmat)
         xy = symmetric_orbitals
         self.h_int = hubbard.get_h_int()
@@ -81,7 +81,7 @@ class PlaquetteBetheSetup(CycleSetupGeneric):
         a, b = tnn_plaquette, tnnn_plaquette
         t_loc_per_spin = np.array([[0,a,a,b],[a,0,b,a],[a,b,0,a],[b,a,a,0]])
         t_loc = {up: t_loc_per_spin, dn: t_loc_per_spin}
-        t_loc = transf.reblock(transf.transform_matrix(t_loc))
+        t_loc = transf.transform_matrix(t_loc)
         hubbard = PlaquetteMomentum(u, spins, orbital_labels, transfbmat)
         xy = symmetric_orbitals
         self.h_int = hubbard.get_h_int()

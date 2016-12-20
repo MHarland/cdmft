@@ -3,7 +3,7 @@ import numpy as np, itertools as itt
 from bethe.setups.generic import CycleSetupGeneric
 from bethe.operators.hubbard import PlaquetteMomentum
 from bethe.schemes.cdmft import GLocal, SelfEnergy, WeissField
-from bethe.tightbinding import LatticeDispersion
+from bethe.tightbinding import SquarelatticeDispersion as LatticeDispersion
 from bethe.transformation import MatrixTransformation
 
 
@@ -28,15 +28,12 @@ class MomentumPlaquetteSetup(CycleSetupGeneric):
         for r, t in clusterhopping.items():
             clusterhopping[r] = np.array(t)
         disp = LatticeDispersion(clusterhopping, n_k)
-        site_transf_mat = dict([(s, .5 * np.array([[1,1,1,1],[1,-1,1,-1],[1,1,-1,-1],[1,-1,-1,1]])) for s in spins])
-        new_struct = [[s+'-'+a, [0]] for s, a in itt.product(spins, momenta)]
-        up, dn, a, b, c, d = tuple(spins + momenta)
-        reblock_map = {(up,0,0): (up+'-'+a,0,0), (up,1,1): (up+'-'+b,0,0),
-                       (up,2,2): (up+'-'+c,0,0), (up,3,3): (up+'-'+d,0,0),
-                       (dn,0,0): (dn+'-'+a,0,0), (dn,1,1): (dn+'-'+b,0,0),
-                       (dn,2,2): (dn+'-'+c,0,0), (dn,3,3): (dn+'-'+d,0,0)}
-        disp.transform_site_space(site_transf_mat, new_struct, reblock_map)
-        hubbard = PlaquetteMomentum(u, spins, momenta, site_transf_mat)
+        self.site_transf_mat = dict([(s, .5 * np.array([[1,1,1,1],[1,-1,1,-1],[1,1,-1,-1],[1,-1,-1,1]])) for s in spins])
+        sites = range(4)
+        self.old_struct = [[s, sites] for s in spins]
+        self.new_struct = new_struct = [[s+'-'+a, [0]] for s, a in itt.product(spins, momenta)]
+        disp.transform_site_space(self.site_transf_mat, new_struct)#, reblock_map)
+        hubbard = PlaquetteMomentum(u, spins, momenta, self.site_transf_mat)
         self.h_int = hubbard.get_h_int()
         self.gloc = GLocal(disp, [s[0] for s in new_struct], [1] * 8, beta, n_iw)
         self.g0 = WeissField([s[0] for s in new_struct], [1] * 8, beta, n_iw)
