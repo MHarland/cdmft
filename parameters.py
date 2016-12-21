@@ -7,7 +7,7 @@ class DMFTParameters:
     Untouched parameters: random_seed, fit_known_moments.
     """
     def __init__(self, parameter_dict = {}):
-        self.solver_run = ["n_cycles", "partition_method", "quantum_numbers", "length_cycle", "n_warmup_cycles", "random_name", "max_time", "verbosity", "move_shift", "move_double", "use_trace_estimator", "measure_g_tau", "measure_g_l", "measure_pert_order", "measure_density_matrix", "use_norm_as_weight", "performance_analysis", "proposal_prob", "imag_threshold", "perform_post_proc", "perform_tail_fit", "fit_min_n", "fit_max_n", "fit_min_w", "fit_max_w", "fit_max_moment", "move_global", "move_global_prob", "measure_g_pp_tau"]
+        self.solver_run = ["n_cycles", "partition_method", "quantum_numbers", "length_cycle", "n_warmup_cycles", "random_name", "max_time", "verbosity", "move_shift", "move_double", "use_trace_estimator", "measure_g_tau", "measure_g_l", "measure_pert_order", "measure_density_matrix", "use_norm_as_weight", "performance_analysis", "proposal_prob", "imag_threshold", "perform_post_proc", "perform_tail_fit", "fit_min_n", "fit_max_n", "fit_min_w", "fit_max_w", "fit_max_moment", "move_global", "move_global_prob"]#, "measure_g_pp_tau"]
         all_parameternames = ["beta", "n_iw", "n_tau", "n_l", "mix", "make_g0_tau_real", "filling", "block_symmetries", "dmu_max"] + self.solver_run
         self.current = dict([(name, None) for name in all_parameternames])
         self.set(parameter_dict)
@@ -125,7 +125,7 @@ class DefaultDMFTParameters(DMFTParameters):
                    "measure_g_l": False,
                    "measure_pert_order": False,
                    "measure_density_matrix": False,
-                   "measure_g_pp_tau": False,
+                   #"measure_g_pp_tau": False,
                    "use_norm_as_weight": False,
                    "performance_analysis": False,
                    "proposal_prob": {},
@@ -171,7 +171,7 @@ class TestDMFTParameters(DMFTParameters):
                    "measure_g_l": False,
                    "measure_pert_order": False,
                    "measure_density_matrix": False,
-                   "measure_g_pp_tau": False,
+                   #"measure_g_pp_tau": False,
                    "use_norm_as_weight": False,
                    "performance_analysis": False,
                    "proposal_prob": {},
