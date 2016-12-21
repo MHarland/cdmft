@@ -2,7 +2,6 @@ import unittest
 
 from test_greensfunctions import TestMatsubaraGreensFunction
 from test_parameters import TestDMFTParameters
-from test_weissfield import TestWeissField
 from test_gfoperations import TestGfOperations
 from test_impuritysolver import TestImpuritySolver
 from test_hubbard import TestHubbard
@@ -27,9 +26,6 @@ suite.addTest(TestDMFTParameters("test_parameters_recognization"))
 suite.addTest(TestDMFTParameters("test_parameters_interface"))
 suite.addTest(TestDMFTParameters("test_parameters_check_for_missing"))
 suite.addTest(TestDMFTParameters("test_defaultparameters_initialization"))
-suite.addTest(TestWeissField("test_WeissField_initialization"))
-suite.addTest(TestWeissField("test_WeissField_selfconsistency"))
-suite.addTest(TestWeissField("test_WeissFieldNambu"))
 suite.addTest(TestGfOperations("test_sum"))
 suite.addTest(TestGfOperations("test_double_dot_product_2by2"))
 suite.addTest(TestImpuritySolver("test_ImpuritySolver_initialization"))
