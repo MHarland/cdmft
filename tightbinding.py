@@ -11,7 +11,7 @@ class LatticeDispersion:
         self.spins = spins
         self.force_real = force_real
         for r, t in hopping.items():
-            self.dimension = len(r)
+            self.dimension = len(r) if type(r) != int else 1
             self.n_orbs = len(t)
             break
         rs = []
