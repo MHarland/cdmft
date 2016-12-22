@@ -80,7 +80,10 @@ class Storage:
         if mpi.is_master_node():
             self._open_archive(True)
             loop_nr = self._asc_loop_nr(loop_nr)
-            quantity = self.dmft_results[str(loop_nr)][quantity_name]
+            try:
+                quantity = self.dmft_results[str(loop_nr)][quantity_name]
+            except KeyError:
+                pass
             self._close_archive()
         if bcast:
             quantity = mpi.bcast(quantity)

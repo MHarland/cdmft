@@ -1,5 +1,6 @@
 import numpy as np, itertools as itt
 from pytriqs.applications.impurity_solvers.cthyb import AtomDiag, atomic_density_matrix
+from pytriqs.gf.local import BlockGf, GfImTime
 
 
 class Evaluation:
@@ -78,3 +79,19 @@ class Evaluation:
             for i in range(len(rho_block)):
                 probabilities.append(rho_block[i, i])
         return np.array(probabilities)
+
+    def get_g_static_diags(self, loop = -1):
+        g = self.archive.load("g_imp_iw")
+        gf_struct = []
+        for s, b in g:
+            gf_struct.append([s, range(len(b.indices))])
+        gtau = BlockGf(name_block_generator = [(struct[0], GfImTime(indices = struct[1], beta = g.beta, n_points = 10001)) for struct in gf_struct])
+        for s, b in gtau: b.set_from_inverse_fourier(g[s])
+        inds = [i for i in g.all_indices]
+        gsd = {}
+        for ind in inds:
+            if ind[1] == ind[2]:
+                i = int(ind[1])
+                b = ind[0]
+                gsd[b+'-'+str(i)+str(i)] = -gtau[b].data[-1, i, i].real
+        return gsd
