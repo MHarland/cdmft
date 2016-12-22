@@ -3,7 +3,7 @@ import unittest, os
 from bethe.h5interface import Storage
 from bethe.selfconsistency import Cycle
 from bethe.setups.bethelattice import SingleBetheSetup, TriangleBetheSetup, PlaquetteBetheSetup
-from bethe.setups.cdmftchain import MomentumDimerSetup
+from bethe.setups.cdmftchain import MomentumDimerSetup, StrelSetup
 from bethe.setups.cdmftsquarelattice import MomentumPlaquetteSetup
 from bethe.parameters import TestDMFTParameters
 
@@ -47,3 +47,12 @@ class TestSetups(unittest.TestCase):
         cyc = Cycle(sto, par, **setup.initialize_cycle())
         cyc.run(1, n_cycles = 0)
         os.remove('test.h5')
+
+    def test_chain_StrelCDMFTSetup(self):
+        setup = StrelSetup(10, 0, -.1, -1, -.1, 0, 2, 16)
+        sto = Storage('test.h5')
+        par = TestDMFTParameters()
+        cyc = Cycle(sto, par, **setup.initialize_cycle())
+        cyc.run(1, n_cycles = 0)
+        os.remove('test.h5')
+        

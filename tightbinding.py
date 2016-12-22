@@ -23,6 +23,7 @@ class LatticeDispersion:
         self.hopping_elements = np.array(t_rs)
         self.create_grid(k_points_per_dimension)
         self.calculate_energies()
+        self.energies_k = self.energies
         up, dn = spins[0], spins[1]
         self.energies_spinsite_space = np.array([{up: h, dn: h} for h in self.energies])
         self.energies = self.energies_spinsite_space
@@ -155,3 +156,25 @@ class SquarelatticeDispersionFast(LatticeDispersion):
                     self.bz_points.append([-.5 + i * step, -.5 + j * step])
         self.bz_points = np.array(self.bz_points)
         self.bz_weights = np.array(self.bz_weights)
+
+
+class LatticeDispersionMultiband(LatticeDispersion):
+    def __init__(self, orb_disp_map = {}):
+        self.energies = []
+        more_k_to_iterate = True
+        i_k = 0
+        while more_k_to_iterate:
+            self.energies.append(dict([(orbname, orbdisp.energies_k[i_k]) for orbname, orbdisp in orb_disp_map.items()]))
+            for orbdisp in orb_disp_map.values():
+                if len(orbdisp.energies_k) - 1 == i_k:
+                    more_k_to_iterate = False
+                    break
+            i_k += 1
+        self.energies = np.array(self.energies)
+        for orbdisp in orb_disp_map.values():
+            self.bz_points = orbdisp.bz_points
+            self.bz_weights = orbdisp.bz_weights
+            break
+
+    def transform_site_space(self):
+        assert False, "to be implemented"
