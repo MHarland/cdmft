@@ -26,7 +26,7 @@ class Cycle:
         self.mu = mu
         self.se = self_energy
 
-    def run(self, n_loops, **parameters_dict):
+    def run(self, n_loops, save_loops = True, **parameters_dict):
         """
         parameters are taken from initialization, but can also be updated using the optional argument
         """
@@ -41,7 +41,7 @@ class Cycle:
             self.imp_solver.run(self.g0, self.h_int, loop_nr, **self.p.run_solver())
             self.g_imp << self.imp_solver.get_g_iw()
             self.process_impurity_results()
-            self.save()
+            if save_loops: self.save()
             self.report("Loop done.")
 
     def save(self):
