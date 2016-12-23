@@ -17,7 +17,7 @@ class Dimer:
         mos = {(sn, on): (str(sn)+"-"+str(on), 1) for sn, on in itt.product(self.spins, self.orbs)}
         h += h_int_kanamori(self.spins, self.orbs, umat, upmat, self.j, map_operator_structure = mos)
         self.h_int = h
-        self.field_sz = False
+        self.gap_sz = None
 
     def get_h_int(self):
         return self.h_int
@@ -27,16 +27,16 @@ class Dimer:
 
     def get_field_sz(self, gap):
         up, dn = self.spins[0], self.spins[1]
-        field = gap * np.sum([N(dn+'-'+orb, i) for orb, i in itt.product(self.orbs, self.sites)])
-        field -= gap * np.sum([N(up+'-'+orb, i) for orb, i in itt.product(self.orbs, self.sites)])
+        field = .5 * gap * np.sum([N(dn+'-'+orb, i) for orb, i in itt.product(self.orbs, self.sites)])
+        field -= .5 * gap * np.sum([N(up+'-'+orb, i) for orb, i in itt.product(self.orbs, self.sites)])
         return field
     
     def add_field_sz(self, gap):
-        if not self.field_sz:
-            self.field_sz = True
+        if self.gap_sz is None:
             self.h_int += self.get_field_sz(gap)
+            self.gap_sz = gap
 
-    def rm_field_sz(self, gap):
-        if self.field_sz:
-            self.h_int -= self.get_field_sz(gap)
-            self.field_sz = False
+    def rm_field_sz(self):
+        if self.gap_sz is not None:
+            self.h_int -= self.get_field_sz(self.gap_sz)
+            self.gap_sz = None
