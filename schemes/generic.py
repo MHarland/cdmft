@@ -18,45 +18,44 @@ class GLocalGeneric(MatsubaraGreensFunction):
         self.filling_with_old_mu = None
         self.last_found_mu_number = None
         self.last_found_density = None
+        self.mu_maxiter = 1000
+        self.mu_dx = 1
 
     def calc_dyson(self, weissfield, selfenergy):
         self << inverse(inverse(weissfield) - selfenergy)
 
-    def set(self, selfenergy, mu, w1, w2, n_mom, filling = None, dmu_max = None, *args, **kwargs):
+    def set(self, selfenergy, mu, filling = None, dmu_max = None):
         """
         sets GLocal using calculate(self, mu, selfenergy, w1, w2, n_mom), uses either filling or mu
         mu can be either of blockmatrix-type or scalar
         """
         if filling is None:
-            assert type(mu) in [float, int, complex] or isinstance(mu, dict), "Unexpected type or class of mu."
-            self.calculate(selfenergy, mu, w1, w2, n_mom)
+            assert type(mu) in [float, int, complex], "Unexpected type or class of mu."
+            self.calculate(selfenergy, self.make_matrix(mu))
         else:
-            mu = self.find_and_set_mu(filling, selfenergy, mu, dmu_max, w1, w2, n_mom)
+            mu = self.find_and_set_mu(filling, selfenergy, mu, dmu_max)
         return mu
 
-    def find_and_set_mu(self, filling, selfenergy, mu0, dmu_max, w1, w2, n_mom, *args, **kwargs):
+    def find_and_set_mu(self, filling, selfenergy, mu0, dmu_max):
         """
         Assumes a diagonal-mu basis
         """
         # TODO place mu in center of gap
         if not filling is None:
             self.filling_with_old_mu = self.total_density()
-            f = lambda mu: self._set_mu_get_filling(selfenergy, mu, w1, w2, n_mom)
+            f = lambda mu: self._set_mu_get_filling(selfenergy, mu)
             f = FunctionWithMemory(f)
-            if isinstance(mu0, dict):
-                mu0 = self.mu_number(mu0)
-            self.last_found_mu_number, self.last_found_density = bound_and_bisect(f, mu0, filling, dx = 1, x_name = "mu", y_name = "filling", maxiter = 1000, verbosity = self.verbosity, *args, **kwargs)
-            new_mu_number, limit_applied = self.limit(self.last_found_mu_number, mu0, dmu_max)
-            new_mu = self.mu_matrix(new_mu_number)
+            self.last_found_mu_number, self.last_found_density = bound_and_bisect(f, mu0, filling, dx = self.mu_dx, x_name = "mu", y_name = "filling", maxiter = self.mu_maxiter, verbosity = self.verbosity)
+            new_mu, limit_applied = self.limit(self.last_found_mu_number, mu0, dmu_max)
             if limit_applied:
-                self.calculate(selfenergy, new_mu, w1, w2, n_mom)
+                self.calculate(selfenergy, self.make_matrix(new_mu))
             return new_mu
 
-    def _set_mu_get_filling(self, selfenergy, mu, w1, w2, n_mom):
+    def _set_mu_get_filling(self, selfenergy, mu):
         """
         needed for find_and_set_mu
         """
-        self.calculate(selfenergy, mu, w1, w2, n_mom)
+        self.calculate(selfenergy, self.make_matrix(mu))
         d = self.total_density()
         return d
 
@@ -69,23 +68,23 @@ class GLocalGeneric(MatsubaraGreensFunction):
             return x0 + dxlim * np.sign(x - x0), True
         return x, False
 
-    def mu_number(self, mu):
+    def make_number(self, matrix):
         """
-        converts mu to number using the first entry
+        converts matrix to number using the first entry
         """
-        for key, val in mu.items():
-            mu_number = val[0, 0]
+        for key, val in matrix.items():
+            number = val[0, 0]
             break
-        return mu_number
+        return number
 
-    def mu_matrix(self, mu_number):
+    def make_matrix(self, number):
         """
-        converts mu to blockmatrix in GLocal basis multiplying by 1
+        converts number to blockmatrix in GLocal basis multiplying by 1
         """
-        mu = dict()
+        mat = dict()
         for bname, bsize in zip(self.blocknames, self.blocksizes):
-            mu[bname] = np.identity(bsize) * mu_number
-        return mu
+            mat[bname] = np.identity(bsize) * number
+        return mat
 
 
 class WeissFieldGeneric(MatsubaraGreensFunction):

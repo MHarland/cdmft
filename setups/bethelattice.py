@@ -8,7 +8,7 @@ from bethe.transformation import MatrixTransformation
 
 class SingleBetheSetup(CycleSetupGeneric):
 
-    def __init__(self, beta, mu, u, t_bethe, n_iw = 1025):
+    def __init__(self, beta, mu, u, t_bethe, w1 = None, w2 = None, n_mom = 3, n_iw = 1025):
         up = "up"
         dn = "dn"
         spins = [up, dn]
@@ -19,7 +19,7 @@ class SingleBetheSetup(CycleSetupGeneric):
         blocksizes = [len(sites), len(sites)]
         gf_struct = [[s, sites] for s in spins]
         self.h_int = hubbard.get_h_int()
-        self.gloc = GLocal(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
+        self.gloc = GLocal(t_bethe, t_loc, w1, w2, n_mom, blocknames, blocksizes, beta, n_iw)
         self.g0 = WeissField(blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
         self.mu = mu
@@ -31,7 +31,7 @@ class TriangleBetheSetup(CycleSetupGeneric):
     """
     Contributions by Kristina Klafka
     """
-    def __init__(self, beta, mu, u, t_triangle, t_bethe, orbital_labels = ["E", "A2", "A1"],
+    def __init__(self, beta, mu, u, t_triangle, t_bethe, w1 = None, w2 = None, n_mom = 3, orbital_labels = ["E", "A2", "A1"],
                  symmetric_orbitals = ["A2", "A1"],
                  site_transformation = np.array([[1/np.sqrt(3),1/np.sqrt(3),1/np.sqrt(3)],[0,-1/np.sqrt(2),1/np.sqrt(2)],[-np.sqrt(2./3.),1/np.sqrt(6),1/np.sqrt(6)]]),
                  n_iw = 1025):
@@ -52,7 +52,7 @@ class TriangleBetheSetup(CycleSetupGeneric):
         hubbard = TriangleMomentum(u, spins, orbital_labels, transfbmat)
         xy = symmetric_orbitals
         self.h_int = hubbard.get_h_int()
-        self.gloc = GLocal(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
+        self.gloc = GLocal(t_bethe, t_loc, w1, w2, n_mom, blocknames, blocksizes, beta, n_iw)
         self.g0 = WeissField(blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
         self.mu = mu
@@ -64,8 +64,8 @@ class PlaquetteBetheSetup(CycleSetupGeneric):
     """
     site transformation must be unitary and diagonalize G, assuming all sites are equal
     """
-    def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t_bethe,
-                 orbital_labels = ["G", "X", "Y", "M"], symmetric_orbitals = ["X", "Y"],
+    def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t_bethe, w1 = None, w2 = None,
+                 n_mom = 3, orbital_labels = ["G", "X", "Y", "M"], symmetric_orbitals = ["X", "Y"],
                  site_transformation =.5*np.array([[1,1,1,1],[1,-1,1,-1],[1,1,-1,-1],[1,-1,-1,1]]),
                  n_iw = 1025):
         up = "up"
@@ -85,7 +85,7 @@ class PlaquetteBetheSetup(CycleSetupGeneric):
         hubbard = PlaquetteMomentum(u, spins, orbital_labels, transfbmat)
         xy = symmetric_orbitals
         self.h_int = hubbard.get_h_int()
-        self.gloc = GLocal(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
+        self.gloc = GLocal(t_bethe, t_loc, w1, w2, n_mom, blocknames, blocksizes, beta, n_iw)
         self.g0 = WeissField(blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
         self.mu = mu
@@ -97,7 +97,7 @@ class PlaquetteBetheSetup(CycleSetupGeneric):
 
     def init_centered_semicirculars(self): # TODO test
         for n, b in self.se:
-            b << self.gloc.mu_matrix(self.mu)[n]
+            b << self.gloc.make_matrix(self.mu)[n]
 
 
 class NambuMomentumPlaquette: # TODO

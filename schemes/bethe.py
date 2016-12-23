@@ -7,8 +7,11 @@ from ..gfoperations import double_dot_product
 
 
 class GLocal(GLocalGeneric):
-
-    def __init__(self, t_bethe, t_local, *args, **kwargs):
+    """
+    w1, w2, n_mom are used for calculate only, the fitting after the impurity solver is defined in
+    the selfconsistency parameters
+    """
+    def __init__(self, t_bethe, t_local, w1 = None, w2 = None, n_mom = 3, *args, **kwargs):
         for bn, b in t_local.items():
             for i, j in itt.product(*[range(b.shape[0])]*2):
                 if i != j:
@@ -16,9 +19,11 @@ class GLocal(GLocalGeneric):
         GLocalGeneric.__init__(self, *args, **kwargs)
         self.t_loc = t_local
         self.t_b = t_bethe
+        self.w1 = (2 * self.n_iw * .8 + 1) * np.pi / self.beta if w1 is None else w1
+        self.w2 = (2 * self.n_iw + 1) * np.pi / self.beta if w2 is None else w2
+        self.n_mom = n_mom
 
-    def calculate(self, selfenergy, mu, w1, w2, n_mom):
-        mu = self.mu_matrix(mu)
+    def calculate(self, selfenergy, mu):
         for sk, b in self:
             orbitals = [i for i in range(b.data.shape[1])]
             for i, j in itt.product(orbitals, orbitals):
@@ -27,7 +32,7 @@ class GLocal(GLocalGeneric):
                     gf = lambda iw: (z(iw) - complex(0, 1) * np.sign(z(iw).imag) * np.sqrt(4*self.t_b**2 - z(iw)**2))/(2.*self.t_b**2)
                     b.data[n,i,j] = gf(iwn)
         assert not math.isnan(self.total_density()), 'g(iw) undefined for mu = '+str(self.mu_number(mu))
-        self.fit_tail2(w1, w2, n_mom)
+        self.fit_tail2(self.w1, self.w2, self.n_mom)
         assert not math.isnan(self.total_density()), 'tail fit fail!'
 
 

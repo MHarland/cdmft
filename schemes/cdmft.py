@@ -18,8 +18,7 @@ class GLocal(GLocalGeneric):
         self.bz = [self.lat.bz_points, self.lat.bz_weights, self.lat.energies]
         GLocalGeneric.__init__(self, *args, **kwargs)
 
-    def calculate(self, selfenergy, mu, *args, **kwargs):
-        mu = self.mu_matrix(mu)
+    def calculate(self, selfenergy, mu):
         g = self.get_as_BlockGf() # TODO need BlockGf for __iadd__ and reduce
         g.zero()
         for k, w, d in itt.izip(*[mpi.slice_array(x) for x in self.bz]): # TODO c++

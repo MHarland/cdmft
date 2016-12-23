@@ -13,7 +13,7 @@ class TestCycle(unittest.TestCase):
         sto = LoopStorage("test.h5")
         params = TestDMFTParameters()
         h = Site(2)
-        gloc = GLocal(1, {'up': np.array([[0]]), 'dn': np.array([[0]])}, ['up', 'dn'], [1, 1], 10, 1025)
+        gloc = GLocal(1, {'up': np.array([[0]]), 'dn': np.array([[0]])}, None, None, 3, ['up', 'dn'], [1, 1], 10, 1025)
         g0 = WeissField(['up', 'dn'], [1, 1], 10, 1025)
         se = SelfEnergy(['up', 'dn'], [1, 1], 10, 1025)
         mu = 0
@@ -24,7 +24,7 @@ class TestCycle(unittest.TestCase):
         sto = LoopStorage("test.h5")
         params = TestDMFTParameters()
         h = Site(2)
-        gloc = GLocal(1, {'up': np.array([[0]]), 'dn': np.array([[0]])}, ['up', 'dn'], [1, 1], 10, 1025)
+        gloc = GLocal(1, {'up': np.array([[0]]), 'dn': np.array([[0]])}, w1, w2, n_mom, ['up', 'dn'], [1, 1], 10, 1025)
         g0 = WeissField(['up', 'dn'], [1, 1], 10, 1025)
         se = SelfEnergy(['up', 'dn'], [1, 1], 10, 1025)
         mu = 1

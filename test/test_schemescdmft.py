@@ -16,6 +16,15 @@ class TestSchemesCDMFT(unittest.TestCase):
         disp = LatticeDispersion(h, 8)
         g = GLocal(disp, ['up', 'dn'], [2, 2], 10, 1000)
 
+    def test_SchemesCDMFT_dmu(self):
+        t = -1
+        h = {(0, 0): [[0,t],[t,0]],(1, 0): [[0,t],[0,0]],(-1, 0): [[0,0],[t,0]]}
+        disp = LatticeDispersion(h, 8)
+        g = GLocal(disp, ['up', 'dn'], [2, 2], 10, 1000)
+        se = SelfEnergy(['up', 'dn'], [2, 2], 10, 1000)
+        mu = g.set(se, 3, 2, .1)
+        self.assertEqual(2.9, mu)
+
     def test_SchemesCDMFT_calculate_clustersite_basis(self):
         t = -1
         h = {(0, 0): [[0,t],[t,0]],(1, 0): [[0,t],[0,0]],(-1, 0): [[0,0],[t,0]]}
@@ -23,7 +32,7 @@ class TestSchemesCDMFT(unittest.TestCase):
         g = GLocal(disp, ['up', 'dn'], [2, 2], 10, 1000)
         se = SelfEnergy(['up', 'dn'], [2, 2], 10, 1000)
         se.zero()
-        g.calculate(se, 0)
+        g.set(se, 0)
         self.assertAlmostEqual(g.total_density(), 2)
 
     def test_SchemesCDMFT_calculate_clustermomentum_basis(self):
@@ -38,7 +47,7 @@ class TestSchemesCDMFT(unittest.TestCase):
         disp.transform_site_space(u, new_struct, reblock_map)
         g = GLocal(disp, ['up-+', 'up--', 'dn-+', 'dn--'], [1] * 4, 10, 1000)
         se = SelfEnergy(['up-+', 'up--', 'dn-+', 'dn--'], [1] * 4, 10, 1000)
-        g.calculate(se, 0)
+        g.set(se, 0)
         self.assertAlmostEqual(g.total_density(), 2)
 
     def test_SchemesCDMFT_Cycle(self):

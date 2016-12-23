@@ -55,6 +55,7 @@ suite.addTest(TestTightbinding("test_LatticeDispersion_dimer_in_chain_transform"
 suite.addTest(TestTightbinding("test_SquarelatticeDispersion"))
 #suite.addTest(TestSetups("test_SingleBetheSetup_with_cycle_run"))
 suite.addTest(TestSchemesCDMFT("test_SchemesCDMFT_init"))
+suite.addTest(TestSchemesCDMFT("test_SchemesCDMFT_dmu"))
 suite.addTest(TestSchemesCDMFT("test_SchemesCDMFT_calculate_clustersite_basis"))
 suite.addTest(TestSchemesCDMFT("test_SchemesCDMFT_calculate_clustermomentum_basis"))
 #suite.addTest(TestSchemesCDMFT("test_SchemesCDMFT_Cycle"))

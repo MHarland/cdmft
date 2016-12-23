@@ -35,7 +35,7 @@ class Cycle:
             loop_nr = self.storage.get_completed_loops()
             self.report("DMFT loop nr. "+str(loop_nr)+":")
             self.start_time = time()
-            self.mu = self.g_loc.set(self.se, self.mu, self.p["fit_min_w"], self.p["fit_max_w"], self.p["fit_max_moment"], self.p["filling"], self.p["dmu_max"])
+            self.mu = self.g_loc.set(self.se, self.mu, self.p["filling"], self.p["dmu_max"])
             self.g0.calc_selfconsistency(self.g_loc, self.se, self.mu)
             self.prepare_impurity_run()
             self.imp_solver.run(self.g0, self.h_int, loop_nr, **self.p.run_solver())
