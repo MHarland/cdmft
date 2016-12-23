@@ -11,7 +11,7 @@ orb_nr = 1
 for fname in sys.argv[1:]:
     fig = plt.figure()
     ax = fig.add_axes([.12,.12,.85,.85])
-    sto = LoopStorage(fname)
+    sto = Storage(fname)
     n_loops = sto.get_completed_loops()
     colors = [matplotlib.cm.jet(i/float(max(1,n_loops-1))) for i in range(n_loops)]
     for l, c in zip(range(n_loops), colors):

@@ -16,7 +16,7 @@ par = {"ntau": ntau,
        "bandwidth": bandwidth,
        "sigma": sigma}
 for archive_name in sys.argv[1:]:
-    sto = LoopStorage(archive_name)
+    sto = Storage(archive_name)
     #g = sto.load("g_tau")
     #"""
     gw = sto.load("g_imp_iw")
