@@ -1,5 +1,6 @@
 from pytriqs.applications.impurity_solvers.cthyb import Solver
 from pytriqs.gf.local import LegendreToMatsubara, BlockGf, GfImFreq, inverse
+from pytriqs.operators.operators import Operator
 from pytriqs.random_generator import random_generator_names_list
 from pytriqs.utility import mpi
 
@@ -79,7 +80,8 @@ class ImpuritySolver:
 
     def run(self, weiss_field, hamiltonian, loop_nr, **run_parameters):
         self.cthyb.G0_iw << weiss_field
-        self.run_parameters["h_int"] = hamiltonian
+        h = hamiltonian if isinstance(hamiltonian, Operator) else hamiltonian.get_h_int()
+        self.run_parameters["h_int"] = h
         self.run_parameters.update(run_parameters)
         self.run_parameters.update(self._get_internal_parameters(loop_nr))
         self.cthyb.solve(**self.run_parameters)

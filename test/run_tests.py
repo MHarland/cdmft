@@ -5,6 +5,7 @@ from test_parameters import TestDMFTParameters
 from test_gfoperations import TestGfOperations
 from test_impuritysolver import TestImpuritySolver
 from test_hubbard import TestHubbard
+from test_kanamori import TestKanamori
 from test_h5interface import TestStorage
 from test_transformation import TestTransformation
 from test_schemesgeneric import TestSchemesGeneric
@@ -36,6 +37,7 @@ suite.addTest(TestHubbard("test_HubbardSite"))
 suite.addTest(TestHubbard("test_HubbardPlaquetteMomentum"))
 suite.addTest(TestHubbard("test_HubbardPlaquetteMomentumNambu"))
 suite.addTest(TestHubbard("test_HubbardTriangleMomentum"))
+suite.addTest(TestKanamori("test_KanamoriDimer"))
 suite.addTest(TestStorage("test_Storage_initialization"))
 suite.addTest(TestStorage("test_Storage_get_completed_loops"))
 suite.addTest(TestStorage("test_Storage_save_load_cut_merge"))

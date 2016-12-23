@@ -46,7 +46,7 @@ class StrelSetup(CycleSetupGeneric):
         disp = LatticeDispersionMultiband({'up-d': disp_d, 'dn-d': disp_d,
                                            'up-c': disp_c, 'dn-c': disp_c})
         hamiltonian = KanamoriDimer(u, j)
-        self.h_int = hamiltonian.get_h_int()
+        self.h_int = hamiltonian
         self.gloc = GLocal(disp, gf_struct = struct, beta = beta, n_iw = n_iw)
         self.g0 = WeissField(gf_struct = struct, beta = beta, n_iw = n_iw)
         self.se = SelfEnergy(gf_struct = struct, beta = beta, n_iw = n_iw)
