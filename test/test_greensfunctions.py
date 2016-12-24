@@ -1,6 +1,6 @@
 import unittest, os, numpy as np
 from bethe.greensfunctions import MatsubaraGreensFunction
-from pytriqs.gf.local import BlockGf, GfImFreq, iOmega_n, inverse, GfImTime
+from pytriqs.gf.local import BlockGf, GfImFreq, iOmega_n, inverse, GfImTime, delta, is_gf_real_in_tau
 from pytriqs.archive import HDFArchive
 
 
@@ -24,19 +24,18 @@ class TestMatsubaraGreensFunction(unittest.TestCase):
         TODO
         """
         g = MatsubaraGreensFunction(['up', 'dn'], [2, 2], 10, 1000)
-        g << inverse(iOmega_n) * complex(0, 1)
         g_tau = BlockGf(name_list = ['up', 'dn'],
-                         block_list = [GfImTime(beta = 10, indices = range(2),
-                                                n_points = 10001) for s in [2, 2]])
-        for bn, b in g_tau:
-            b.set_from_inverse_fourier(g[bn])
-            #print b.data[:5,0,0]
+                        block_list = [GfImTime(beta = 10, indices = range(2),
+                                               n_points = 10001) for s in [2, 2]])
+        for s, b in g:
+            b.data[:,:,:] = (np.random.rand(b.data.shape[0], b.data.shape[1], b.data.shape[2]) -.5)* .001
+            b.data[:, :,:] += complex(0, 1) * (np.random.rand(b.data.shape[0], b.data.shape[1], b.data.shape[2]) -.5) * .001
+        for s, b in g:
+            self.assertTrue(not is_gf_real_in_tau(b))
         g.make_g_tau_real(10001)
-        for bn, b in g_tau:
-            b.set_from_inverse_fourier(g[bn])
-            #print b.data[:5,0,0]
-            for n in range(10001):
-                self.assertEqual(b[n, 0, 0].imag, 0)
+        for bn, b in g:
+            self.assertTrue(is_gf_real_in_tau(b))
+
 
     def test_MatsubaraGreensFunction_fit_tail2(self):
         g = MatsubaraGreensFunction(['up'], [1], 10, 100)

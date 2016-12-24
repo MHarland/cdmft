@@ -134,7 +134,6 @@ class MatsubaraGreensFunction(BlockGf):
         Transforms to tau space with n_tau meshsize, sets self accordingly
         TODO tail
         """
-        assert False, "something might be wrong here" # TODO
         inds_tau = range(n_tau)
         g_tau = BlockGf(name_list = self.blocknames,
                          block_list = [GfImTime(beta = self.beta, indices = range(s),
