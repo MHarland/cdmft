@@ -1,6 +1,8 @@
 import numpy as np, itertools as itt
 from pytriqs.gf.local import BlockGf, GfImFreq
 
+from bethe.greensfunctions import MatsubaraGreensFunction
+
 
 class GfStructTransformationIndex:
     """Supports transformation of vectors. They don't depend on a 2D blockstructure,
@@ -38,20 +40,25 @@ class MatrixTransformation:
     TRIQS Blockstructure makes calculations more efficient. Values outside the blocks are zero. This
     transformation class supports a change of the blockstructure. It can be defined explicitly by
     reblock_map or be calculated automatically or be suppressed.
+    orbital_filter allows to omit transformation on certain orbitals
     """
-    def __init__(self, gf_struct, transformation_matrix = None, gf_struct_new = None, reblock_map = None):
+    def __init__(self, gf_struct, transformation_matrix = None, gf_struct_new = None, reblock_map = None, orbital_filter = []):
         self.gf_struct = gf_struct
         self.blocksizes = [len(block[1]) for block in self.gf_struct]
         self.mat = transformation_matrix
-        self.gf_struct_new = gf_struct_new
+        self.gf_struct_new = gf_struct_new if gf_struct_new is not None else gf_struct
         self.gf_struct_names_new = [b[0] for b in self.gf_struct_new]
         self.reblock_map = reblock_map
+        self.orbital_filter = orbital_filter
 
     def transform_matrix(self, matrix, reblock = True):
         result = {}
         for block in self.gf_struct:
             bname = block[0]
-            result[bname] = self.mat[bname].dot(matrix[bname]).dot(self.mat[bname].transpose().conjugate())
+            if bname in self.orbital_filter:
+                result[bname] = matrix[bname]
+            else:
+                result[bname] = self.mat[bname].dot(matrix[bname]).dot(self.mat[bname].transpose().conjugate())
         if reblock and self.reblock_map is not None:
             result = self.reblock_by_map(result, self.reblock_map)
         elif reblock:
@@ -67,17 +74,24 @@ class MatrixTransformation:
         result = {}
         for block in self.gf_struct:
             bname = block[0]
-            result[bname] = self.mat[bname].transpose().conjugate().dot(tmp[bname]).dot(self.mat[bname])
+            if bname in self.orbital_filter:
+                result[bname] = tmp[bname]
+            else:
+                result[bname] = self.mat[bname].transpose().conjugate().dot(tmp[bname]).dot(self.mat[bname])
         return result
     
     def transform_g(self, gf, reblock = True):
         blocknames = [ind for ind in gf.indices]
-        result = gf.__class__(gf_init = gf)
+        #result = gf.__class__(self, gf_init = gf)
+        result = MatsubaraGreensFunction(gf_init = gf)
         result.zero()
         for bname in blocknames:
             indices = [int(ind) for ind in gf[bname].indices]
             for i1, i2, j1, j2 in itt.product(*[indices]*4):
-                result[bname][i1, i2] += self.mat[bname][i1, j1] * gf[bname][j1, j2] * self.mat[bname].transpose().conjugate()[j2, i2]
+                if not(bname in self.orbital_filter):
+                    result[bname][i1, i2] += self.mat[bname][i1, j1] * gf[bname][j1, j2] * self.mat[bname].transpose().conjugate()[j2, i2]
+                elif i1 == j1 and i2 == j2:
+                    result[bname][i1, i2] = gf[bname][j1, j2]
         if reblock and self.reblock_map is not None:
             result = self.reblock_by_map(result, self.reblock_map)
         elif reblock:
@@ -95,7 +109,10 @@ class MatrixTransformation:
         for bname in blocknames:
             indices = [int(ind) for ind in result[bname].indices]
             for i1, i2, j1, j2 in itt.product(*[indices]*4):
-                result[bname][i1, i2] += self.mat[bname].transpose().conjugate()[i1, j1] * tmp[bname][j1, j2] * self.mat[bname][j2, i2]
+                if not(bname in self.orbital_filter):
+                    result[bname][i1, i2] += self.mat[bname].transpose().conjugate()[i1, j1] * tmp[bname][j1, j2] * self.mat[bname][j2, i2]
+                elif i1 == j1 and i2 == j2:
+                    result[bname][i1, i2] = tmp[bname][j1, j2]
         return result
 
     def reblock(self, matrix, struct_old, struct_new):

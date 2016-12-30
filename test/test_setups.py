@@ -1,4 +1,4 @@
-import unittest, os
+import unittest, os, numpy as np
 
 from bethe.h5interface import Storage
 from bethe.selfconsistency import Cycle
@@ -54,5 +54,16 @@ class TestSetups(unittest.TestCase):
         par = TestDMFTParameters()
         cyc = Cycle(sto, par, **setup.initialize_cycle())
         cyc.run(1, n_cycles = 0)
+        setup = StrelSetup(10, 0, -1, -1, -1, 1, 2, 8)
+        setup.transform_sites(np.pi/4., np.pi/4.)
+        e_loc =  np.sum([w * e['up-d'] for k,w,e in setup.gloc.lat.loop_over_bz()], axis = 0)
+        self.assertTrue(np.allclose(e_loc[0, 1], 0))
+        setup.transform_sites(2.657, 9.52)
+        e_loc =  np.sum([w * e['up-d'] for k,w,e in setup.gloc.lat.loop_over_bz()], axis = 0)
+        self.assertTrue(not np.allclose(e_loc[0, 1], 0))
+        setup.transform_sites(np.pi/4., np.pi/4.)
+        e_loc =  np.sum([w * e['up-d'] for k,w,e in setup.gloc.lat.loop_over_bz()], axis = 0)
+        self.assertTrue(np.allclose(e_loc[0, 1], 0))
+        cyc = Cycle(sto, par, **setup.initialize_cycle())
+        cyc.run(1, n_cycles = 0)
         os.remove('test.h5')
-        

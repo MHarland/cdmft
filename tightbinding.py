@@ -47,7 +47,7 @@ class LatticeDispersion:
         for k, w, d in itt.izip(self.bz_points, self.bz_weights, self.energies):
             yield k, w, d
 
-    def transform_site_space(self, unitary_transformation_matrix, new_blockstructure, reblock_map = None):
+    def transform_site_space(self, unitary_transformation_matrix, new_blockstructure = None, reblock_map = None):
         """
         assumes that all subspin orbitals are site degrees of freedom, i.e. single orbital setup
         unitary_transformation_matrix must be a dict with up and dn keys and matrix values
@@ -58,8 +58,12 @@ class LatticeDispersion:
         side-note: this mapping need not be invertible
         """
         site_struct = [[s, range(self.n_orbs)] for s in self.spins]
-        site_transf = MatrixTransformation(site_struct, unitary_transformation_matrix,
-                                           new_blockstructure)
+        if new_blockstructure is None:
+            site_transf = MatrixTransformation(site_struct, unitary_transformation_matrix,
+                                               site_struct)
+        else:
+            site_transf = MatrixTransformation(site_struct, unitary_transformation_matrix,
+                                               new_blockstructure)
         for i, d in enumerate(self.energies_spinsite_space):
             self.energies[i] = site_transf.transform_matrix(d)
 
@@ -170,11 +174,23 @@ class LatticeDispersionMultiband(LatticeDispersion):
                     more_k_to_iterate = False
                     break
             i_k += 1
+        self.struct = [[key, range(len(val))] for key, val in self.energies[0].items()]
         self.energies = np.array(self.energies)
         for orbdisp in orb_disp_map.values():
             self.bz_points = orbdisp.bz_points
             self.bz_weights = orbdisp.bz_weights
             break
 
-    def transform_site_space(self):
-        assert False, "to be implemented"
+    def transform_site_space(self, unitary_transformation_matrix, orbital_filter = [], new_blockstructure = None, reblock_map = None):
+        """
+        uses the orbital_filter option of MatrixTransformation
+        """
+        site_struct = self.struct
+        if new_blockstructure is None:
+            site_transf = MatrixTransformation(site_struct, unitary_transformation_matrix,
+                                               site_struct, orbital_filter = orbital_filter)
+        else:
+            site_transf = MatrixTransformation(site_struct, unitary_transformation_matrix,
+                                               new_blockstructure, orbital_filter = orbital_filter)
+        for i, d in enumerate(self.energies):
+            self.energies[i] = site_transf.transform_matrix(d)
