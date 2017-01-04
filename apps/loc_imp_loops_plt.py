@@ -13,7 +13,7 @@ for fname in sys.argv[1:]:
     ax = fig.add_axes([.12,.12,.85,.85])
     sto = Storage(fname)
     n_loops = sto.get_completed_loops()
-    colors = [matplotlib.cm.jet(i/float(max(1,n_loops-1))) for i in range(10)]
+    colors = [matplotlib.cm.jet(i/float(max(1,10-1))) for i in range(10)]
     for l, c in zip(range(-10, 0), colors):
         g_loc = sto.load("g_loc_iw", l)
         g_imp = sto.load("g_imp_iw", l)
