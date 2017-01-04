@@ -10,7 +10,7 @@ ax = fig.add_axes([.12,.12,.75,.8])
 nc = len(sys.argv[1:])
 colors = [matplotlib.cm.jet(i/float(max(1,nc-1))) for i in range(nc)]
 for fname, c in zip(sys.argv[1:], colors):
-    sto = LoopStorage(fname)
+    sto = Storage(fname)
     y = []
     x = []
     n_loops = sto.get_completed_loops()

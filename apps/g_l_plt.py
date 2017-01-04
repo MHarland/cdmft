@@ -17,7 +17,11 @@ for fname in sys.argv[1:]:
     colors = [matplotlib.cm.jet(i/max(1,float(n_orb-1))) for i in range(n_orb)]
     for orb, c in zip(orbitals, colors):
         y = np.log(abs(g[orb[0]][orb[1],orb[2]].data[:,0,0]))
-        ax.plot(x, y, color = c, label = str(orb[0])+str(orb[1])+str(orb[2]))
+        label = str(orb[0])+str(orb[1])+str(orb[2])
+        if max(y) > -30.:
+            ax.plot(x, y, color = c, label = label)
+        else:
+            print 'omitting '+label+'...'
     ax.set_xlabel("$l$")
     ax.set_ylabel("$\\mathrm{ln}\,\\mathrm{abs}\,G(l)$")
     ax.legend(fontsize = 8, loc = "upper right")

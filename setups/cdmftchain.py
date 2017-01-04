@@ -62,7 +62,7 @@ class StrelSetup(CycleSetupGeneric):
         self.se = SelfEnergy(gf_struct = struct, beta = beta, n_iw = n_iw)
         self.mu = mu
         self.global_moves = {}#{"spin-flip": {((s1+'-'+orb, i), (s2+'-'+orb, i)) for i, orb in zip(sites, orbs) for s1, s2 in itt.product(spins, spins) if s1 != s2}, "dimer-flip": {((s+'-'+orb, i1), (s+'-'+orb, i2)) for s, orb in zip(spins, orbs) for i1, i2 in itt.product(sites, sites) if i1 != i2}}
-        self.quantum_numbers = []
+        self.quantum_numbers = [hamiltonian.n_tot()]
 
     def transform_sites(self, angle_d, angle_c):
         change_d = angle_d - self.site_transf_d

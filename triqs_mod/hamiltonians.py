@@ -6,7 +6,7 @@ from itertools import product
 def c(orb, site, transf = None):
     cnew = Operator()
     if transf is None:
-        cnew = Cdag(orb, site)
+        cnew = C(orb, site)
     else:
         sites = range(transf[orb].shape[0])
         cnew =  np.sum([transf[orb][site, i] * C(orb, i) for i in sites], axis = 0)
