@@ -68,3 +68,12 @@ class Dimer:
 
     def n_tot(self):
         return np.sum([self.n(s, o, i) for s, o, i in itt.product(self.spins, self.orbs, self.sites)], axis = 0)
+
+    def n_per_spin(self, spin):
+        return np.sum([self.n(spin, o, i) for o, i in itt.product(self.orbs, self.sites)], axis = 0)
+
+    def sz_tot(self):
+        return .5 * (self.n_per_spin(self.spins[0]) - self.n_per_spin(self.spins[1]))
+
+    def sz2_tot(self):
+        return self.sz_tot() * self.sz_tot()
