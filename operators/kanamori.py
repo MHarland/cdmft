@@ -1,30 +1,17 @@
 import itertools as itt, numpy as np
 from pytriqs.operators import n as N, dagger, c as C
-#from pytriqs.operators.util.hamiltonians import h_int_kanamori
-from pytriqs.operators.util.U_matrix import U_matrix_kanamori
-
-from bethe.triqs_mod.hamiltonians import h_int_kanamori
 
 
 class Dimer:
-    def __init__(self, u, j, spins = ['up', 'dn'], orbs = ['d', 'c'], sites = range(2), transf = None):
+    def __init__(self, u = None, j = None, spins = ['up', 'dn'], orbs = ['d', 'c'], sites = range(2), transf = None):
         self.u = u
         self.j = j
         self.spins = spins
         self.orbs = orbs
         self.sites = sites
-        self.set_interaction(transf)
         self.gap_sz = None
         self.transf = transf
-
-    def set_interaction(self, transf):
-        self.transf = transf
-        umat, upmat = U_matrix_kanamori(len(self.sites), self.u, self.j)
-        mos = {(sn, on): (str(sn)+"-"+str(on), 0) for sn, on in itt.product(self.spins, self.orbs)}
-        h = h_int_kanamori(self.spins, self.orbs, umat, upmat, self.j, map_operator_structure = mos, transf = transf)
-        mos = {(sn, on): (str(sn)+"-"+str(on), 1) for sn, on in itt.product(self.spins, self.orbs)}
-        h += h_int_kanamori(self.spins, self.orbs, umat, upmat, self.j, map_operator_structure = mos, transf = transf)
-        self.h_int = h
+        if u is not None and j is not None: self.set_h_int(u, j)
 
     def get_h_int(self):
         return self.h_int
@@ -37,15 +24,19 @@ class Dimer:
         field = .5 * gap * np.sum([self.n(self.spins[1], o, i) for o, i in itt.product(self.orbs, self.sites)], axis = 0)
         field -= .5 * gap * np.sum([self.n(self.spins[0], o, i) for o, i in itt.product(self.orbs, self.sites)], axis = 0)
         return field
-    
+
     def add_field_sz(self, gap):
         if self.gap_sz is None:
-            self.h_int += self.get_field_sz(gap)
+            self.h_int += gap * self.sz_tot()
+            self.gap_sz = gap
+        else:
+            self.rm_field_sz()
+            self.h_int += gap * self.sz_tot()
             self.gap_sz = gap
 
     def rm_field_sz(self):
         if self.gap_sz is not None:
-            self.h_int -= self.get_field_sz(self.gap_sz)
+            self.h_int -= self.gap_sz * self.sz_tot()
             self.gap_sz = None
 
     def c(self, spin, orb, site):
@@ -57,7 +48,7 @@ class Dimer:
             cnew = C(block, site)
         else:
             sites = range(self.transf[block].shape[0])
-            cnew =  np.sum([self.transf[block][site, i] * C(orb, i) for i in sites], axis = 0)
+            cnew =  np.sum([self.transf[block][site, i] * C(block, i) for i in sites], axis = 0)
         return cnew
 
     def c_dag(self, spin, orb, site):
@@ -93,3 +84,15 @@ class Dimer:
                         for o1, o2 in itt.product(self.orbs, self.orbs) if o1 != o2], axis = 0)
         jortho = -.5 * self.j * (cross + dagger(cross))
         return uintra + uinter + jpara + jortho
+
+    def sz(self, orb, site):
+        return .5 * (self.n(self.spins[0], orb, site) - self.n(self.spins[1], orb, site))
+
+    def s_plus(self, orb, site):
+        return self.c_dag(self.spins[0], orb, site) * self.c(self.spins[1], orb, site)
+
+    def s_minus(self, orb, site):
+        return self.c_dag(self.spins[1], orb, site) * self.c(self.spins[0], orb, site)
+
+    def s2_tot(self):
+        return np.sum([.5 * (self.s_plus(o1, i1) * self.s_minus(o2, i2) + self.s_minus(o1, i1) * self.s_plus(o2, i2)) + self.sz(o1, i1) * self.sz(o2, i2) for i1, i2, o1, o2 in itt.product(self.sites, self.sites, self.orbs, self.orbs)], axis = 0)

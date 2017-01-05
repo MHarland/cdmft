@@ -61,8 +61,8 @@ class StrelSetup(CycleSetupGeneric):
         self.g0 = WeissField(gf_struct = struct, beta = beta, n_iw = n_iw)
         self.se = SelfEnergy(gf_struct = struct, beta = beta, n_iw = n_iw)
         self.mu = mu
-        self.global_moves = {}#{"spin-flip": {((s1+'-'+orb, i), (s2+'-'+orb, i)) for i, orb in zip(sites, orbs) for s1, s2 in itt.product(spins, spins) if s1 != s2}, "dimer-flip": {((s+'-'+orb, i1), (s+'-'+orb, i2)) for s, orb in zip(spins, orbs) for i1, i2 in itt.product(sites, sites) if i1 != i2}}
-        self.quantum_numbers = [hamiltonian.n_tot()]
+        self.global_moves = {}#{"spin-flip": {((s1+'-'+orb, i), (s2+'-'+orb, i)) for i, orb in zip(sites, orbs) for s1, s2 in itt.product(spins, spins) if s1 != s2}, "dimer-flip": {((s+'-'+orb, i1), (s+'-'+orb, i2)) for s, orb in zip(spins, orbs) for i1, i2 in itt.product(sites, sites) if i1 != i2}} #here, dimer-flip would not work with a site-transformation, could be implemented if needed, remeber to reset it if transform_sites
+        self.quantum_numbers = [self.h_int.n_tot(), self.h_int.s2_tot(), self.h_int.sz_tot()]
 
     def transform_sites(self, angle_d, angle_c):
         change_d = angle_d - self.site_transf_d
@@ -73,13 +73,14 @@ class StrelSetup(CycleSetupGeneric):
                                            [s+'-'+self.orbs[1] for s in self.spins])
         self.gloc.lat.transform_site_space(self._site_transf(change_d, change_c),
                                            [s+'-'+self.orbs[0] for s in self.spins])
-        self.h_int.set_interaction(self._site_transf(angle_d, angle_c))
+        self.h_int = KanamoriDimer(self.h_int.u, self.h_int.j, transf = self._site_transf(angle_d, angle_c))
         transf_d = MatrixTransformation(self.gloc.gf_struct, self._site_transf(angle_d, angle_c),
                                         orbital_filter = [s+'-'+self.orbs[1] for s in self.spins])
         transf_c = MatrixTransformation(self.gloc.gf_struct, self._site_transf(angle_d, angle_c),
                                         orbital_filter = [s+'-'+self.orbs[0] for s in self.spins])
         for t, g in itt.product([transf_d, transf_c], [self.gloc, self.g0, self.se]):
             t.transform_g(g, reblock = False)
+        self.quantum_numbers = [self.h_int.n_tot(), self.h_int.s2_tot(), self.h_int.sz_tot()]
 
     def _site_transf(self, angle_d, angle_c):
         transf = {}
