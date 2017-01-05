@@ -1,9 +1,8 @@
-import matplotlib, numpy as np, sys
-matplotlib.use("PDF")
-from matplotlib import pyplot as plt
+import numpy as np, sys
 
 from bethe.evaluation.generic import Evaluation
 from bethe.h5interface import Storage
+from bethe.plot.cfg import plt, ax
 
 
 n_bins = 800
@@ -37,8 +36,6 @@ for arch in sys.argv[1:]:
     x = [energies]*n_plots
     if omega_max is None:
         omega_max = rho[0,-1]
-    fig = plt.figure()
-    ax = fig.add_axes([.1,.1,.85,.85])
     n, bins, patches = ax.hist(x, bins = n_bins, weights = weights, stacked = False, log = log, label = labels)
     if degeneracy_labels:
         bin_degeneracies = np.zeros([len(bins)-1])
@@ -58,5 +55,7 @@ for arch in sys.argv[1:]:
     ax.set_ylabel("$\\rho$")
     ax.set_xlabel("$\\omega$")
     ax.set_xlim(right = omega_max)
-    plt.savefig(arch[:-3]+"_density_matrix_diag.pdf")
+    outname = arch[:-3]+"_density_matrix_diag.pdf"
+    plt.savefig(outname)
+    print outname+' ready, note: diag2 recommended'
     plt.close()

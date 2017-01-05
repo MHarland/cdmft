@@ -1,13 +1,10 @@
 import matplotlib, sys, numpy as np
-matplotlib.use("PDF")
-from matplotlib import pyplot as plt
 
 from bethe.h5interface import Storage
+from bethe.plot.cfg import plt, ax
 
 
 for fname in sys.argv[1:]:
-    fig = plt.figure()
-    ax = fig.add_axes([.12,.12,.75,.8])
     sto = Storage(fname)
     y = []
     x = []

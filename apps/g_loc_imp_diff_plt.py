@@ -1,14 +1,11 @@
 import matplotlib, sys, numpy as np
-matplotlib.use("PDF")
-from matplotlib import pyplot as plt
 
 from bethe.h5interface import Storage
+from bethe.plot.cfg import plt, ax
 
 
 nc = len(sys.argv[1:])
 colors = [matplotlib.cm.jet(i/float(max(1,nc-1))) for i in range(nc)]
-fig = plt.figure()
-ax = fig.add_axes([.13,.12,.8,.8])
 for fname, color in zip(sys.argv[1:], colors):
     sto = Storage(fname)
     n_freq = 20
@@ -32,7 +29,7 @@ for fname, color in zip(sys.argv[1:], colors):
         dif /= gloc.n_blocks
         x.append(l)
         y.append(dif)
-    ax.plot(x, np.log10(y), label = fname[:-3], color = color)
+    ax.plot(x, np.log10(y), label = '$\\mathrm{'+fname[:-3]+'}$', color = color)
 ax.set_xlabel("$\mathrm{DMFT-Loop}$")
 ax.set_ylabel("$\\log_{10}\\sum_{n}^{"+str(n_freq)+"}\,\\sum_{i}\,|G^{loc}_{ii}(i\\omega_n)-G^{imp}_{ii}(i\\omega_n)|\,/\,N$")
 ax.legend(loc = "upper right", fontsize = 8)

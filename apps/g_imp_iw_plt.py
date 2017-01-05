@@ -1,13 +1,10 @@
 import matplotlib, sys, numpy as np
-matplotlib.use("PDF")
-from matplotlib import pyplot as plt
 
 from bethe.h5interface import Storage
+from bethe.plot.cfg import plt, ax
 
 
 for fname in sys.argv[1:]:
-    fig = plt.figure()
-    ax = fig.add_axes([.12,.12,.85,.85])
     w_max = 10
     sto = Storage(fname)
     g = sto.load("g_imp_iw")
@@ -21,7 +18,7 @@ for fname in sys.argv[1:]:
     for orb, c in zip(orbs, colors):
         b, i, j = orb
         y = g[b][i, j].data[n_iw0:n_w_max,0,0].imag
-        ax.plot(mesh, y, label = b+str(i)+str(j), color = c)
+        ax.plot(mesh, y, label = '$'+b+str(i)+str(j)+'$', color = c)
     ax.set_xlabel("$i\\omega_n$")
     ax.set_ylabel("$\\Im G(i\\omega_n)$")
     ax.legend(fontsize = 8, loc = "lower right")

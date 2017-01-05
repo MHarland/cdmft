@@ -1,13 +1,10 @@
 import matplotlib, sys, numpy as np
-matplotlib.use("PDF")
-from matplotlib import pyplot as plt
 
 from bethe.h5interface import Storage
+from bethe.plot.cfg import plt, ax
 
 
 for fname in sys.argv[1:]:
-    fig = plt.figure()
-    ax = fig.add_axes([.12,.12,.85,.85])
     sto = Storage(fname)
     loop_nr = sto.get_last_loop_nr()
     g = sto.load("g_sol_l", loop_nr)
@@ -19,7 +16,7 @@ for fname in sys.argv[1:]:
         y = np.log(abs(g[orb[0]][orb[1],orb[2]].data[:,0,0]))
         label = str(orb[0])+str(orb[1])+str(orb[2])
         if max(y) > -30.:
-            ax.plot(x, y, color = c, label = label)
+            ax.plot(x, y, color = c, label = '$'+label+'$')
         else:
             print 'omitting '+label+'...'
     ax.set_xlabel("$l$")

@@ -1,12 +1,9 @@
 import matplotlib, sys, numpy as np
-matplotlib.use("PDF")
-from matplotlib import pyplot as plt
 
 from bethe.h5interface import Storage
+from bethe.plot.cfg import plt, ax
 
 
-fig = plt.figure()
-ax = fig.add_axes([.12,.12,.75,.8])
 nc = len(sys.argv[1:])
 colors = [matplotlib.cm.jet(i/float(max(1,nc-1))) for i in range(nc)]
 for fname, c in zip(sys.argv[1:], colors):
@@ -22,11 +19,10 @@ for fname, c in zip(sys.argv[1:], colors):
                 break
         y.append(mu)
         x.append(l)
-    ax.plot(x, y, marker = "+", label = fname[:-3], color = c)
-ax.legend(fontsize = 8, loc = "lower center")
+    ax.plot(x, y, marker = "+", label = '$\\mathrm{'+fname[:-3]+'}$', color = c)
+ax.legend(loc = "upper left")
 ax.set_xlabel("$\mathrm{DMFT-Loop}$")
 ax.set_ylabel("$\\mu$")
-#plt.savefig(fname[:-3]+"_mu.pdf")
 plt.savefig("mu.pdf")
 print "mu.pdf ready"
 plt.close()

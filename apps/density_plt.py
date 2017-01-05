@@ -1,13 +1,10 @@
 import matplotlib, sys, numpy as np
-matplotlib.use("PDF")
-from matplotlib import pyplot as plt
 
 from bethe.h5interface import Storage
+from bethe.plot.cfg import plt, ax
 
 
 for fname in sys.argv[1:]:
-    fig = plt.figure()
-    ax = fig.add_axes([.12,.12,.75,.8])
     sto = Storage(fname)
     y = []
     y0 = []
@@ -18,11 +15,11 @@ for fname in sys.argv[1:]:
         y.append(sto.load("density", l))
         x.append(l)
         y0.append(sto.load("density0", l))
-    ax.plot(x, y0, marker = "x", label = "density of G_loc")
-    ax.plot(x, y, marker = "+", label = "density of G_imp")
+    ax.plot(x, y0, marker = "x", label = "$G_{loc}$")
+    ax.plot(x, y, marker = "+", label = "$G_{imp}$")
     ax.set_xlabel("$\mathrm{DMFT-Loop}$")
     ax.set_ylabel("$N$")
-    ax.legend(fontsize = 8, loc = "lower center")
+    ax.legend(loc = "upper right")
     plt.savefig(fname[:-3]+"_density.pdf")
     print fname[:-3]+"_density.pdf ready"
     plt.close()

@@ -1,13 +1,12 @@
 import matplotlib, sys, numpy as np
-matplotlib.use("PDF")
-from matplotlib import pyplot as plt
 
 from bethe.h5interface import Storage
+from bethe.plot.cfg import plt
 
 
 for fname in sys.argv[1:]:
     fig = plt.figure()
-    ax = fig.add_axes([.12,.12,.75,.8])
+    ax = fig.add_axes([.12,.13,.75,.8])
     ax2 = ax.twinx()
     indices = None
     sto = Storage(fname)
@@ -25,10 +24,12 @@ for fname in sys.argv[1:]:
     for y, label, color in zip(ys, indices, colors):
         ax2.plot(x, y.real, color = color, ls = ":")
         ax.plot(x, y.imag, label = label, color = color, ls = "-")
+    handles, labels = ax.get_legend_handles_labels()
+    legend = plt.legend(handles, labels, fontsize = 8, loc = "upper left")
     ax.set_xlabel("$\mathrm{DMFT-Loop}$")
     ax.set_ylabel("$\\Im G(i\\omega_0)$")
     ax2.set_ylabel("$\\Re G(i\\omega_0)$")
-    ax.legend(fontsize = 8, loc = "upper left")
+    ax2.add_artist(legend)
     plt.savefig(fname[:-3]+"_convergence.pdf")
     print fname[:-3]+"_convergence.pdf ready"
     plt.close()
