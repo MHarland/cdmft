@@ -62,7 +62,7 @@ class StrelSetup(CycleSetupGeneric):
         self.se = SelfEnergy(gf_struct = struct, beta = beta, n_iw = n_iw)
         self.mu = mu
         self.global_moves = {}#{"spin-flip": {((s1+'-'+orb, i), (s2+'-'+orb, i)) for i, orb in zip(sites, orbs) for s1, s2 in itt.product(spins, spins) if s1 != s2}, "dimer-flip": {((s+'-'+orb, i1), (s+'-'+orb, i2)) for s, orb in zip(spins, orbs) for i1, i2 in itt.product(sites, sites) if i1 != i2}} #here, dimer-flip would not work with a site-transformation, could be implemented if needed, remeber to reset it if transform_sites
-        self.quantum_numbers = [self.h_int.n_tot(), self.h_int.s2_tot(), self.h_int.sz_tot()]
+        self.quantum_numbers = [self.h_int.n_tot(), self.h_int.sz_tot()]
 
     def transform_sites(self, angle_d, angle_c):
         change_d = angle_d - self.site_transf_d
@@ -80,7 +80,7 @@ class StrelSetup(CycleSetupGeneric):
                                         orbital_filter = [s+'-'+self.orbs[0] for s in self.spins])
         for t, g in itt.product([transf_d, transf_c], [self.gloc, self.g0, self.se]):
             t.transform_g(g, reblock = False)
-        self.quantum_numbers = [self.h_int.n_tot(), self.h_int.s2_tot(), self.h_int.sz_tot()]
+        self.quantum_numbers = [self.h_int.n_tot(), self.h_int.sz_tot()]
 
     def _site_transf(self, angle_d, angle_c):
         transf = {}
