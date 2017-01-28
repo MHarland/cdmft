@@ -7,7 +7,7 @@ class DMFTParameters:
     Untouched parameters: random_seed, fit_known_moments.
     """
     def __init__(self, parameter_dict = {}):
-        self.solver_run = ["n_cycles", "partition_method", "quantum_numbers", "length_cycle", "n_warmup_cycles", "random_name", "max_time", "verbosity", "move_shift", "move_double", "use_trace_estimator", "measure_g_tau", "measure_g_l", "measure_pert_order", "measure_density_matrix", "use_norm_as_weight", "performance_analysis", "proposal_prob", "imag_threshold", "perform_post_proc", "perform_tail_fit", "fit_min_n", "fit_max_n", "fit_min_w", "fit_max_w", "fit_max_moment", "move_global", "move_global_prob"]#, "measure_g_pp_tau"]
+        self.solver_run = ["n_cycles", "partition_method", "quantum_numbers", "length_cycle", "n_warmup_cycles", "random_name", "max_time", "verbosity", "move_shift", "move_double", "use_trace_estimator", "measure_g_tau", "measure_g_l", "measure_pert_order", "measure_density_matrix", "use_norm_as_weight", "performance_analysis", "proposal_prob", "imag_threshold", "perform_post_proc", "perform_tail_fit", "fit_min_n", "fit_max_n", "fit_min_w", "fit_max_w", "fit_max_moment", "move_global", "move_global_prob", "measure_g2_legendre", "measure_g2_pp", "measure_g2_ph", "measure_g2_block_order", "measure_g2_blocks", "measure_g2_n_iw", "measure_g2_n_inu", "measure_g2_n_l"]#, "measure_g_pp_tau"]
         all_parameternames = ["beta", "n_iw", "n_tau", "n_l", "mix", "make_g0_tau_real", "filling", "block_symmetries", "dmu_max"] + self.solver_run
         self.current = dict([(name, None) for name in all_parameternames])
         self.set(parameter_dict)
@@ -139,7 +139,15 @@ class DefaultDMFTParameters(DMFTParameters):
                    "fit_max_n": 1025,
                    "fit_min_w": None,
                    "fit_max_w": None,
-                   "fit_max_moment": 3}
+                   "fit_max_moment": 3,
+                   "measure_g2_legendre": False,
+                   "measure_g2_pp": False,
+                   "measure_g2_ph": False,
+                   "measure_g2_block_order": 'AABB',
+                   #"measure_g2_blocks": measure all blocks,
+                   "measure_g2_n_iw": 30,
+                   "measure_g2_n_inu": 30,
+                   "measure_g2_n_l": 20}
         default.update(parameter_dict)
         DMFTParameters.__init__(self, default)
 
@@ -185,6 +193,14 @@ class TestDMFTParameters(DMFTParameters):
                    "fit_max_n": 1025,
                    "fit_min_w": 10,
                    "fit_max_w": 20,
-                   "fit_max_moment": 3}
+                   "fit_max_moment": 3,
+                   "measure_g2_legendre": False,
+                   "measure_g2_pp": False,
+                   "measure_g2_ph": False,
+                   "measure_g2_block_order": 'AABB',
+                   #"measure_g2_blocks": measure all blocks,
+                   "measure_g2_n_iw": 30,
+                   "measure_g2_n_inu": 30,
+                   "measure_g2_n_l": 20}
         default.update(parameter_dict)
         DMFTParameters.__init__(self, default)
