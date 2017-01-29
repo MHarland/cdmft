@@ -51,7 +51,11 @@ class Storage:
             place_to_store = self.dmft_results[str(new_loop_nr)]
             for name, obj in self.memory_container.items():
                 if not obj is None:
-                    place_to_store[name] = obj
+                    try:
+                        place_to_store[name] = obj
+                    except TypeError:
+                        if mpi.is_master_node():
+                            print "warning: TypeError while writing",name,"to archive"
             self.dmft_results["n_dmft_loops"] += 1
             self._close_archive()
 

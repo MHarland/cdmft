@@ -115,7 +115,7 @@ class ImpuritySolver:
                 results.update({"G2_iw_l_lp_pp": self.cthyb.G2_iw_l_lp_pp})
             if params["measure_g2_pp"]:
                 results.update({"G2_iw_l_lp_ph": self.cthyb.G2_iw_l_lp_ph})
-        else:
+        elif params["measure_g2_inu"]:
             if params["measure_g2_pp"]:
                 results.update({"G2_iw_inu_inup_pp": self.cthyb.G2_iw_inu_inup_pp})
             if params["measure_g2_ph"]:
