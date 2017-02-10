@@ -2,7 +2,7 @@ import numpy as np, itertools as itt
 
 from bethe.setups.generic import CycleSetupGeneric
 from bethe.operators.hubbard import Site, TriangleMomentum, PlaquetteMomentum
-from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy
+from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM
 from bethe.transformation import MatrixTransformation
 
 
@@ -34,7 +34,7 @@ class TriangleBetheSetup(CycleSetupGeneric):
     def __init__(self, beta, mu, u, t_triangle, t_bethe, w1 = None, w2 = None, n_mom = 3, orbital_labels = ["E", "A2", "A1"],
                  symmetric_orbitals = ["A2", "A1"],
                  site_transformation = np.array([[1/np.sqrt(3),1/np.sqrt(3),1/np.sqrt(3)],[0,-1/np.sqrt(2),1/np.sqrt(2)],[-np.sqrt(2./3.),1/np.sqrt(6),1/np.sqrt(6)]]),
-                 n_iw = 1025):
+                 n_iw = 1025, afm = False):
         up = "up"
         dn = "dn"
         spins = [up, dn]
@@ -52,12 +52,23 @@ class TriangleBetheSetup(CycleSetupGeneric):
         hubbard = TriangleMomentum(u, spins, orbital_labels, transfbmat)
         xy = symmetric_orbitals
         self.h_int = hubbard.get_h_int()
-        self.gloc = GLocal(t_bethe, t_loc, w1, w2, n_mom, blocknames, blocksizes, beta, n_iw)
+        if afm:
+            self.gloc = GLocalAFM(t_bethe, t_loc, w1, w2, n_mom, blocknames, blocksizes, beta, n_iw)
+        else:
+            self.gloc = GLocal(t_bethe, t_loc, w1, w2, n_mom, blocknames, blocksizes, beta, n_iw)
         self.g0 = WeissField(blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
         self.mu = mu
         self.global_moves = {"spin-flip": dict([((s1+"-"+k, 0), (s2+"-"+k, 0)) for k in orbital_labels for s1, s2 in itt.product(spins, spins) if s1 != s2]), "A1A2-flip": dict([((s+"-"+k1, 0), (s+"-"+k2, 0)) for s in spins for k1, k2 in itt.product(xy, xy) if k1 != k2])}
         self.quantum_numbers = [hubbard.get_n_tot(), hubbard.get_n_per_spin(up)]
+
+
+class TriangleAllInAllOutBetheSetup(CycleSetupGeneric):
+    """
+    merges spin and sitespaces and diagonalizes
+    """
+    def __init__(self):
+        pass
 
 
 class PlaquetteBetheSetup(CycleSetupGeneric):
