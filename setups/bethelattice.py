@@ -44,7 +44,7 @@ class TriangleBetheSetup(CycleSetupGeneric):
         gf_struct = [[n, range(s)] for n, s in zip(blocknames, blocksizes)]
         gf_struct_site = [[s, sites] for s in spins]
         transfbmat = dict([(s, site_transformation) for s in spins])
-        transf = MatrixTransformation(gf_struct_site, transfbmat, gf_struct)
+        transf = self.transf = MatrixTransformation(gf_struct_site, transfbmat, gf_struct)
         a = t_triangle
         t_loc_per_spin = np.array([[0,a,a],[a,0,a],[a,a,0]])
         t_loc = {up: t_loc_per_spin, dn: t_loc_per_spin}
