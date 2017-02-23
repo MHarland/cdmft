@@ -22,5 +22,5 @@ for arch_name in sys.argv[1:]:
     ax.set_xlabel("$\\tau$")
     ax.set_ylabel("$G(\\tau)$")
     plt.savefig(outname)
-    plt.close()
+    plt.cla()
     print outname+' ready'

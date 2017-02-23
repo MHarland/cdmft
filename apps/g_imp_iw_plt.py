@@ -5,7 +5,7 @@ from bethe.plot.cfg import plt, ax
 
 
 for fname in sys.argv[1:]:
-    w_max = 10
+    w_max = 20
     sto = Storage(fname)
     g = sto.load("g_imp_iw")
     supermesh = np.array([iw.imag for iw in g.mesh])
@@ -26,4 +26,4 @@ for fname in sys.argv[1:]:
     outname = fname[:-3]+"_g_imp_iw.pdf"
     plt.savefig(outname)
     print outname+" ready"
-    plt.close()
+    plt.cla()

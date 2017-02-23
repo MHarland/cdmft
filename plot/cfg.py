@@ -13,4 +13,4 @@ try:
 except:
     pass
 fig = plt.figure()
-ax = fig.add_axes([.13,.13,.84,.83])
+ax = fig.add_axes([.13,.13,.84,.82])

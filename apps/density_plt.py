@@ -22,4 +22,4 @@ for fname in sys.argv[1:]:
     ax.legend(loc = "upper right")
     plt.savefig(fname[:-3]+"_density.pdf")
     print fname[:-3]+"_density.pdf ready"
-    plt.close()
+    plt.cla()
