@@ -3,7 +3,7 @@ from pytriqs.operators import n as N, dagger, c as C
 
 
 class Dimer:
-    def __init__(self, u = None, j = None, spins = ['up', 'dn'], orbs = ['d', 'c'], sites = range(2), transf = None):
+    def __init__(self, u = None, j = None, spins = ['up', 'dn'], orbs = ['d', 'c'], sites = range(2), transf = None, density_density_only = False):
         self.u = u
         self.j = j
         self.spins = spins
@@ -11,7 +11,7 @@ class Dimer:
         self.sites = sites
         self.gap_sz = None
         self.transf = transf
-        if u is not None and j is not None: self.set_h_int(u, j)
+        if u is not None and j is not None: self.set_h_int(u, j, density_density_only)
 
     def get_h_int(self):
         return self.h_int
@@ -48,7 +48,7 @@ class Dimer:
             cnew = C(block, site)
         else:
             sites = range(self.transf[block].shape[0])
-            cnew =  np.sum([self.transf[block][site, i] * C(block, i) for i in sites], axis = 0)
+            cnew =  np.sum([self.transf[block][i, site] * C(block, i) for i in sites], axis = 0)
         return cnew
 
     def c_dag(self, spin, orb, site):
@@ -69,20 +69,23 @@ class Dimer:
     def sz2_tot(self):
         return self.sz_tot() * self.sz_tot()
 
-    def set_h_int(self, u, j):
+    def set_h_int(self, u, j, density_density_only = False):
         self.up = u - 2 * j
         self.u = u
         self.j = j
-        self.h_int = np.sum([self.h_int_per_site(i) for i in self.sites], axis = 0)
+        self.h_int = np.sum([self.h_int_per_site(i, density_density_only) for i in self.sites], axis = 0)
 
-    def h_int_per_site(self, site):
+    def h_int_per_site(self, site, density_density_only = False):
         uintra = self.u * np.sum([self.n(self.spins[0], o, site) * self.n(self.spins[1], o, site) for o in self.orbs], axis = 0)
         uinter = self.up * np.sum([self.n(s1, self.orbs[0], site) * self.n(s2, self.orbs[1], site) for s1, s2 in itt.product(self.spins, self.spins)], axis = 0)
         jpara = -self.j * np.sum([self.n(s, self.orbs[0], site) * self.n(s, self.orbs[1], site) for s in self.spins], axis = 0)
-        cross = np.sum([self.c_dag(self.spins[1], o1, site) * self.c_dag(self.spins[0], o2, site) * self.c(self.spins[1], o2, site) * self.c(self.spins[0], o1, site)
-                        + self.c_dag(self.spins[0], o2, site) * self.c_dag(self.spins[1], o2, site) * self.c(self.spins[0], o1, site) * self.c(self.spins[1], o1, site)
-                        for o1, o2 in itt.product(self.orbs, self.orbs) if o1 != o2], axis = 0)
-        jortho = -.5 * self.j * (cross + dagger(cross))
+        if not density_density_only:
+            cross = np.sum([self.c_dag(self.spins[1], o1, site) * self.c_dag(self.spins[0], o2, site) * self.c(self.spins[1], o2, site) * self.c(self.spins[0], o1, site)
+                            + self.c_dag(self.spins[0], o2, site) * self.c_dag(self.spins[1], o2, site) * self.c(self.spins[0], o1, site) * self.c(self.spins[1], o1, site)
+                            for o1, o2 in itt.product(self.orbs, self.orbs) if o1 != o2], axis = 0)
+            jortho = -.5 * self.j * (cross + dagger(cross))
+        else:
+            jortho = 0
         return uintra + uinter + jpara + jortho
 
     def sz(self, orb, site):

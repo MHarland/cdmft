@@ -1,6 +1,6 @@
 import unittest, numpy as np
 
-from bethe.schemes.bethe import GLocal, SelfEnergy, WeissField
+from bethe.schemes.bethe import GLocal, SelfEnergy, WeissField, GLocalAFM
 
 
 class TestSchemesBethe(unittest.TestCase):
@@ -12,6 +12,13 @@ class TestSchemesBethe(unittest.TestCase):
     def test_SchemesBethe_calculate(self):
         h = np.array([[0]])
         g = GLocal(1, {'up': h, 'dn': h}, None, None, 3, ['up', 'dn'], [1, 1], 10, 1001)
+        se = SelfEnergy(['up', 'dn'], [1, 1], 10, 1001)
+        se.zero()
+        g.set(se, 0)
+
+    def test_SchemesBetheAFM_calculate(self):
+        h = np.array([[0]])
+        g = GLocalAFM(1, {'up': h, 'dn': h}, None, None, 3, ['up', 'dn'], [1, 1], 10, 1001)
         se = SelfEnergy(['up', 'dn'], [1, 1], 10, 1001)
         se.zero()
         g.set(se, 0)

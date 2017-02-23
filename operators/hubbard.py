@@ -89,12 +89,13 @@ class Dimer(Hubbard):
         self.up = spins[0]
         self.dn = spins[1]
         self.sites = range(2)
+        self.transf = transf
  
     def _c(self, s, i):
-        if transf is None:
+        if self.transf is None:
             c = Hubbard._c(self, s, i)
         else:
-            c = np.sum([transf[i, j] * C(s, j) for j in self.sites])
+            c = np.sum([self.transf[i, j] * C(s, j) for j in self.sites])
         return c
 
 
@@ -154,7 +155,8 @@ class TriangleMomentum(Hubbard):
         self._to_mom = GfStructTransformationIndex(self.gf_struct, [[self.up, self.sites], [self.dn, self.sites]])
 
     def _c(self, spin, site):
-        return sum([self.transformation[spin][k_index, site] * C(*self._to_mom(spin, k_index)) for k_index in range(len(self.sites))])
+        return sum([self.transformation[spin][k_index, site] * C(*self._to_mom(spin, k_index)) for k_index in range(len(self.sites))]) # TODO conjugate!
+
 
 class TriangleMomentum2(TriangleMomentum):
     def _c(self, spin, site):

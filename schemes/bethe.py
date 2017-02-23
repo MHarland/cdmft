@@ -36,6 +36,36 @@ class GLocal(GLocalGeneric):
         assert not math.isnan(self.total_density()), 'tail fit fail!'
 
 
+class GLocalAFM(GLocal):
+    def calculate(self, selfenergy, mu):
+        self.checkforspins()
+        for sk, b in self:
+            sk = self.flip_spin(sk)
+            orbitals = [i for i in range(b.data.shape[1])]
+            for i, j in itt.product(orbitals, orbitals):
+                for n, iwn in enumerate(b.mesh):
+                    z = lambda iw: iw + mu[sk][i, j] - self.t_loc[sk][i, j] - selfenergy[sk].data[n,i,j]
+                    gf = lambda iw: (z(iw) - complex(0, 1) * np.sign(z(iw).imag) * np.sqrt(4*self.t_b**2 - z(iw)**2))/(2.*self.t_b**2)
+                    b.data[n,i,j] = gf(iwn)
+        assert not math.isnan(self.total_density()), 'g(iw) undefined for mu = '+str(self.mu_number(mu))
+        self.fit_tail2(self.w1, self.w2, self.n_mom)
+        assert not math.isnan(self.total_density()), 'tail fit fail!'
+
+    def checkforspins(self):
+        for name in self.blocknames:
+            assert (len(name.split("up")) == 2) ^ (len(name.split("dn")) == 2), "the strings up and dn must occur exactly once in blocknames"
+
+    def flip_spin(self, blocklabel):
+        up, dn = "up", "dn"
+        if up in blocklabel:
+            splittedlabel = blocklabel.split(up)
+            new_label = splittedlabel[0] + dn + splittedlabel[1]
+        elif dn in blocklabel:
+            splittedlabel = blocklabel.split(dn)
+            new_label = splittedlabel[0] + up + splittedlabel[1]
+        return new_label
+
+    
 class SelfEnergy(SelfEnergyGeneric):
     pass
 
