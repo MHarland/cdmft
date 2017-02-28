@@ -2,7 +2,7 @@ import unittest, os, numpy as np
 
 from bethe.h5interface import Storage
 from bethe.selfconsistency import Cycle
-from bethe.setups.bethelattice import SingleBetheSetup, TriangleBetheSetup, PlaquetteBetheSetup
+from bethe.setups.bethelattice import SingleBetheSetup, TriangleBetheSetup, PlaquetteBetheSetup, TriangleAIAOBetheSetup
 from bethe.setups.cdmftchain import MomentumDimerSetup, StrelSetup
 from bethe.setups.cdmftsquarelattice import MomentumPlaquetteSetup
 from bethe.parameters import TestDMFTParameters
@@ -68,3 +68,7 @@ class TestSetups(unittest.TestCase):
         cyc.run(1, n_cycles = 0)
         os.remove('test.h5')
         setup = StrelSetup(10, 0, -.1, -1, -.1, 0, 2, 16, .1, .1)
+
+    def test_TriangleAIAOBetheSetup(self):
+        setup = TriangleAIAOBetheSetup(10, 1, 2, -1, 1)
+        self.assertTrue(np.allclose(setup.spin_transf_mat(np.pi, 0), np.array([[0,1],[-1,0]])))
