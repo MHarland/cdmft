@@ -103,6 +103,8 @@ class MatrixTransformation:
             result = self.reblock_by_map(gf, self.reblock_map, backtransform = True)
         elif reblock:
             result = self.reblock(gf, self.gf_struct_new, self.gf_struct)
+        else:
+            result = gf.copy()
         tmp = result.copy()
         result.zero()
         blocknames = [ind for ind in result.indices]
