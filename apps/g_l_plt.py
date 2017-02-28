@@ -24,4 +24,4 @@ for fname in sys.argv[1:]:
     ax.legend(fontsize = 8, loc = "upper right")
     plt.savefig(fname[:-3]+"_g_l.pdf")
     print fname[:-3]+"_g_l.pdf ready"
-    plt.close()
+    plt.cla()

@@ -47,6 +47,9 @@ class Hubbard:
     def ss_tot(self):
         return np.sum([self.ss(i, j) for i, j in itt.product(*[self.sites]*2)])
 
+    def nn_tot(self):
+        return np.sum([self.nn(i, j) for i, j in itt.product(*[self.sites]*2)])
+
     def sz(self, i):
         return .5 * (self.n(self.up, i) - self.n(self.dn, i))
 
@@ -167,6 +170,7 @@ class DimerMomentum(Hubbard):
         return sum([self.transformation[spin][site, k_index] * C(*self._to_mom(spin, k_index)) for k_index in range(len(self.sites))])
 
 
+
 class TriangleMomentum(Hubbard):
     """
     transformation is a 3by3 matrix applied to the site-space
@@ -185,6 +189,11 @@ class TriangleMomentum(Hubbard):
     def _c(self, spin, site):
         return sum([self.transformation[spin][k_index, site] * C(*self._to_mom(spin, k_index)) for k_index in range(len(self.sites))]) # TODO conjugate!
 
+
+class TriangleMomentum2(TriangleMomentum):
+    def _c(self, spin, site):
+        return sum([self.transformation[spin][k_index, site] * C(*self._to_mom(spin, k_index)) for k_index in range(len(self.sites))])
+    
 
 class PlaquetteMomentum(Hubbard):
     """

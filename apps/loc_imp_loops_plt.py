@@ -32,4 +32,4 @@ for fname in sys.argv[1:]:
     ax.set_xlim(left = 0)
     plt.savefig(fname[:-3]+"_loc_imp.pdf")
     print fname[:-3]+"_loc_imp.pdf ready"
-    plt.close()
+    plt.cla()

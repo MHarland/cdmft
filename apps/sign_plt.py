@@ -18,4 +18,4 @@ for fname in sys.argv[1:]:
     ax.set_ylim(0,1.05)
     plt.savefig(fname[:-3]+"_sign.pdf")
     print fname[:-3]+"_sign.pdf ready"
-    plt.close()
+    plt.cla()
