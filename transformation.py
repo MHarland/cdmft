@@ -125,7 +125,7 @@ class MatrixTransformation:
             else:
                 result = matrix.__class__(gf_struct = struct_new, beta = matrix.beta, n_iw = matrix.n_iw)
         else:
-            result = dict([[block[0], np.zeros([len(block[1]), len(block[1])])] for block in struct_new])
+            result = dict([[block[0], np.zeros([len(block[1]), len(block[1])], dtype = matrix[matrix.keys()[0]].dtype)] for block in struct_new])
         for block in struct_new:
             b_new = block[0]
             indices_new = block[1]

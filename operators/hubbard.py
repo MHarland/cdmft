@@ -1,4 +1,5 @@
 import numpy as np, itertools as itt
+from scipy.linalg import expm, inv
 from pytriqs.operators import c as C, c_dag as CDag, n as N, dagger
 
 from bethe.gfoperations import sum
@@ -104,6 +105,37 @@ class Triangle(Hubbard):
         self.up = spins[0]
         self.dn = spins[1]
         self.sites = range(3)
+
+
+class TriangleAIAO(Triangle):
+    """
+    Interaction is scalar, theta and phi won't change anything
+    """
+    def __init__(self, *args, **kwargs):
+        self.theta = kwargs['theta'] if 'theta' in kwargs.keys() else 0
+        self.phi = kwargs['phi'] if 'phi' in kwargs.keys() else 0
+        Triangle.__init__(self, *args, **kwargs)
+
+    def _c(self, s, i):
+        s = self.spin_index(s)
+        c = 0
+        for t in range(2):
+            a = self.superindex(t, i)
+            c += inv(self.spin_transf_mat(self.theta, self.phi))[s, t] * C('spin-site', a)
+        return c
+
+    def superindex(self, s, i):
+        if s in self.spins:
+            s = self.spin_index(s)
+        return s * 3 + i
+
+    def spin_index(self, s):
+        return {'up':0, 'dn':1}[s]
+
+    def spin_transf_mat(self, theta, phi):
+        py = np.matrix([[0,complex(0,-1)],[complex(0,1),0]])
+        pz = np.matrix([[1,0],[0,-1]])
+        return expm(complex(0,1)*theta*py*.5).dot(expm(complex(0,1)*phi*pz*.5))
 
 
 class Plaquette(Hubbard):

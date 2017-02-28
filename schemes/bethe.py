@@ -37,6 +37,7 @@ class GLocal(GLocalGeneric):
 
 
 class GLocalAFM(GLocal):
+
     def calculate(self, selfenergy, mu):
         self.checkforspins()
         for sk, b in self:
@@ -65,7 +66,68 @@ class GLocalAFM(GLocal):
             new_label = splittedlabel[0] + up + splittedlabel[1]
         return new_label
 
-    
+
+class GLocalWithOffdiagonals(GLocal):
+
+    def __init__(self, t_bethe, t_local, *args, **kwargs):
+        GLocalGeneric.__init__(self, *args, **kwargs)
+        self.t_loc = t_local
+        self.t_b = t_bethe
+
+    def calculate(self, selfenergy, mu):
+        for s, b in self:
+            b << inverse(iOmega_n + mu[s] - self.t_loc[s] - selfenergy[s])
+
+
+class WeissFieldAFM(WeissFieldGeneric):
+
+    def calc_selfconsistency(self, glocal, selfenergy, mu, *args, **kwargs):
+        if isinstance(mu, float) or isinstance(mu, int): mu = self._to_blockmatrix(mu)
+        for bn, b in self:
+            bn = self.flip_spin(bn)
+            b << inverse(iOmega_n  + mu[bn] - glocal.t_loc[bn] - glocal.t_b**2 * glocal[bn])
+
+    def flip_spin(self, blocklabel):
+        up, dn = "up", "dn"
+        if up in blocklabel:
+            splittedlabel = blocklabel.split(up)
+            new_label = splittedlabel[0] + dn + splittedlabel[1]
+        elif dn in blocklabel:
+            splittedlabel = blocklabel.split(dn)
+            new_label = splittedlabel[0] + up + splittedlabel[1]
+        return new_label
+
+
+class WeissFieldAIAO(WeissFieldGeneric):
+
+    def __init__(self, *args, **kwargs):
+        WeissFieldGeneric.__init__(self, *args, **kwargs)
+        self.index_map = {}
+        for i,j in itt.product(*[range(6)]*2):
+            if i < 3 and j < 3:
+                self.index_map[(i,j)] = (i+3,j+3,1)
+            elif i >= 3 and j >= 3:
+                self.index_map[(i,j)] = (i-3,j-3,1)
+            elif i < 3 and j >= 3:
+                self.index_map[(i,j)] = (i+3,j-3,-1)
+            elif i >= 3 and j < 3:
+                self.index_map[(i,j)] = (i-3,j+3,-1)
+
+    def calc_selfconsistency(self, glocal, selfenergy, mu, *args, **kwargs):
+        """
+        maps a 180 deg spin rotation
+        """
+        tmp = self.copy()
+        if isinstance(mu, float) or isinstance(mu, int): mu = self._to_blockmatrix(mu)
+        for bn, b in tmp:
+            for lind, rindsign in self.index_map.items():
+                sign = rindsign[2]
+                rind = (rindsign[0], rindsign[1])
+                dij = int(lind[0] == lind[1])
+                b[lind] <<  dij * iOmega_n + mu[bn][rind] - glocal.t_loc[bn][rind] - sign * glocal.t_b**2 * glocal[bn][rind]
+        self << inverse(tmp)
+
+
 class SelfEnergy(SelfEnergyGeneric):
     pass
 
