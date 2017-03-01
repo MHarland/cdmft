@@ -69,7 +69,7 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
     merges spin and sitespaces and diagonalizes(?)
     space hierarchy: spin, site
     """
-    def __init__(self, beta, mu, u , t_triangle, t_bethe, n_iw = 1025):
+    def __init__(self, beta, mu, u , t_triangle, t_bethe, n_iw = 1025, force_real = True):
         sites = range(3)
         spins = ['up', 'dn']
         gf_struct = [['spin-site', range(9)]]
@@ -78,7 +78,7 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
         blocksizes = [len(sites)*2]
         t = t_triangle
         t_loc = {'spin-site': np.kron(np.identity(2), np.array([[0,t,t],[t,0,t],[t,t,0]]))}
-        self.t_loc = self.rotate_t_loc(t_loc)
+        self.t_loc = self.rotate_t_loc(t_loc, force_real)
         #transf = self.transf = MatrixTransformation(gf_struct, {'spin-site': np.identity(6)}, gf_struct_new)
         #np.set_printoptions(precision = 2, suppress = True)
         #tt = np.array([[1/np.sqrt(3),1/np.sqrt(3),1/np.sqrt(3)],[0,-1/np.sqrt(2),1/np.sqrt(2)],[-np.sqrt(2./3.),1/np.sqrt(6),1/np.sqrt(6)]])
@@ -90,21 +90,25 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
         #    #print e
         #    #print v
         #self.t_loc = transf.transform_matrix(self.t_loc)
-        self.h_int = TriangleAIAO(3)
+        self.h_int = TriangleAIAO(3, force_real = force_real)
         self.mu = mu
         self.gloc = GLocalWithOffdiagonals(t_bethe, self.t_loc, blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
         self.g0 = WeissFieldAIAO(blocknames, blocksizes, beta, n_iw)
-        self.global_moves = {"spin-flip": dict([((s1, i), (s2, i)) for i in sites for s1, s2 in itt.product(spins, spins) if s1 != s2])}
+        self.global_moves = {}#{"spin-flip": dict([((s1, i), (s2, i)) for i in sites for s1, s2 in itt.product(spins, spins) if s1 != s2])}
         self.quantum_numbers = [self.h_int.n_tot()]
 
-    def rotate_t_loc(self, t_loc):
+    def rotate_t_loc(self, t_loc, force_real = False):
         t_loc_new = {'spin-site': np.zeros([6, 6], dtype = complex)}
         for a, b in itt.product(*[range(6)]*2):
             i, j = self.site_index(a), self.site_index(b)
             t1, t2 = self.spin_index(a), self.spin_index(b)
             #t_loc_new['spin-site'][a, b] += np.sum([self.spin_transf_mat(np.pi*.5, i*2*np.pi/3.).conjugate().transpose()[t1, s1] * t_loc['spin-site'][s1*3+i, s2*3+j] * self.spin_transf_mat(np.pi*.5, j*2*np.pi/3.)[s2, t2] for s1, s2 in itt.product(*[range(2)]*2)])
             t_loc_new['spin-site'][a, b] += np.sum([self.spin_transf_mat(i*2*np.pi/3., 0).conjugate().transpose()[t1, s1] * t_loc['spin-site'][s1*3+i, s2*3+j] * self.spin_transf_mat(j*2*np.pi/3., 0)[s2, t2] for s1, s2 in itt.product(*[range(2)]*2)])
+        if force_real:
+            tmp = np.empty([6]*2)
+            tmp[:,:] = t_loc_new['spin-site'].real
+            t_loc_new['spin-site'] = tmp
         return t_loc_new
 
     def spin_index(self, superindex):

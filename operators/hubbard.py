@@ -115,8 +115,9 @@ class TriangleAIAO(Triangle):
     Interaction is scalar, theta and phi won't change anything
     """
     def __init__(self, *args, **kwargs):
-        self.theta = kwargs['theta'] if 'theta' in kwargs.keys() else 0
-        self.phi = kwargs['phi'] if 'phi' in kwargs.keys() else 0
+        self.theta = kwargs.pop('theta') if 'theta' in kwargs.keys() else 0
+        self.phi = kwargs.pop('phi') if 'phi' in kwargs.keys() else 0
+        self.force_real = kwargs.pop('force_real') if 'force_real' in kwargs.keys() else False
         Triangle.__init__(self, *args, **kwargs)
 
     def _c(self, s, i):
@@ -138,7 +139,10 @@ class TriangleAIAO(Triangle):
     def spin_transf_mat(self, theta, phi):
         py = np.matrix([[0,complex(0,-1)],[complex(0,1),0]])
         pz = np.matrix([[1,0],[0,-1]])
-        return expm(complex(0,1)*theta*py*.5).dot(expm(complex(0,1)*phi*pz*.5))
+        m = expm(complex(0,1)*theta*py*.5).dot(expm(complex(0,1)*phi*pz*.5))
+        if self.force_real:
+            m = m.real
+        return m
 
 
 class Plaquette(Hubbard):

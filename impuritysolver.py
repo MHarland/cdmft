@@ -62,13 +62,12 @@ class ImpuritySolver:
         """
         se = self._init_new_giw()
         if by_tau or not self.run_parameters["measure_g_l"]:
-            for s, b in self.cthyb.Sigma_iw:
-                se[s] << b
+            g_iw = self._get_g_iw_by_tau()
         else:
             assert by_legendre and self.run_parameters["measure_g_l"], "Need either g_legendre or g_tau to set sigma_iw"
             g_iw = self._get_g_iw_by_legendre()
-            for bn, b in g_iw:
-                se[bn] << inverse(self.cthyb.G0_iw[bn]) - inverse(g_iw[bn])
+        for bn, b in g_iw:
+            se[bn] << inverse(self.cthyb.G0_iw[bn]) - inverse(g_iw[bn])
         return se
 
     def _get_internal_parameters(self, loop_nr):
