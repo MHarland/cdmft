@@ -95,3 +95,22 @@ class Evaluation:
                 b = ind[0]
                 gsd[b+'-'+str(i)+str(i)] = -gtau[b].data[-1, i, i].real
         return gsd
+
+    def get_quasiparticle_residue(self, n_freq, block = 'up', index = (0, 0)):
+        sigma = self.archive.load("se_imp_iw")
+        mesh = np.array([w.imag for w in sigma.mesh])
+        for n, w in enumerate(mesh):
+            if w > 0:
+                n_0 = n
+                break
+        mesh = mesh[n_0:n+n_freq]
+        sigma_values = sigma[block].data[n_0:n+n_freq, int(index[0]), int(index[1])].real
+        fit_coefficients = np.polyfit(mesh, sigma_values, len(mesh) - 1)
+        derivative_coeff = self.__derivative(fit_coefficients)
+        z = 1. / (1 - derivative_coeff[-1])
+        return z
+
+    def __derivative(self, polynomial_coefficients):
+        deg = len(polynomial_coefficients)
+        der = np.array([(deg - n - 1) * polynomial_coefficients[n] for n in range(deg - 1)])
+        return der
