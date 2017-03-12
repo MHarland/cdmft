@@ -96,18 +96,26 @@ class Dimer(Hubbard):
         if self.transf is None:
             c = Hubbard._c(self, s, i)
         else:
-            c = np.sum([self.transf[i, j] * C(s, j) for j in self.sites])
+            c = np.sum([self.transf[s][j, i].conjugate() * C(s, j) for j in self.sites])
         return c
 
 
 class Triangle(Hubbard):
 
-    def __init__(self, u = None, spins = ["up", "dn"]):
+    def __init__(self, u = None, spins = ["up", "dn"], transf = None):
         self.u = u
         self.spins = spins
         self.up = spins[0]
         self.dn = spins[1]
         self.sites = range(3)
+        self.transf = transf
+
+    def _c(self, s, i):
+        if self.transf is None:
+            c = Hubbard._c(self, s, i)
+        else:
+            c = np.sum([self.transf[s][j, i].conjugate() * C(s, j) for j in self.sites])
+        return c
 
 
 class TriangleAIAO(Triangle):
@@ -118,9 +126,16 @@ class TriangleAIAO(Triangle):
         self.theta = kwargs.pop('theta') if 'theta' in kwargs.keys() else 0
         self.phi = kwargs.pop('phi') if 'phi' in kwargs.keys() else 0
         self.force_real = kwargs.pop('force_real') if 'force_real' in kwargs.keys() else False
+        self.site_transf = kwargs.pop('site_transf') if 'site_transf' in kwargs.keys() else False
         Triangle.__init__(self, *args, **kwargs)
 
     def _c(self, s, i):
+        c = 0
+        for j in range(3):
+            c += self.site_transf[j, i].conjugate() * self._c_rot(s, j)
+        return c
+
+    def _c_rot(self, s, i):
         s = self.spin_index(s)
         c = 0
         for t in range(2):
