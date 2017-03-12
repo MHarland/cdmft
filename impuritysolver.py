@@ -66,8 +66,9 @@ class ImpuritySolver:
         else:
             assert by_legendre and self.run_parameters["measure_g_l"], "Need either g_legendre or g_tau to set sigma_iw"
             g_iw = self._get_g_iw_by_legendre()
-        for bn, b in g_iw:
-            se[bn] << inverse(self.cthyb.G0_iw[bn]) - inverse(g_iw[bn])
+        if self.run_parameters["n_cycles"] > 0:
+            for bn, b in g_iw:
+                se[bn] << inverse(self.cthyb.G0_iw[bn]) - inverse(g_iw[bn])
         return se
 
     def _get_internal_parameters(self, loop_nr):
@@ -109,17 +110,19 @@ class ImpuritySolver:
             results.update({"perturbation_order": self.cthyb.perturbation_order})
         if params["performance_analysis"]:
             results.update({"performance_analysis": self.cthyb.performance_analysis})
-        if "measure_g2_legendre" in params.items() or "measure_g2_inu" in params.items():
+        if "measure_g2_legendre" in params.keys() or "measure_g2_inu" in params.keys():
             if params["measure_g2_legendre"]:
                 if params["measure_g2_pp"]:
                     results.update({"G2_iw_l_lp_pp": self.cthyb.G2_iw_l_lp_pp})
                 if params["measure_g2_pp"]:
                     results.update({"G2_iw_l_lp_ph": self.cthyb.G2_iw_l_lp_ph})
-            elif params["measure_g2_inu"]:
+            if params["measure_g2_inu"]:
                 if params["measure_g2_pp"]:
                     results.update({"G2_iw_inu_inup_pp": self.cthyb.G2_iw_inu_inup_pp})
                 if params["measure_g2_ph"]:
                     results.update({"G2_iw_inu_inup_ph": self.cthyb.G2_iw_inu_inup_ph})
         #if params["measure_g_pp_tau"]:
         #    results.update({"g_pp_tau": dict([(str(i_pp), self.cthyb.G_pp_tau[i_pp]) for i_pp in range(self.cthyb.G_pp_tau.shape[0])])})
+        if params["n_cycles"] == 0:
+            results = {"average_sign": 0}
         return results
