@@ -64,12 +64,46 @@ class TriangleBetheSetup(CycleSetupGeneric):
         self.quantum_numbers = [hubbard.get_n_tot(), hubbard.get_n_per_spin(up)]
 
 
+class TriangleNondiagBetheSetup(CycleSetupGeneric):
+    """
+    Also for non-diagonal spin blocks
+    """
+    def __init__(self, beta, mu, u, t_triangle, t_bethe, w1 = None, w2 = None, n_mom = 3, site_transformation = np.identity(3), n_iw = 1025, afm = False):
+        up = "up"
+        dn = "dn"
+        spins = [up, dn]
+        sites = range(3)
+        blocknames = spins
+        blocksizes = [3] * len(blocknames)
+        gf_struct = [[n, range(s)] for n, s in zip(blocknames, blocksizes)]
+        gf_struct_site = [[s, sites] for s in spins]
+        transfbmat = dict([(s, site_transformation) for s in spins])
+        transf = self.transf = MatrixTransformation(gf_struct_site, transfbmat, gf_struct)
+        a = t_triangle
+        t_loc_per_spin = np.array([[0,a,a],[a,0,a],[a,a,0]])
+        t_loc = {up: t_loc_per_spin, dn: t_loc_per_spin}
+        t_loc = transf.transform_matrix(t_loc)
+        hubbard = Triangle(u, spins, transfbmat)
+        self.h_int = hubbard.get_h_int()
+        if afm:
+            self.gloc = GLocalAFM(t_bethe, t_loc, w1, w2, n_mom, blocknames, blocksizes, beta, n_iw)
+        else:
+            self.gloc = GLocalWithOffdiagonals(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
+        self.g0 = WeissField(blocknames, blocksizes, beta, n_iw)
+        self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
+        self.mu = mu
+        self.global_moves = {}#{"spin-flip": dict([((s1+"-"+k, 0), (s2+"-"+k, 0)) for k in orbital_labels for s1, s2 in itt.product(spins, spins) if s1 != s2]), "A1A2-flip": dict([((s+"-"+k1, 0), (s+"-"+k2, 0)) for s in spins for k1, k2 in itt.product(xy, xy) if k1 != k2])}
+        self.quantum_numbers = [hubbard.get_n_tot(), hubbard.get_n_per_spin(up)]
+
+
+
 class TriangleAIAOBetheSetup(CycleSetupGeneric):
     """
     merges spin and sitespaces and diagonalizes(?)
     space hierarchy: spin, site
     """
-    def __init__(self, beta, mu, u , t_triangle, t_bethe, n_iw = 1025, force_real = True):
+    def __init__(self, beta, mu, u , t_triangle, t_bethe, n_iw = 1025, force_real = True,
+                 site_transformation = np.array([[1/np.sqrt(3),1/np.sqrt(3),1/np.sqrt(3)],[0,-1/np.sqrt(2),1/np.sqrt(2)],[-np.sqrt(2./3.),1/np.sqrt(6),1/np.sqrt(6)]])):
         sites = range(3)
         spins = ['up', 'dn']
         gf_struct = [['spin-site', range(9)]]
@@ -77,8 +111,15 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
         blocknames = ['spin-site']
         blocksizes = [len(sites)*2]
         t = t_triangle
-        t_loc = {'spin-site': np.kron(np.identity(2), np.array([[0,t,t],[t,0,t],[t,t,0]]))}
-        self.t_loc = self.rotate_t_loc(t_loc, force_real)
+        hop = np.array([[0,t,t],[t,0,t],[t,t,0]])
+        t_loc = {'spin-site': np.kron(np.identity(2), hop)}
+        t_loc_rotated = self.rotate_t_loc(t_loc, force_real)
+        self.t_loc = {'spin-site': np.zeros([6, 6])}
+        for s1, s2 in itt.product(*[range(2)]*2):
+            for i, j, k, l in itt.product(*[range(3)]*4):
+                a, b = self.superindex(s1, i), self.superindex(s2, j)
+                c, d = self.superindex(s1, k), self.superindex(s2, l)
+                self.t_loc['spin-site'][a, b] += site_transformation[i, k] * t_loc_rotated['spin-site'][c, d] * site_transformation[j, l].conjugate()
         #transf = self.transf = MatrixTransformation(gf_struct, {'spin-site': np.identity(6)}, gf_struct_new)
         #np.set_printoptions(precision = 2, suppress = True)
         #tt = np.array([[1/np.sqrt(3),1/np.sqrt(3),1/np.sqrt(3)],[0,-1/np.sqrt(2),1/np.sqrt(2)],[-np.sqrt(2./3.),1/np.sqrt(6),1/np.sqrt(6)]])
@@ -90,7 +131,7 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
         #    #print e
         #    #print v
         #self.t_loc = transf.transform_matrix(self.t_loc)
-        self.h_int = TriangleAIAO(3, force_real = force_real)
+        self.h_int = TriangleAIAO(3, force_real = force_real, site_transf = site_transformation)
         self.mu = mu
         self.gloc = GLocalWithOffdiagonals(t_bethe, self.t_loc, blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
@@ -110,6 +151,9 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
             tmp[:,:] = t_loc_new['spin-site'].real
             t_loc_new['spin-site'] = tmp
         return t_loc_new
+
+    def superindex(self, spin_index, site_index):
+        return spin_index * 3 + site_index
 
     def spin_index(self, superindex):
         return superindex / 3
