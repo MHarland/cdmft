@@ -53,6 +53,9 @@ class Hubbard:
     def sz(self, i):
         return .5 * (self.n(self.up, i) - self.n(self.dn, i))
 
+    def sz_tot(self):
+        return np.sum([self.sz(i) for i in self.sites])
+
     def szsz(self, i, j):
         return self.sz(i) * self.sz(j)
 
