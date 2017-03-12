@@ -25,13 +25,14 @@ for fname in sys.argv[1:]:
                 norm3 = len(g2_iw[0,:,:,:,:])
                 norm = norm1 * norm2 * norm3
                 for i in range(norm3):
-                    giw[s].data[:,0,0] += g2_iw[:,i,i,i,i]/norm/10**5/beta/beta
+                    giw[s].data[:,0,0] += g2_iw[:,i,i,i,i]/norm
     for (s, b), color in zip(giw, colors):
         y = b.data[:,0,0].real
         ax.plot(x, y, label = '$'+s[0]+s[1]+'$', color = color, marker ='+')
     ax.set_xlabel("$i\\omega_n$")
-    ax.set_ylabel("$\\Re G^2(i\\omega_n)$")
+    ax.set_ylabel("$\\Re G^{(2)}(i\\omega_n)$")
     ax.legend(fontsize = 8, loc = "upper right")
+    ax.set_xlim(left = 0)
     #ax.set_xlim(left = 0)
     outname = fname[:-3]+"_g2_imp_iw.pdf"
     plt.savefig(outname)
