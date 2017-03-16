@@ -120,6 +120,58 @@ class Triangle(Hubbard):
             c = np.sum([self.transf[s][j, i].conjugate() * C(s, j) for j in self.sites])
         return c
 
+    def spin_index(self, s):
+        return {self.spins[0]: 0, self.spins[1]: 1}[s]
+
+    def _c_rot(self, s, i, theta, phi):
+        """
+        up becomes in and dn becomes out or vice versa
+        """
+        c = 0
+        spin_transf_mat = self.spin_transf_mat(theta, phi)
+        for t in range(2):
+            c += spin_transf_mat[self.spin_index(s), t] * self._c(self.spins[t], i)
+        return c
+
+    def _c_dag_rot(self, s, i, theta, phi):
+        return dagger(self._c_rot(s, i, theta, phi))
+
+    def spin_transf_mat(self, theta, phi, force_real = True):
+        py = np.matrix([[0,complex(0,-1)],[complex(0,1),0]])
+        pz = np.matrix([[1,0],[0,-1]])
+        m = expm(complex(0,1)*theta*py*.5).dot(expm(complex(0,1)*phi*pz*.5))
+        if force_real:
+            m = m.real
+        return m
+
+    def allin_allout(self):
+        operator = 0
+        phi = 0
+        for i in self.sites:
+            theta = i * 2 * np.pi / 3.
+            for s, sign in zip(self.spins, [+1, -1]):
+                operator += sign * self._c_dag_rot(s, i, theta, phi) * self._c_rot(s, i, theta, phi)
+        return operator
+
+
+class TriangleSpinSiteCoupling(Triangle):
+    """
+    1 block, spin-site blockstructure
+    transformation is not a dict, but an array acting on the site-space
+    the aiao-field: first we apply the site transformation, then the rotation
+    """
+    def _c(self, s, i):
+        if self.transf is None:
+            c = C('spin-site', self.superindex(s, i))
+        else:
+            c = np.sum([self.transf[j, i].conjugate() * C('spin-site', self.superindex(s, j)) for j in self.sites])
+        return c
+
+    def superindex(self, s, i):
+        if s in self.spins:
+            s = self.spin_index(s)
+        return s * 3 + i
+
 
 class TriangleAIAO(Triangle):
     """

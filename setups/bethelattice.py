@@ -2,7 +2,7 @@ import numpy as np, itertools as itt
 from scipy.linalg import expm, eigh
 
 from bethe.setups.generic import CycleSetupGeneric
-from bethe.operators.hubbard import Site, TriangleMomentum, PlaquetteMomentum, Triangle, TriangleAIAO
+from bethe.operators.hubbard import Site, TriangleMomentum, PlaquetteMomentum, Triangle, TriangleAIAO, TriangleSpinSiteCoupling
 from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM
 from bethe.transformation import MatrixTransformation
 
@@ -106,8 +106,8 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
                  site_transformation = np.array([[1/np.sqrt(3),1/np.sqrt(3),1/np.sqrt(3)],[0,-1/np.sqrt(2),1/np.sqrt(2)],[-np.sqrt(2./3.),1/np.sqrt(6),1/np.sqrt(6)]])):
         sites = range(3)
         spins = ['up', 'dn']
-        gf_struct = [['spin-site', range(9)]]
-        gf_struct_new = [[s, range(3)] for s in spins]
+        #gf_struct = [['spin-site', range(6)]]
+        #gf_struct_new = [[s, range(3)] for s in spins]
         blocknames = ['spin-site']
         blocksizes = [len(sites)*2]
         t = t_triangle
@@ -131,7 +131,7 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
         #    #print e
         #    #print v
         #self.t_loc = transf.transform_matrix(self.t_loc)
-        self.h_int = TriangleAIAO(3, force_real = force_real, site_transf = site_transformation)
+        self.h_int = TriangleSpinSiteCoupling(u, transf = site_transformation) #TriangleAIAO(3, force_real = force_real, site_transf = site_transformation)
         self.mu = mu
         self.gloc = GLocalWithOffdiagonals(t_bethe, self.t_loc, blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)

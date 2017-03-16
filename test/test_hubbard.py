@@ -1,6 +1,6 @@
 import unittest, numpy as np
 
-from bethe.operators.hubbard import Site, Plaquette, PlaquetteMomentum, PlaquetteMomentumNambu, TriangleMomentum
+from bethe.operators.hubbard import Site, Plaquette, PlaquetteMomentum, PlaquetteMomentumNambu, TriangleMomentum, TriangleSpinSiteCoupling
 
 
 class TestHubbard(unittest.TestCase):
@@ -26,3 +26,8 @@ class TestHubbard(unittest.TestCase):
     def test_HubbardTriangleMomentum(self):
         h = TriangleMomentum(3)
         h_int = h.get_h_int()
+
+    def test_HubbardTriangleSpinSiteCoupling(self):
+        h = TriangleSpinSiteCoupling(3, transf = np.array([[1/np.sqrt(3),1/np.sqrt(3),1/np.sqrt(3)],[0,-1/np.sqrt(2),1/np.sqrt(2)],[-np.sqrt(2./3.),1/np.sqrt(6),1/np.sqrt(6)]]))
+        h_int = h.get_h_int()
+

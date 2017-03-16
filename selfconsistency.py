@@ -22,6 +22,8 @@ class Cycle:
         g0 = self.g0 = weiss_field
         self.imp_solver = ImpuritySolver(g0.beta, dict(g0.gf_struct), g0.n_iw, p['n_tau'], p['n_l'])
         self.g_loc = g_local
+        if hasattr(self.g_loc, 'verbosity'):
+            self.g_loc.verbosity = self.p['verbosity']
         self.g_imp = GLocalGeneric(gf_init = g_local)
         self.mu = mu
         self.se = self_energy
