@@ -104,6 +104,7 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
     """
     def __init__(self, beta, mu, u , t_triangle, t_bethe, n_iw = 1025, force_real = True,
                  site_transformation = np.array([[1/np.sqrt(3),1/np.sqrt(3),1/np.sqrt(3)],[0,-1/np.sqrt(2),1/np.sqrt(2)],[-np.sqrt(2./3.),1/np.sqrt(6),1/np.sqrt(6)]])):
+        self.site_transf = site_transformation
         sites = range(3)
         spins = ['up', 'dn']
         #gf_struct = [['spin-site', range(6)]]
