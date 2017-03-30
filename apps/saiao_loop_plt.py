@@ -15,6 +15,7 @@ superindex = lambda s, i: s * 3 + i
 for fname, c in zip(sys.argv[1:], colors):
     sto = Storage(fname)
     y = []
+    y2 = []
     x = []
     n_loops = sto.get_completed_loops()
     for l in range(n_loops):
@@ -27,12 +28,15 @@ for fname, c in zip(sys.argv[1:], colors):
             a1, a2 = superindex(s1, i1), superindex(s2, i2)
             naiao[a1, a2] = np.sum([rots[i1][s1, t1] * rots[i2][t2, s2].conjugate() * sitetransf[i1, k1] * sitetransf[k2, i2].conjugate() * n[superindex(t1, k1), superindex(t2, k2)] for k1, k2, t1, t2 in itt.product(range(3), range(3), range(2), range(2))], axis = 0).real
         saiao = np.sum([naiao[i, i] - naiao[3+i, 3+i] for i in range(3)], axis = 0)
+        sz =  np.sum([n[i, i] - n[3+i, 3+i] for i in range(3)], axis = 0)
         y.append(saiao)
+        y2.append(sz)
         x.append(l)
     ax.plot(x, y, marker = "+", label = '$\\mathrm{'+fname[:-3]+'}$', color = c)
+    ax.plot(x, y2, marker = "+", label = '$\\mathrm{'+fname[:-3]+'}$', color = c, ls = 'dashed')
 ax.legend(loc = "upper left")
 ax.set_xlabel("$\mathrm{DMFT-Loop}$")
-ax.set_ylabel("$<S_{aiao}>$")
+ax.set_ylabel("$<S_{aiao/z}>$")
 plt.savefig("saiao.pdf")
 print "saiao.pdf ready"
 plt.close()
