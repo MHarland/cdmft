@@ -67,7 +67,7 @@ class TestSetups(unittest.TestCase):
         cyc = Cycle(sto, par, **setup.initialize_cycle())
         cyc.run(1, n_cycles = 0)
         os.remove('test.h5')
-        setup = StrelSetup(10, 0, -.1, -1, -.1, 0, 2, 16, .1, .1)
+        setup = StrelSetup(10, 0, -.1, -1, -.1, 0, 2, 16)
 
     def test_TriangleAIAOBetheSetup(self):
         setup = TriangleAIAOBetheSetup(10, 1, 2, -1, 1)

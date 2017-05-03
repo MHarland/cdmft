@@ -47,5 +47,5 @@ class TestSchemesBethe(unittest.TestCase):
         g = GLocal(1, {'up': h, 'dn': h}, None, None, 3, ['up', 'dn'], [2, 2], 10, 1001)
         se = SelfEnergy(['up', 'dn'], [2, 2], 10, 1001)
         se.zero()
-        g.find_and_set_mu(2, se, .12, 100, 800, 1001, 3)
+        g.find_and_set_mu(2, se, .12, 3)
         self.assertTrue(abs(g.total_density()-2) < 1e-2)
