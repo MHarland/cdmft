@@ -3,7 +3,7 @@ from pytriqs.archive import HDFArchive
 from pytriqs.gf.local import BlockGf, GfImTime, GfReFreq, GfImFreq
 from pytriqs.utility import mpi
 
-from bethe.storage import LoopStorage
+from bethe.h5interface import Storage
 from bethe.gfoperations import trace
 
 
@@ -13,7 +13,7 @@ n_iw = 1025
 pade_n_iw = 100
 for archive_name in sys.argv[1:]:
     print "loading "+archive_name+"..."
-    sto = LoopStorage(archive_name)
+    sto = Storage(archive_name)
     gtau = sto.load("atomic_gf")
     giw = BlockGf(name_block_generator = [(s, GfImFreq(indices = [i for i in b.indices], beta = gtau.beta, n_points = n_iw))for s, b in gtau])
     for s, b in giw:

@@ -1,7 +1,6 @@
 import numpy as np, itertools as itt
 from pytriqs.gf.local import BlockGf, GfImTime, InverseFourier
 
-from bethe.storage import LoopStorage
 from bethe.evaluation.generic import Evaluation as GenericEvaluation
 
 
