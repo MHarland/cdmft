@@ -2,7 +2,7 @@ import unittest, numpy as np, os, itertools as itt
 
 from bethe.parameters import TestDMFTParameters
 from bethe.selfconsistency import Cycle
-from bethe.storage import LoopStorage
+from bethe.h5interface import Storage
 from bethe.schemes.cdmft import GLocal, SelfEnergy, WeissField
 from bethe.tightbinding import LatticeDispersion
 from bethe.operators.hubbard import DimerMomentum
@@ -63,7 +63,7 @@ class TestSchemesCDMFT(unittest.TestCase):
         gloc = GLocal(disp, ['up-+', 'up--', 'dn-+', 'dn--'], [1] * 4, 10, 1000)
         se = SelfEnergy(['up-+', 'up--', 'dn-+', 'dn--'], [1] * 4, 10, 1000)
         g0 = WeissField(['up-+', 'up--', 'dn-+', 'dn--'], [1] * 4, 10, 1000)
-        sto = LoopStorage("test.h5")
+        sto = Storage("test.h5")
         params = TestDMFTParameters()
         h = DimerMomentum(4)
         cyc = Cycle(sto, params, h.get_h_int(), gloc, g0, se, 2)
