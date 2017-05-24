@@ -3,6 +3,7 @@ from scipy.linalg import expm, eigh
 
 from bethe.setups.generic import CycleSetupGeneric
 from bethe.operators.hubbard import Site, TriangleMomentum, PlaquetteMomentum, Triangle, TriangleAIAO, TriangleSpinSiteCoupling
+from bethe.operators.kanamori import Dimer as KanamoriDimer
 from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM
 from bethe.transformation import MatrixTransformation
 
@@ -62,6 +63,33 @@ class TriangleBetheSetup(CycleSetupGeneric):
         self.mu = mu
         self.global_moves = {}#{"spin-flip": dict([((s1+"-"+k, 0), (s2+"-"+k, 0)) for k in orbital_labels for s1, s2 in itt.product(spins, spins) if s1 != s2]), "A1A2-flip": dict([((s+"-"+k1, 0), (s+"-"+k2, 0)) for s in spins for k1, k2 in itt.product(xy, xy) if k1 != k2])}
         self.quantum_numbers = [hubbard.get_n_tot(), hubbard.get_n_per_spin(up)]
+
+class TwoOrbitalDimerBetheSetup(CycleSetupGeneric):
+    """
+    TODO
+    """
+    def __init__(self, beta, mu, u, j, tc_perp, td_perp, t_bethe, density_density_only = False,
+                 orbitals = ["c", "d"], symmetric_orbitals = [], n_iw = 1025, afm = False):
+        up = "up"
+        dn = "dn"
+        spins = [up, dn]
+        sites = range(2)
+        blocknames = [s+"-"+o for s, o in itt.product(spins, orbitals)]
+        blocksizes = [2] * 4
+        gf_struct = [[n, range(s)] for n, s in zip(blocknames, blocksizes)]
+        tc_loc = np.array([[0,tc_perp,],[tc_perp,0]])
+        td_loc = np.array([[0,td_perp,],[td_perp,0]])
+        t_loc = {bn: t_loc for bn, t_loc in zip(blocknames, [tc_loc, td_loc, tc_loc, td_loc])}
+        self.h_int = KanamoriDimer(u, j, spins, orbitals, density_density_only = density_density_only)
+        if afm:
+            self.g0 = WeissFieldAFM(blocknames, blocksizes, beta, n_iw)
+        else:
+            self.g0 = WeissField(blocknames, blocksizes, beta, n_iw)
+        self.gloc = GLocalWithOffdiagonals(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
+        self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
+        self.mu = mu
+        self.global_moves = {}
+        self.quantum_numbers = [self.h_int.n_tot(), self.h_int.sz_tot()]
 
 
 class TriangleNondiagBetheSetup(CycleSetupGeneric):
