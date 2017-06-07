@@ -73,11 +73,27 @@ class GLocalWithOffdiagonals(GLocal):
         GLocalGeneric.__init__(self, *args, **kwargs)
         self.t_loc = t_local
         self.t_b = t_bethe
+        self._last_g_loc_convergence = []
 
-    def calculate(self, selfenergy, mu):
-        for s, b in self:
-            b << inverse(iOmega_n + mu[s] - self.t_loc[s] - selfenergy[s])
+    def calculate(self, selfenergy, mu, n_g_loc_iterations = 1000):
+        last_attempt = self.copy()
+        for i in range(n_g_loc_iterations):
+            for s, b in self:
+                b << inverse(iOmega_n + mu[s] - self.t_loc[s] - self.t_b**2 * b - selfenergy[s])
+            if self._is_converged(last_attempt):
+                break
+            else:
+                last_attempt << self
+        del last_attempt
 
+    def _is_converged(self, g_to_compare, atol = 10e-3, rtol = 1e-15):
+        conv = False
+        n = self.total_density()
+        n_last = g_to_compare.total_density()
+        self._last_g_loc_convergence.append(abs(n-n_last))
+        if np.allclose(n, n_last, rtol, atol):
+            conv = True
+        return conv
 
 class WeissFieldAFM(WeissFieldGeneric):
 

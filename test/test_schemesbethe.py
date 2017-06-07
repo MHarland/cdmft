@@ -31,6 +31,8 @@ class TestSchemesBethe(unittest.TestCase):
         g['spin-site'].data[1001,:,:] = testmat
         g0 = WeissFieldAIAO(['spin-site'], [6], 10, 1001)
         g0.calc_selfconsistency(g, se, 3)
+        g.find_and_set_mu(3., se, 0, 1000)
+        self.assertTrue(g._last_g_loc_convergence[-1] < 0.001)
 
     def test_SchemesBethe_find_and_set_mu_single(self):
         h = np.array([[0]])
