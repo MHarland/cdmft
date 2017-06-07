@@ -18,7 +18,16 @@ class Hubbard:
         return dagger(self._c(spin, site))
 
     def get_h_int(self):
+        """for (C)DMFT calculations"""
         return np.sum([self.u * self._c_dag(self.up, i) * self._c(self.up, i) * self._c_dag(self.dn, i) * self._c(self.dn, i) for i in self.sites], axis = 0)
+
+    def h_int_cluster(self, t, mu):
+        spins = [self.up, self.dn]
+        return self.get_h_int() +  self.kinetic_energy(t) - np.sum([self._c_dag(s, i) * mu * self._c(s, i) for s, i in itt.product(spins, self.sites)], axis = 0)
+
+    def kinetic_energy(self, t):
+        spins = [self.up, self.dn]
+        return np.sum([self._c_dag(s, i) * t[s][i, j] * self._c(s, j) for s, i, j in itt.product(spins, self.sites, self.sites)], axis = 0)
 
     def get_gf_struct(self):
         return [[self.up, self.sites], [self.dn, self.sites]]
@@ -262,6 +271,35 @@ class TriangleMomentum(Hubbard):
 
     def _c(self, spin, site):
         return sum([self.transformation[spin][k_index, site] * C(*self._to_mom(spin, k_index)) for k_index in range(len(self.sites))]) # TODO conjugate!
+
+    def doublet_state(self, i, j, sz, pm = -1):
+        for site in self.sites:
+            if not (site in [i, j]):
+                k = site
+        return (self._c(self.up, i) * self._c(self.dn, j) +pm* self._c(self.dn, i) * self._c(self.up, j)) * self._c(sz, k) / np.sqrt(2)
+
+    def nn_singlet_n2_state(self, i, j, pm = -1):
+        return (self._c(self.up, i) * self._c(self.dn, j) +pm* self._c(self.dn, i) * self._c(self.up, j)) / np.sqrt(2)
+
+    def nn_singlet_n4_state(self, i, j, pm = -1):
+        for site in self.sites:
+            if not (site in [i, j]):
+                k = site
+        return (self._c(self.up, i) * self._c(self.dn, j) +pm* self._c(self.dn, i) * self._c(self.up, j)) * self._c(self.up, k) * self._c(self.dn, k)/ np.sqrt(2)
+
+    def rvb_projector(self, particle_numbers = [2,3,4], pm = -1):
+        inds = [(i, j) for i in self.sites for j in range(i)]#itt.product(self.sites, self.sites)]
+        terms = []
+        for i in inds:
+            if 2 in particle_numbers:
+                terms.append(self.nn_singlet_n2_state(*i, pm = pm))
+            if 3 in particle_numbers:
+                terms.append(self.doublet_state(i[0], i[1], self.up, pm = pm)+self.doublet_state(i[0], i[1], self.dn, pm = pm))
+            if 4 in particle_numbers:
+                terms.append(self.nn_singlet_n4_state(*i, pm = pm))
+        state = np.sum(terms, axis = 0)
+        return dagger(state) * state
+
 
 
 class TriangleMomentum2(TriangleMomentum):
