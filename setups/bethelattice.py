@@ -57,7 +57,9 @@ class TriangleBetheSetup(CycleSetupGeneric):
             self.g0 = WeissFieldAFM(blocknames, blocksizes, beta, n_iw)
         else:
             self.g0 = WeissField(blocknames, blocksizes, beta, n_iw)
-        self.gloc = GLocal(t_bethe, t_loc, w1, w2, n_mom, blocknames, blocksizes, beta, n_iw)
+        print "warning: using GLocalWithOffdiagonals instead of GLocal" # TODO
+        self.gloc = GLocalWithOffdiagonals(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
+        #self.gloc = GLocal(t_bethe, t_loc, w1, w2, n_mom, blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
         self.mu = mu
         self.global_moves = {}#{"spin-flip": dict([((s1+"-"+k, 0), (s2+"-"+k, 0)) for k in orbital_labels for s1, s2 in itt.product(spins, spins) if s1 != s2]), "A1A2-flip": dict([((s+"-"+k1, 0), (s+"-"+k2, 0)) for s in spins for k1, k2 in itt.product(xy, xy) if k1 != k2])}
