@@ -32,7 +32,7 @@ class TriangleBetheSetup(CycleSetupGeneric):
     """
     Contributions by Kristina Klafka
     """
-    def __init__(self, beta, mu, u, t_triangle, t_bethe, w1 = None, w2 = None, n_mom = 3, orbital_labels = ["E", "A2", "A1"],
+    def __init__(self, beta, mu, u, t_triangle, t_bethe, orbital_labels = ["E", "A2", "A1"],
                  symmetric_orbitals = ["A2", "A1"],
                  site_transformation = np.array([[1/np.sqrt(3),1/np.sqrt(3),1/np.sqrt(3)],[0,-1/np.sqrt(2),1/np.sqrt(2)],[-np.sqrt(2./3.),1/np.sqrt(6),1/np.sqrt(6)]]),
                  n_iw = 1025, afm = False):
@@ -57,46 +57,11 @@ class TriangleBetheSetup(CycleSetupGeneric):
             self.g0 = WeissFieldAFM(blocknames, blocksizes, beta, n_iw)
         else:
             self.g0 = WeissField(blocknames, blocksizes, beta, n_iw)
-        print "warning: using GLocalWithOffdiagonals instead of GLocal" # TODO
         self.gloc = GLocalWithOffdiagonals(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
-        #self.gloc = GLocal(t_bethe, t_loc, w1, w2, n_mom, blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
         self.mu = mu
         self.global_moves = {}#{"spin-flip": dict([((s1+"-"+k, 0), (s2+"-"+k, 0)) for k in orbital_labels for s1, s2 in itt.product(spins, spins) if s1 != s2]), "A1A2-flip": dict([((s+"-"+k1, 0), (s+"-"+k2, 0)) for s in spins for k1, k2 in itt.product(xy, xy) if k1 != k2])}
         self.quantum_numbers = [hubbard.get_n_tot(), hubbard.get_n_per_spin(up)]
-
-
-class TriangleNondiagBetheSetup(CycleSetupGeneric):
-    """
-    Also for non-diagonal spin blocks
-    """
-    def __init__(self, beta, mu, u, t_triangle, t_bethe, w1 = None, w2 = None, n_mom = 3, site_transformation = np.identity(3), n_iw = 1025, afm = False):
-        up = "up"
-        dn = "dn"
-        spins = [up, dn]
-        sites = range(3)
-        blocknames = spins
-        blocksizes = [3] * len(blocknames)
-        gf_struct = [[n, range(s)] for n, s in zip(blocknames, blocksizes)]
-        gf_struct_site = [[s, sites] for s in spins]
-        transfbmat = dict([(s, site_transformation) for s in spins])
-        transf = self.transf = MatrixTransformation(gf_struct_site, transfbmat, gf_struct)
-        a = t_triangle
-        t_loc_per_spin = np.array([[0,a,a],[a,0,a],[a,a,0]])
-        t_loc = {up: t_loc_per_spin, dn: t_loc_per_spin}
-        t_loc = transf.transform_matrix(t_loc)
-        hubbard = Triangle(u, spins, transfbmat)
-        self.h_int = hubbard.get_h_int()
-        if afm:
-            self.gloc = GLocalAFM(t_bethe, t_loc, w1, w2, n_mom, blocknames, blocksizes, beta, n_iw)
-        else:
-            self.gloc = GLocalWithOffdiagonals(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
-        self.g0 = WeissField(blocknames, blocksizes, beta, n_iw)
-        self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
-        self.mu = mu
-        self.global_moves = {}#{"spin-flip": dict([((s1+"-"+k, 0), (s2+"-"+k, 0)) for k in orbital_labels for s1, s2 in itt.product(spins, spins) if s1 != s2]), "A1A2-flip": dict([((s+"-"+k1, 0), (s+"-"+k2, 0)) for s in spins for k1, k2 in itt.product(xy, xy) if k1 != k2])}
-        self.quantum_numbers = [hubbard.get_n_tot(), hubbard.get_n_per_spin(up)]
-
 
 
 class TriangleAIAOBetheSetup(CycleSetupGeneric):
