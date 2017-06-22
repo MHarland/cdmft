@@ -11,11 +11,11 @@ class Hubbard:
     meant as abstract class, realization needs self._c(s, i), self.sites, self.up, self.dn,
     self.spins, self.u
     """
-    def _c(self, spin, site):
+    def _c(self, spin, site, *args, **kwargs):
         return C(spin, site)
 
-    def _c_dag(self, spin, site):
-        return dagger(self._c(spin, site))
+    def _c_dag(self, spin, site, *args, **kwargs):
+        return dagger(self._c(spin, site, *args, **kwargs))
 
     def get_h_int(self):
         """for (C)DMFT calculations"""
@@ -129,52 +129,53 @@ class Triangle(Hubbard):
             c = np.sum([self.transf[s][j, i].conjugate() * C(s, j) for j in self.sites])
         return c
 
+
+class TriangleSpinOrbitCoupling(Triangle):
+    """
+    1 block, spin-site blockstructure
+    transformation is not a dict, but an array acting on the site-space
+    the aiao-field: the rotation MUST be applied first since it depends non-linearly on the 
+    site-space, the site-transformation comes second
+    """
+    def __init__(self, blocklabel, *args, **kwargs):
+        Triangle.__init__(self, *args, **kwargs)
+        self.blocklabel = blocklabel
+        self.blocksize = len(self.sites) * len(self.spins)
+
+    def _c(self, s, i, theta = 0, phi = 0):
+        if self.transf is None:
+            c = C(self.blocklabel, self.superindex(s, i))
+        else:
+            c = np.sum([self.transf[s][j, i].conjugate() * C(self.blocklabel, self.superindex(s, j)) for j in self.sites], axis = 0)
+        return c
+
     def spin_index(self, s):
         return {self.spins[0]: 0, self.spins[1]: 1}[s]
 
-    def _c_rot(self, s, i, theta, phi):
-        """
-        up becomes in and dn becomes out or vice versa
-        """
-        c = 0
+    def _c_rot(self, s, i, theta, phi = 0):
         spin_transf_mat = self.spin_transf_mat(theta, phi)
-        for t in range(2):
-            c += spin_transf_mat[self.spin_index(s), t] * self._c(self.spins[t], i)
+        c = np.sum([spin_transf_mat[self.spin_index(s), self.spin_index(t)] * self._c(t, i) for t in self.spins], axis = 0)
         return c
 
-    def _c_dag_rot(self, s, i, theta, phi):
-        return dagger(self._c_rot(s, i, theta, phi))
-
-    def spin_transf_mat(self, theta, phi, force_real = True):
+    def _c_rot_dag(self, s, i, theta, phi = 0):
+        return dagger(self._c_rot(s,i,theta,phi))
+    
+    def spin_transf_mat(self, theta, phi = 0, force_real = True):
         py = np.matrix([[0,complex(0,-1)],[complex(0,1),0]])
         pz = np.matrix([[1,0],[0,-1]])
-        m = expm(complex(0,1)*theta*py*.5).dot(expm(complex(0,1)*phi*pz*.5))
+        m = expm(complex(0,-1)*theta*py*.5)#.dot(expm(complex(0,1)*phi*pz*.5))
         if force_real:
             m = m.real
         return m
 
-    def allin_allout(self):
+    def aiao_op(self):
         operator = 0
         phi = 0
         for i in self.sites:
             theta = i * 2 * np.pi / 3.
             for s, sign in zip(self.spins, [+1, -1]):
-                operator += sign * self._c_dag_rot(s, i, theta, phi) * self._c_rot(s, i, theta, phi)
+                operator += sign * self._c_rot_dag(s, i, theta, phi) * self._c_rot(s, i, theta, phi)
         return operator
-
-
-class TriangleSpinSiteCoupling(Triangle):
-    """
-    1 block, spin-site blockstructure
-    transformation is not a dict, but an array acting on the site-space
-    the aiao-field: first we apply the site transformation, then the rotation
-    """
-    def _c(self, s, i):
-        if self.transf is None:
-            c = C('spin-site', self.superindex(s, i))
-        else:
-            c = np.sum([self.transf[j, i].conjugate() * C('spin-site', self.superindex(s, j)) for j in self.sites])
-        return c
 
     def superindex(self, s, i):
         if s in self.spins:
@@ -184,7 +185,7 @@ class TriangleSpinSiteCoupling(Triangle):
 
 class TriangleAIAO(Triangle):
     """
-    Interaction is scalar, theta and phi won't change anything
+
     """
     def __init__(self, *args, **kwargs):
         self.theta = kwargs.pop('theta') if 'theta' in kwargs.keys() else 0
@@ -195,8 +196,11 @@ class TriangleAIAO(Triangle):
 
     def _c(self, s, i):
         c = 0
-        for j in range(3):
-            c += self.site_transf[j, i].conjugate() * self._c_rot(s, j)
+        if self.site_transf:
+            for j in range(3):
+                c += self.site_transf[j, i].conjugate() * self._c_rot(s, j)
+        else:
+            c = self._c_rot(s, j)
         return c
 
     def _c_rot(self, s, i):
@@ -215,10 +219,10 @@ class TriangleAIAO(Triangle):
     def spin_index(self, s):
         return {'up':0, 'dn':1}[s]
 
-    def spin_transf_mat(self, theta, phi):
+    def spin_transf_mat(self, theta, phi = 0):
         py = np.matrix([[0,complex(0,-1)],[complex(0,1),0]])
         pz = np.matrix([[1,0],[0,-1]])
-        m = expm(complex(0,1)*theta*py*.5).dot(expm(complex(0,1)*phi*pz*.5))
+        m = expm(complex(0,-1)*theta*py*.5)#.dot(expm(complex(0,1)*phi*pz*.5))
         if self.force_real:
             m = m.real
         return m

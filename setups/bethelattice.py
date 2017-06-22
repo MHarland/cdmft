@@ -2,7 +2,7 @@ import numpy as np, itertools as itt
 from scipy.linalg import expm, eigh
 
 from bethe.setups.generic import CycleSetupGeneric
-from bethe.operators.hubbard import Site, TriangleMomentum, PlaquetteMomentum, Triangle, TriangleAIAO, TriangleSpinSiteCoupling
+from bethe.operators.hubbard import Site, TriangleMomentum, PlaquetteMomentum, Triangle, TriangleAIAO, TriangleSpinOrbitCoupling
 from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM
 from bethe.transformation import MatrixTransformation
 
@@ -74,32 +74,17 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
         self.site_transf = site_transformation
         sites = range(3)
         spins = ['up', 'dn']
-        #gf_struct = [['spin-site', range(6)]]
-        #gf_struct_new = [[s, range(3)] for s in spins]
-        blocknames = ['spin-site']
+        gf_struct = [['spin-mom', range(6)]]
+        gf_struct_site = [[s, range(3)] for s in spins]
+        blocknames = ['spin-mom']
         blocksizes = [len(sites)*2]
         t = t_triangle
         hop = np.array([[0,t,t],[t,0,t],[t,t,0]])
-        t_loc = {'spin-site': np.kron(np.identity(2), hop)}
-        t_loc_rotated = self.rotate_t_loc(t_loc, force_real)
-        self.t_loc = {'spin-site': np.zeros([6, 6])}
-        for s1, s2 in itt.product(*[range(2)]*2):
-            for i, j, k, l in itt.product(*[range(3)]*4):
-                a, b = self.superindex(s1, i), self.superindex(s2, j)
-                c, d = self.superindex(s1, k), self.superindex(s2, l)
-                self.t_loc['spin-site'][a, b] += site_transformation[i, k] * t_loc_rotated['spin-site'][c, d] * site_transformation[j, l].conjugate()
-        #transf = self.transf = MatrixTransformation(gf_struct, {'spin-site': np.identity(6)}, gf_struct_new)
-        #np.set_printoptions(precision = 2, suppress = True)
-        #tt = np.array([[1/np.sqrt(3),1/np.sqrt(3),1/np.sqrt(3)],[0,-1/np.sqrt(2),1/np.sqrt(2)],[-np.sqrt(2./3.),1/np.sqrt(6),1/np.sqrt(6)]])
-        #print
-        #for s, b in self.t_loc.items():
-        #    print s
-        #    print b
-        #    #e, v = eigh(b)
-        #    #print e
-        #    #print v
-        #self.t_loc = transf.transform_matrix(self.t_loc)
-        self.h_int = TriangleSpinSiteCoupling(u, transf = site_transformation) #TriangleAIAO(3, force_real = force_real, site_transf = site_transformation)
+        t_loc = {s: hop for s in spins}
+        site_transformation = {s: site_transformation for s in spins}
+        transf = MatrixTransformation(gf_struct_site, site_transformation, gf_struct)
+        self.t_loc = transf.transform_matrix(t_loc)
+        self.h_int = TriangleSpinOrbitCoupling('spin-mom', u, transf = site_transformation)
         self.mu = mu
         self.gloc = GLocalWithOffdiagonals(t_bethe, self.t_loc, blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
@@ -129,10 +114,10 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
     def site_index(self, superindex):
         return superindex % 3
 
-    def spin_transf_mat(self, theta, phi):
+    def spin_transf_mat(self, theta, phi = 0):
         py = np.matrix([[0,complex(0,-1)],[complex(0,1),0]])
         pz = np.matrix([[1,0],[0,-1]])
-        return expm(complex(0,1)*theta*py*.5).dot(expm(complex(0,1)*phi*pz*.5))
+        return expm(complex(0,-1)*theta*py*.5)#.dot(expm(complex(0,1)*phi*pz*.5))
 
 
 class PlaquetteBetheSetup(CycleSetupGeneric):
