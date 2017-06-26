@@ -95,6 +95,20 @@ class GLocalWithOffdiagonals(GLocal):
             conv = True
         return conv
 
+
+class GLocalInhomogeneous(GlocalWithOffdiagonals):
+    def calculate(self, selfenergy, mu, n_g_loc_iterations = 1000):
+        last_attempt = self.copy()
+        for i in range(n_g_loc_iterations):
+            for s, b in self:
+                b << inverse(iOmega_n + mu[s] - self.t_loc[s] - double_dot_product(self.t_b[s], b, self.t_b[s]) - selfenergy[s])
+            if self._is_converged(last_attempt):
+                break
+            else:
+                last_attempt << self
+        del last_attempt
+    
+
 class WeissFieldAFM(WeissFieldGeneric):
 
     def calc_selfconsistency(self, glocal, selfenergy, mu, *args, **kwargs):
