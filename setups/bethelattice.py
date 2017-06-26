@@ -9,7 +9,7 @@ from bethe.transformation import MatrixTransformation
 
 class SingleBetheSetup(CycleSetupGeneric):
 
-    def __init__(self, beta, mu, u, t_bethe, w1 = None, w2 = None, n_mom = 3, n_iw = 1025):
+    def __init__(self, beta, mu, u, t_bethe, n_iw = 1025, afm = False):
         up = "up"
         dn = "dn"
         spins = [up, dn]
@@ -19,9 +19,13 @@ class SingleBetheSetup(CycleSetupGeneric):
         blocknames = spins
         blocksizes = [len(sites), len(sites)]
         gf_struct = [[s, sites] for s in spins]
-        self.h_int = hubbard.get_h_int()
-        self.gloc = GLocal(t_bethe, t_loc, w1, w2, n_mom, blocknames, blocksizes, beta, n_iw)
-        self.g0 = WeissField(blocknames, blocksizes, beta, n_iw)
+        self.h_int = hubbard
+        self.gloc = GLocalWithOffdiagonals(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
+        #self.gloc = GLocal(t_bethe, t_loc, w1, w2, n_mom, blocknames, blocksizes, beta, n_iw)
+        if afm:
+            self.g0 = WeissFieldAFM(blocknames, blocksizes, beta, n_iw)
+        else:
+            self.g0 = WeissField(blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
         self.mu = mu
         self.global_moves = {"spin-flip": {("up", 0): ("dn", 0), ("dn", 0): ("up", 0)}}
@@ -117,7 +121,7 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
     def spin_transf_mat(self, theta, phi = 0):
         py = np.matrix([[0,complex(0,-1)],[complex(0,1),0]])
         pz = np.matrix([[1,0],[0,-1]])
-        return expm(complex(0,-1)*theta*py*.5)#.dot(expm(complex(0,1)*phi*pz*.5))
+        return expm(complex(0,1)*phi*pz*.5).dot(expm(complex(0,-1)*theta*py*.5))
 
 
 class PlaquetteBetheSetup(CycleSetupGeneric):
