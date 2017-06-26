@@ -71,4 +71,3 @@ class TestSetups(unittest.TestCase):
 
     def test_TriangleAIAOBetheSetup(self):
         setup = TriangleAIAOBetheSetup(10, 1, 2, -1, 1)
-        self.assertTrue(np.allclose(setup.spin_transf_mat(np.pi, 0), np.array([[0,1],[-1,0]])))
