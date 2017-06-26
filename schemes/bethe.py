@@ -96,7 +96,7 @@ class GLocalWithOffdiagonals(GLocal):
         return conv
 
 
-class GLocalInhomogeneous(GlocalWithOffdiagonals):
+class GLocalInhomogeneous(GLocalWithOffdiagonals):
     def calculate(self, selfenergy, mu, n_g_loc_iterations = 1000):
         last_attempt = self.copy()
         for i in range(n_g_loc_iterations):
