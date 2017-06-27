@@ -7,6 +7,8 @@ from bethe.operators.kanamori import Dimer as KanamoriDimer
 from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM, GLocalInhomogeneous
 from bethe.transformation import MatrixTransformation
 
+from pytriqs.gf.local import iOmega_n, inverse
+
 
 class SingleBetheSetup(CycleSetupGeneric):
 
@@ -101,44 +103,36 @@ class TwoOrbitalDimerBetheSetup(CycleSetupGeneric):
 
 class TriangleAIAOBetheSetup(CycleSetupGeneric):
     """
-    merges spin and sitespaces and diagonalizes(?)
+    merges spin and sitespaces
     space hierarchy: spin, site
     """
     def __init__(self, beta, mu, u , t_triangle, t_bethe, n_iw = 1025, force_real = True,
-                 site_transformation = np.array([[1/np.sqrt(3),1/np.sqrt(3),1/np.sqrt(3)],[0,-1/np.sqrt(2),1/np.sqrt(2)],[-np.sqrt(2./3.),1/np.sqrt(6),1/np.sqrt(6)]])):
+                 site_transformation = np.array([[1/np.sqrt(3),1/np.sqrt(3),1/np.sqrt(3)],[0,-1/np.sqrt(2),1/np.sqrt(2)],[-np.sqrt(2./3.),1/np.sqrt(6),1/np.sqrt(6)]]),
+                 momentum_labels = ["E", "A2", "A1"]):
         self.site_transf = site_transformation
         sites = range(3)
-        spins = ['up', 'dn']
+        self.spins = ['up', 'dn']
         gf_struct = [['spin-mom', range(6)]]
-        gf_struct_site = [[s, range(3)] for s in spins]
-        blocknames = ['spin-mom']
+        gf_struct_site = [[s, range(3)] for s in self.spins]
+        self.blocknames = ['spin-mom']
         blocksizes = [len(sites)*2]
+        blocknames_paramag = [s+"-"+k for s in self.spins for k in momentum_labels]
+        gf_struct_paramag = [[n, range(1)] for n in blocknames_paramag]
+        self.paramag_to_aiao = MatrixTransformation(gf_struct = gf_struct_paramag, gf_struct_new = gf_struct)
+        self.momentum_labels = momentum_labels
         t = t_triangle
         hop = np.array([[0,t,t],[t,0,t],[t,t,0]])
-        t_loc = {s: hop for s in spins}
-        site_transformation = {s: site_transformation for s in spins}
+        t_loc = {s: hop for s in self.spins}
+        site_transformation = {s: site_transformation for s in self.spins}
         transf = MatrixTransformation(gf_struct_site, site_transformation, gf_struct)
         self.t_loc = transf.transform_matrix(t_loc)
         self.h_int = TriangleSpinOrbitCoupling('spin-mom', u, transf = site_transformation)
         self.mu = mu
-        self.gloc = GLocalWithOffdiagonals(t_bethe, self.t_loc, blocknames, blocksizes, beta, n_iw)
-        self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
-        self.g0 = WeissFieldAIAO(blocknames, blocksizes, beta, n_iw)
+        self.gloc = GLocalWithOffdiagonals(t_bethe, self.t_loc, self.blocknames, blocksizes, beta, n_iw)
+        self.se = SelfEnergy(self.blocknames, blocksizes, beta, n_iw)
+        self.g0 = WeissFieldAIAO(self.blocknames, blocksizes, beta, n_iw)
         self.global_moves = {}#{"spin-flip": dict([((s1, i), (s2, i)) for i in sites for s1, s2 in itt.product(spins, spins) if s1 != s2])}
         self.quantum_numbers = [self.h_int.n_tot()]
-
-    def rotate_t_loc(self, t_loc, force_real = False):
-        t_loc_new = {'spin-site': np.zeros([6, 6], dtype = complex)}
-        for a, b in itt.product(*[range(6)]*2):
-            i, j = self.site_index(a), self.site_index(b)
-            t1, t2 = self.spin_index(a), self.spin_index(b)
-            #t_loc_new['spin-site'][a, b] += np.sum([self.spin_transf_mat(np.pi*.5, i*2*np.pi/3.).conjugate().transpose()[t1, s1] * t_loc['spin-site'][s1*3+i, s2*3+j] * self.spin_transf_mat(np.pi*.5, j*2*np.pi/3.)[s2, t2] for s1, s2 in itt.product(*[range(2)]*2)])
-            t_loc_new['spin-site'][a, b] += np.sum([self.spin_transf_mat(i*2*np.pi/3., 0).conjugate().transpose()[t1, s1] * t_loc['spin-site'][s1*3+i, s2*3+j] * self.spin_transf_mat(j*2*np.pi/3., 0)[s2, t2] for s1, s2 in itt.product(*[range(2)]*2)])
-        if force_real:
-            tmp = np.empty([6]*2)
-            tmp[:,:] = t_loc_new['spin-site'].real
-            t_loc_new['spin-site'] = tmp
-        return t_loc_new
 
     def superindex(self, spin_index, site_index):
         return spin_index * 3 + site_index
@@ -152,7 +146,40 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
     def spin_transf_mat(self, theta, phi = 0):
         py = np.matrix([[0,complex(0,-1)],[complex(0,1),0]])
         pz = np.matrix([[1,0],[0,-1]])
-        return expm(complex(0,1)*phi*pz*.5).dot(expm(complex(0,-1)*theta*py*.5))
+        return expm(complex(0,-1)*theta*py*.5).dot(expm(complex(0,-1)*phi*pz*.5))
+
+    def set_initial_guess(self, selfenergy, g0, e_in, e_out, v, transform = True, momentum_labels = None):
+        """
+        initializes with paramagnetic(transform=True) or AIAO(transform=False) solution
+        adds a dynamical AIAO symmetry breaking field with the energies e_in, e_out
+        and the amplitude v
+        paramagnetic_labels is used only if transform=True, and has a default: E, A2, A1
+        assumes the paramagnetic solution to be blockdiagonal
+        """
+        if transform:
+            if momentum_labels is None:
+                momentum_labels = self.momentum_labels
+            s0, s1 = self.spins[0], self.spins[1]
+            e, a2, a1 = tuple(lab for lab in self.momentum_labels)
+            bn = self.blocknames[0]
+            rm = {(s0+'-'+e,0,0): (bn,0,0), (s0+'-'+a2,0,0): (bn,1,1),
+                  (s0+'-'+a1,0,0): (bn,2,2), (s1+'-'+e,0,0): (bn,3,3),
+                  (s1+'-'+a2,0,0): (bn,4,4), (s1+'-'+a1,0,0): (bn,5,5)}
+            self.g0 << self.paramag_to_aiao.reblock_by_map(g0, rm)
+            self.se << self.paramag_to_aiao.reblock_by_map(selfenergy, rm)
+        self.set_dynamical_aiao_field(e_in, e_out, v)
+
+    def set_dynamical_aiao_field(self, e_in, e_out, v):
+        """delta_momentum_updn = U R_dag delta_site_aiao R U_dag"""
+        se = self.se
+        u = self.site_transf
+        r = [self.spin_transf_mat(i * 2*np.pi /3.) for i in range(3)]
+        bn = self.blocknames[0]
+        eps = np.array([e_in, e_out])
+        spins, sites = range(2), range(3)
+        for s0, i0, s1, i1 in itt.product(spins, sites, spins, sites):
+            a0, a1 = self.superindex(s0, i0), self.superindex(s1, i1)
+            se[bn][a0, a1] << np.sum([u[i0, j] * r[j][t, s0].conjugate() * v**2 * inverse(iOmega_n - eps[t]) * r[j][t, s1] *u[i1, j].conjugate() for t, j in itt.product(spins, sites)])
 
 
 class PlaquetteBetheSetup(CycleSetupGeneric):

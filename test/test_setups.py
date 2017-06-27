@@ -71,6 +71,14 @@ class TestSetups(unittest.TestCase):
 
     def test_TriangleAIAOBetheSetup(self):
         setup = TriangleAIAOBetheSetup(10, 1, 2, -1, 1)
+        setup_paramag = TriangleBetheSetup(10, 1, 2, -1, 1)
+        se0, g00 = setup_paramag.se, setup_paramag.g0
+        setup.set_initial_guess(se0, g00, .15, -.15, .15)
+        zeros = [(0,1),(0,3),(0,5),(1,2),(1,4),(2,3),(2,5),(3,4),(4,5)]
+        for zero in zeros:
+            i, j = zero
+            self.assertTrue(np.allclose(setup.se['spin-mom'].data[1025,i,j], 0.))
+            self.assertTrue(np.allclose(setup.se['spin-mom'].data[1025,j,i], 0.))
 
     def test_TwoOrbitalDimerBetheSetup(self):
         setup = TwoOrbitalDimerBetheSetup(10, .5, 1, .2, -1, -.1, -1, -.1)
