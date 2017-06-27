@@ -167,9 +167,9 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
                   (s1+'-'+a2,0,0): (bn,4,4), (s1+'-'+a1,0,0): (bn,5,5)}
             self.g0 << self.paramag_to_aiao.reblock_by_map(g0, rm)
             self.se << self.paramag_to_aiao.reblock_by_map(selfenergy, rm)
-        self.set_dynamical_aiao_field(e_in, e_out, v)
+        self.add_dynamical_aiao_field(e_in, e_out, v)
 
-    def set_dynamical_aiao_field(self, e_in, e_out, v):
+    def add_dynamical_aiao_field(self, e_in, e_out, v):
         """delta_momentum_updn = U R_dag delta_site_aiao R U_dag"""
         se = self.se
         u = self.site_transf
@@ -179,7 +179,7 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
         spins, sites = range(2), range(3)
         for s0, i0, s1, i1 in itt.product(spins, sites, spins, sites):
             a0, a1 = self.superindex(s0, i0), self.superindex(s1, i1)
-            se[bn][a0, a1] << np.sum([u[i0, j] * r[j][t, s0].conjugate() * v**2 * inverse(iOmega_n - eps[t]) * r[j][t, s1] *u[i1, j].conjugate() for t, j in itt.product(spins, sites)])
+            se[bn][a0, a1] += np.sum([u[i0, j] * r[j][t, s0].conjugate() * v**2 * inverse(iOmega_n - eps[t]) * r[j][t, s1] *u[i1, j].conjugate() for t, j in itt.product(spins, sites)])
 
 
 class PlaquetteBetheSetup(CycleSetupGeneric):
