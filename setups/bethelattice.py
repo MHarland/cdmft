@@ -167,13 +167,15 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
                   (s1+'-'+a2,0,0): (bn,4,4), (s1+'-'+a1,0,0): (bn,5,5)}
             self.g0 << self.paramag_to_aiao.reblock_by_map(g0, rm)
             self.se << self.paramag_to_aiao.reblock_by_map(selfenergy, rm)
-        self.add_dynamical_aiao_field(e_in, e_out, v)
+            excitation_shifts = [1,1.1,1.2,1.3,1.4,1.5]
+        for (i, j, k), shift in zip(itt.permutations(range(3), 3), excitation_shifts):
+            self.add_dynamical_aiao_field(e_in * shift, e_out * shift, v, [i, j, k])
 
-    def add_dynamical_aiao_field(self, e_in, e_out, v):
+    def add_dynamical_aiao_field(self, e_in, e_out, v, permutation):
         """delta_momentum_updn = U R_dag delta_site_aiao R U_dag"""
         se = self.se
         u = self.site_transf
-        r = [self.spin_transf_mat(i * 2*np.pi /3.) for i in range(3)]
+        r = [self.spin_transf_mat(i * 2*np.pi /3.) for i in permutation]
         bn = self.blocknames[0]
         eps = np.array([e_in, e_out])
         spins, sites = range(2), range(3)
