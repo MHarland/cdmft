@@ -111,10 +111,11 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
                  momentum_labels = ["E", "A2", "A1"]):
         self.site_transf = site_transformation
         sites = range(3)
+        bn = 'spin-mom'
         self.spins = ['up', 'dn']
-        gf_struct = [['spin-mom', range(6)]]
+        gf_struct = [[bn, range(6)]]
         gf_struct_site = [[s, range(3)] for s in self.spins]
-        self.blocknames = ['spin-mom']
+        self.blocknames = [bn]
         blocksizes = [len(sites)*2]
         blocknames_paramag = [s+"-"+k for s in self.spins for k in momentum_labels]
         gf_struct_paramag = [[n, range(1)] for n in blocknames_paramag]
@@ -126,12 +127,13 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
         site_transformation = {s: site_transformation for s in self.spins}
         transf = MatrixTransformation(gf_struct_site, site_transformation, gf_struct)
         self.t_loc = transf.transform_matrix(t_loc)
-        self.h_int = TriangleSpinOrbitCoupling('spin-mom', u, transf = site_transformation)
+        self.h_int = TriangleSpinOrbitCoupling(bn, u, transf = site_transformation)
         self.mu = mu
         self.gloc = GLocalWithOffdiagonals(t_bethe, self.t_loc, self.blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(self.blocknames, blocksizes, beta, n_iw)
         self.g0 = WeissFieldAIAO(self.blocknames, blocksizes, beta, n_iw)
-        self.global_moves = {}#{"spin-flip": dict([((s1, i), (s2, i)) for i in sites for s1, s2 in itt.product(spins, spins) if s1 != s2])}
+        self.global_moves = {"spin-flip": dict([((bn, i), (bn, (i+3)%6)) for i in range(6)])}
+        print self.global_moves
         self.quantum_numbers = [self.h_int.n_tot()]
 
     def superindex(self, spin_index, site_index):
@@ -167,7 +169,7 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
                   (s1+'-'+a2,0,0): (bn,4,4), (s1+'-'+a1,0,0): (bn,5,5)}
             self.g0 << self.paramag_to_aiao.reblock_by_map(g0, rm)
             self.se << self.paramag_to_aiao.reblock_by_map(selfenergy, rm)
-            excitation_shifts = [1,1.1,1.2,1.3,1.4,1.5]
+            excitation_shifts = [1,1.2,1.4,1.6,1.8,2]
         for (i, j, k), shift in zip(itt.permutations(range(3), 3), excitation_shifts):
             self.add_dynamical_aiao_field(e_in * shift, e_out * shift, v, [i, j, k])
 
