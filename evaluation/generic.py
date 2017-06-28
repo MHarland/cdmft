@@ -67,6 +67,22 @@ class Evaluation:
             rhorow[atom.flatten_block_index(row_block, 0)+j] = abs(number)
         return rhorow
 
+    def get_atomic_density_matrix(self, loop = -1, beta = None):
+        """order corresponds to energies of get_energies"""
+        atom = self.archive.load("h_loc_diagonalization", loop, bcast = False)
+        if beta is None:
+            g = self.archive.load("g_loc_iw", loop)
+            beta = g.beta
+        rhoblocked = atomic_density_matrix(atom, beta)
+        rho = np.zeros([atom.full_hilbert_space_dim]*2)
+        for i_block, block in enumerate(rhoblocked):
+            dim = atom.get_block_dim(i_block)
+            for i, j in itt.product(*[range(dim)]*2):
+                k = atom.flatten_block_index(i_block, i)
+                l = atom.flatten_block_index(i_block, j)
+                rho[k, l] = block[i, j]
+        return rho
+
     def get_atomic_density_matrix_diag(self, loop = -1, beta = None):
         """order corresponds to energies of get_energies"""
         atom = self.archive.load("h_loc_diagonalization", loop, bcast = False)
