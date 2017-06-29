@@ -132,7 +132,7 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
         self.gloc = GLocalWithOffdiagonals(t_bethe, self.t_loc, self.blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(self.blocknames, blocksizes, beta, n_iw)
         self.g0 = WeissFieldAIAO(self.blocknames, blocksizes, beta, n_iw)
-        self.global_moves = {"spin-flip": dict([((bn, i), (bn, (i+3)%6)) for i in range(6)])}
+        self.global_moves = {"spin-flip": dict([((bn, i), (bn, (i+3)%6)) for i in range(6)]), "reflection": dict([((bn, 1), (bn, 2)), ((bn, 2), (bn, 1)), ((bn, 4), (bn, 5)), ((bn, 5), (bn, 4))])}
         print self.global_moves
         self.quantum_numbers = [self.h_int.n_tot()]
 
