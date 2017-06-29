@@ -169,7 +169,7 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
                   (s1+'-'+a2,0,0): (bn,4,4), (s1+'-'+a1,0,0): (bn,5,5)}
             self.g0 << self.paramag_to_aiao.reblock_by_map(g0, rm)
             self.se << self.paramag_to_aiao.reblock_by_map(selfenergy, rm)
-            excitation_shifts = [1,1.2,1.4,1.6,1.8,2]
+            excitation_shifts = [1,1,1,1,1,1]
         for (i, j, k), shift in zip(itt.permutations(range(3), 3), excitation_shifts):
             self.add_dynamical_aiao_field(e_in * shift, e_out * shift, v, [i, j, k])
 
