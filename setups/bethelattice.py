@@ -123,7 +123,7 @@ class TwoOrbitalMomentumDimerBetheSetup(TwoOrbitalDimerBetheSetup):
                 t_bethe[bn] = np.array([[td_bethe]])
             else:
                 assert False, "neither "+orbitals[0]+" nor "+orbitals[1]+" in "+bn
-        self.h_int = KanamoriMomentumDimer(u, j, spins, orbitals, density_density_only = density_density_only, momenta = momenta)
+        self.h_int = KanamoriMomentumDimer(u, j, spins, orbitals, density_density_only = density_density_only, momenta = momenta, transf = site_transformation)
         self.g0 = WeissFieldInhomogeneous(blocknames, blocksizes, beta, n_iw)
         self.gloc = GLocalInhomogeneous(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)

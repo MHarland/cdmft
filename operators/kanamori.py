@@ -11,6 +11,8 @@ class Dimer:
         self.sites = sites
         self.gap_sz = None
         self.transf = transf
+        if transf:
+            self.kinds = range(self.transf.values()[0].shape[0])
         if u is not None and j is not None: self.set_h_int(u, j, density_density_only)
 
     def get_h_int(self):
@@ -47,8 +49,7 @@ class Dimer:
         if self.transf is None:
             cnew = C(block, site)
         else:
-            sites = range(self.transf[block].shape[0])
-            cnew =  np.sum([self.transf[block][i, site].conjugate() * C(block, i) for i in sites], axis = 0)
+            cnew =  np.sum([self.transf[block][k, site].conjugate() * C(block, k) for k in self.kinds], axis = 0)
         return cnew
 
     def c_dag(self, spin, orb, site):
@@ -107,14 +108,10 @@ class MomentumDimer(Dimer):
     """
     def __init__(self, *args, **kwargs):
         self.mom = kwargs.pop('momenta')
+        self.r_to_k = {i:self.mom[i] for i in range(len(self.mom))}
         Dimer.__init__(self, *args, **kwargs)
-        self.r_to_k = {i:self.mom[i] for i in self.sites}
     
     def c(self, spin, orb, site):
-        block = spin+'-'+orb+'-'
-        if self.transf is None:
-            cnew = C(block, site)
-        else:
-            sites = range(self.transf[block].shape[0])
-            cnew =  np.sum([self.transf[block][i, site].conjugate() * C(block+self.r_to_k[i], 0) for i in sites], axis = 0)
-        return cnew
+        block = spin+'-'+orb
+        c =  np.sum([self.transf[block][i_k, site].conjugate() * C(block+'-'+self.r_to_k[i_k], 0) for i_k in self.kinds], axis = 0)
+        return c
