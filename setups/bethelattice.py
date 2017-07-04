@@ -181,7 +181,7 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
         pz = np.matrix([[1,0],[0,-1]])
         return expm(complex(0,-1)*theta*py*.5).dot(expm(complex(0,-1)*phi*pz*.5))
 
-    def set_initial_guess(self, selfenergy, g0, e_in, e_out, v, transform = True, momentum_labels = None):
+    def set_initial_guess(self, selfenergy, g0, e_in = .15, e_out = -.15, v = .15, transform = True, momentum_labels = None):
         """
         initializes with paramagnetic(transform=True) or AIAO(transform=False) solution
         adds a dynamical AIAO symmetry breaking field with the energies e_in, e_out
@@ -200,8 +200,9 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
                   (s1+'-'+a2,0,0): (bn,4,4), (s1+'-'+a1,0,0): (bn,5,5)}
             self.g0 << self.paramag_to_aiao.reblock_by_map(g0, rm)
             self.se << self.paramag_to_aiao.reblock_by_map(selfenergy, rm)
-            excitation_shifts = [1,1,1,1,1,1]
-        for (i, j, k), shift in zip(itt.permutations(range(3), 3), excitation_shifts):
+            excitation_shifts = [1,1,1] # 1 + x shifts by x
+            rotation_permutations = [(0,1,2),(2,0,1),(1,2,0)]
+        for (i, j, k), shift in zip(rotation_permutations, excitation_shifts):
             self.add_dynamical_aiao_field(e_in * shift, e_out * shift, v, [i, j, k])
 
     def add_dynamical_aiao_field(self, e_in, e_out, v, permutation):
