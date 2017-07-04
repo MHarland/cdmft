@@ -254,7 +254,7 @@ class DimerMomentum(Hubbard):
         self._to_mom = GfStructTransformationIndex(self.gf_struct, [[self.up, self.sites], [self.dn, self.sites]])
 
     def _c(self, spin, site):
-        return sum([self.transformation[spin][site, k_index] * C(*self._to_mom(spin, k_index)) for k_index in range(len(self.sites))])
+        return sum([self.transformation[spin][k_index, site].conjugate() * C(*self._to_mom(spin, k_index)) for k_index in range(len(self.sites))])
 
 
 
