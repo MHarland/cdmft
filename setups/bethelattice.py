@@ -4,7 +4,7 @@ from scipy.linalg import expm, eigh
 from bethe.setups.generic import CycleSetupGeneric
 from bethe.operators.hubbard import Site, TriangleMomentum, PlaquetteMomentum, Triangle, TriangleAIAO, TriangleSpinOrbitCoupling
 from bethe.operators.kanamori import Dimer as KanamoriDimer
-from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM, GLocalInhomogeneous
+from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM, GLocalInhomogeneous, WeissFieldInhomogeneous
 from bethe.transformation import MatrixTransformation
 
 from pytriqs.gf.local import iOmega_n, inverse
@@ -75,7 +75,7 @@ class TwoOrbitalDimerBetheSetup(CycleSetupGeneric):
     TODO
     """
     def __init__(self, beta, mu, u, j, tc_perp, td_perp, tc_bethe, td_bethe, density_density_only = False,
-                 orbitals = ["c", "d"], symmetric_orbitals = [], n_iw = 1025, afm = False):
+                 orbitals = ["c", "d"], symmetric_orbitals = [], n_iw = 1025):
         up = "up"
         dn = "dn"
         spins = [up, dn]
@@ -90,10 +90,7 @@ class TwoOrbitalDimerBetheSetup(CycleSetupGeneric):
         td_b = np.array([[td_bethe, 0],[0, td_bethe]])
         t_bethe = {bn: t_b for bn, t_b in zip(blocknames, [tc_b, td_b, tc_b, td_b])}
         self.h_int = KanamoriDimer(u, j, spins, orbitals, density_density_only = density_density_only)
-        if afm:
-            self.g0 = WeissFieldAFM(blocknames, blocksizes, beta, n_iw)
-        else:
-            self.g0 = WeissField(blocknames, blocksizes, beta, n_iw)
+        self.g0 = WeissFieldInhomogeneous(blocknames, blocksizes, beta, n_iw)
         self.gloc = GLocalInhomogeneous(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
         self.mu = mu

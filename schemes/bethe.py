@@ -97,6 +97,7 @@ class GLocalWithOffdiagonals(GLocal):
 
 
 class GLocalInhomogeneous(GLocalWithOffdiagonals):
+
     def calculate(self, selfenergy, mu, n_g_loc_iterations = 1000):
         last_attempt = self.copy()
         for i in range(n_g_loc_iterations):
@@ -167,6 +168,13 @@ class WeissField(WeissFieldGeneric):
         if isinstance(mu, float) or isinstance(mu, int): mu = self._to_blockmatrix(mu)
         for bn, b in self:
             b << inverse(iOmega_n  + mu[bn] - glocal.t_loc[bn] - glocal.t_b**2 * glocal[bn])
+
+class WeissFieldInhomogeneous(WeissFieldAFM):
+    def calc_selfconsistency(self, glocal, selfenergy, mu, *args, **kwargs):
+        if isinstance(mu, float) or isinstance(mu, int): mu = self._to_blockmatrix(mu)
+        for bn, b in self:
+            bn = self.flip_spin(bn)
+            b << inverse(iOmega_n  + mu[bn] - glocal.t_loc[bn] - double_dot_product(glocal.t_b[bn], glocal[bn], glocal.t_b[bn]))
 
 
 class GLocalNambu(GLocal):
