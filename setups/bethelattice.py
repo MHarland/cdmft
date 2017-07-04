@@ -115,9 +115,14 @@ class TwoOrbitalMomentumDimerBetheSetup(TwoOrbitalDimerBetheSetup):
         site_transformation = {bn: site_transformation for bn in blocknames_site}
         self.transf = MatrixTransformation(gf_struct_site, site_transformation, gf_struct)
         t_loc = self.transf.transform_matrix(t_loc_site)
-        tc_b = np.array([[tc_bethe, 0],[0, tc_bethe]]) # diagonal, no transformation required
-        td_b = np.array([[td_bethe, 0],[0, td_bethe]])
-        t_bethe = {bn: t_b for bn, t_b in zip(blocknames, [tc_b, td_b, tc_b, td_b])}
+        t_bethe = {} # diagonal, invariant under site_transformation
+        for bn in blocknames:
+            if "-"+orbitals[0] in bn:
+                t_bethe[bn] = np.array([[tc_bethe]])
+            elif "-"+orbitals[1] in bn:
+                t_bethe[bn] = np.array([[td_bethe]])
+            else:
+                assert False, "neither "+orbitals[0]+" nor "+orbitals[1]+" in "+bn
         self.h_int = KanamoriMomentumDimer(u, j, spins, orbitals, density_density_only = density_density_only, momenta = momenta)
         self.g0 = WeissFieldInhomogeneous(blocknames, blocksizes, beta, n_iw)
         self.gloc = GLocalInhomogeneous(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
