@@ -48,7 +48,7 @@ class Dimer:
             cnew = C(block, site)
         else:
             sites = range(self.transf[block].shape[0])
-            cnew =  np.sum([self.transf[block][i, site] * C(block, i) for i in sites], axis = 0)
+            cnew =  np.sum([self.transf[block][i, site].conjugate() * C(block, i) for i in sites], axis = 0)
         return cnew
 
     def c_dag(self, spin, orb, site):
@@ -99,3 +99,22 @@ class Dimer:
 
     def s2_tot(self):
         return np.sum([.5 * (self.s_plus(o1, i1) * self.s_minus(o2, i2) + self.s_minus(o1, i1) * self.s_plus(o2, i2)) + self.sz(o1, i1) * self.sz(o2, i2) for i1, i2, o1, o2 in itt.product(self.sites, self.sites, self.orbs, self.orbs)], axis = 0)
+
+
+class MomentumDimer(Dimer):
+    """
+    assumes spin-orb-mom blockstructure
+    """
+    def __init__(self, *args, **kwargs):
+        self.mom = kwargs.pop('momenta')
+        Dimer.__init__(self, *args, **kwargs)
+        self.r_to_k = {i:self.mom[i] for i in self.sites}
+    
+    def c(self, spin, orb, site):
+        block = spin+'-'+orb+'-'
+        if self.transf is None:
+            cnew = C(block, site)
+        else:
+            sites = range(self.transf[block].shape[0])
+            cnew =  np.sum([self.transf[block][i, site].conjugate() * C(block+self.r_to_k[i], 0) for i in sites], axis = 0)
+        return cnew

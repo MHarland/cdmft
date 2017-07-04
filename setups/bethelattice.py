@@ -3,7 +3,7 @@ from scipy.linalg import expm, eigh
 
 from bethe.setups.generic import CycleSetupGeneric
 from bethe.operators.hubbard import Site, TriangleMomentum, PlaquetteMomentum, Triangle, TriangleAIAO, TriangleSpinOrbitCoupling
-from bethe.operators.kanamori import Dimer as KanamoriDimer
+from bethe.operators.kanamori import Dimer as KanamoriDimer, MomentumDimer as KanamoriMomentumDimer
 from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM, GLocalInhomogeneous, WeissFieldInhomogeneous
 from bethe.transformation import MatrixTransformation
 
@@ -70,12 +70,12 @@ class TriangleBetheSetup(CycleSetupGeneric):
         self.global_moves = {}#{"spin-flip": dict([((s1+"-"+k, 0), (s2+"-"+k, 0)) for k in orbital_labels for s1, s2 in itt.product(spins, spins) if s1 != s2]), "A1A2-flip": dict([((s+"-"+k1, 0), (s+"-"+k2, 0)) for s in spins for k1, k2 in itt.product(xy, xy) if k1 != k2])}
         self.quantum_numbers = [hubbard.get_n_tot(), hubbard.get_n_per_spin(up)]
 
+
 class TwoOrbitalDimerBetheSetup(CycleSetupGeneric):
     """
     TODO
     """
-    def __init__(self, beta, mu, u, j, tc_perp, td_perp, tc_bethe, td_bethe, density_density_only = False,
-                 orbitals = ["c", "d"], symmetric_orbitals = [], n_iw = 1025):
+    def __init__(self, beta, mu, u, j, tc_perp, td_perp, tc_bethe, td_bethe, density_density_only = False, orbitals = ["c", "d"], symmetric_orbitals = [], n_iw = 1025):
         up = "up"
         dn = "dn"
         spins = [up, dn]
@@ -96,6 +96,36 @@ class TwoOrbitalDimerBetheSetup(CycleSetupGeneric):
         self.mu = mu
         self.global_moves = {}
         self.quantum_numbers = [self.h_int.n_tot(), self.h_int.sz_tot()]
+
+
+class TwoOrbitalMomentumDimerBetheSetup(TwoOrbitalDimerBetheSetup):
+    def __init__(self, beta, mu, u, j, tc_perp, td_perp, tc_bethe, td_bethe, density_density_only = False, orbitals = ["c", "d"], symmetric_orbitals = [], n_iw = 1025, site_transformation = np.array([[1/np.sqrt(2), 1/np.sqrt(2)],[1/np.sqrt(2), -1/np.sqrt(2)]])):
+        spins = ["up", "dn"]
+        sites = range(2)
+        momenta = ["G", "X"]
+        blocknames = [s+"-"+o+"-"+k for s, o, k in itt.product(spins, orbitals, momenta)]
+        blocksizes = [1] * 8
+        gf_struct = [[n, range(s)] for n, s in zip(blocknames, blocksizes)]
+        blocknames_site = [s+"-"+o for s, o in itt.product(spins, orbitals)]
+        blocksizes_site = [2] * 4
+        gf_struct_site = [[n, range(s)] for n, s in zip(blocknames_site, blocksizes_site)]
+        tc_loc_site = np.array([[0,tc_perp,],[tc_perp,0]])
+        td_loc_site = np.array([[0,td_perp,],[td_perp,0]])
+        t_loc_site = {bn: t_loc_site for bn, t_loc_site in zip(blocknames_site, [tc_loc_site, td_loc_site, tc_loc_site, td_loc_site])}
+        site_transformation = {bn: site_transformation for bn in blocknames_site}
+        self.transf = MatrixTransformation(gf_struct_site, site_transformation, gf_struct)
+        t_loc = self.transf.transform_matrix(t_loc_site)
+        tc_b = np.array([[tc_bethe, 0],[0, tc_bethe]]) # diagonal, no transformation required
+        td_b = np.array([[td_bethe, 0],[0, td_bethe]])
+        t_bethe = {bn: t_b for bn, t_b in zip(blocknames, [tc_b, td_b, tc_b, td_b])}
+        self.h_int = KanamoriMomentumDimer(u, j, spins, orbitals, density_density_only = density_density_only, momenta = momenta)
+        self.g0 = WeissFieldInhomogeneous(blocknames, blocksizes, beta, n_iw)
+        self.gloc = GLocalInhomogeneous(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
+        self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
+        self.mu = mu
+        self.global_moves = {}
+        self.quantum_numbers = [self.h_int.n_tot(), self.h_int.sz_tot()]
+        
 
 
 class TriangleAIAOBetheSetup(CycleSetupGeneric):
@@ -130,7 +160,6 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
         self.se = SelfEnergy(self.blocknames, blocksizes, beta, n_iw)
         self.g0 = WeissFieldAIAO(self.blocknames, blocksizes, beta, n_iw)
         self.global_moves = {"spin-flip": dict([((bn, i), (bn, (i+3)%6)) for i in range(6)]), "reflection": dict([((bn, 1), (bn, 2)), ((bn, 2), (bn, 1)), ((bn, 4), (bn, 5)), ((bn, 5), (bn, 4))])}
-        print self.global_moves
         self.quantum_numbers = [self.h_int.n_tot()]
 
     def superindex(self, spin_index, site_index):
