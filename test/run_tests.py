@@ -15,6 +15,7 @@ from test_selfconsistency import TestCycle
 from test_setups import TestSetups
 from test_tightbinding import TestTightbinding
 from test_schemescdmft import TestSchemesCDMFT
+from test_setuphypercubic import TestSetupHypercubic
 
 
 extensive_test = False
@@ -72,4 +73,9 @@ if extensive_test: suite.addTest(TestSetups("test_squarelattice_MomentumPlaquett
 suite.addTest(TestSetups("test_TriangleAIAOBetheSetup"))
 suite.addTest(TestSetups("test_TwoOrbitalDimerBetheSetup"))
 suite.addTest(TestSetups("test_TwoOrbitalMomentumDimerBetheSetup"))
+suite.addTest(TestSetupHypercubic("test_init"))
+if extensive_test: suite.addTest(TestSetupHypercubic("test_plot_pade"))
+suite.addTest(TestSetupHypercubic("test_plot_pade"))
+if extensive_test: suite.addTest(TestSetupHypercubic("test_plot_rho_npts_convergence"))
+if extensive_test: suite.addTest(TestSetupHypercubic("test_Cycle_run"))
 unittest.TextTestRunner(verbosity = 2).run(suite)
