@@ -14,12 +14,12 @@ class TestSetupHypercubic(unittest.TestCase):
         setup = HypercubicSetup(15, 1, 2)
 
     def test_plot_pade(self):
-        setup = HypercubicSetup(30, 0, 0)
+        setup = HypercubicSetup(30, 0, 0, 1, -12, 12, 4000)
         g = setup.gloc
         se = setup.se
         mu = setup.mu
         g.calculate(se, {s:np.array([[mu]]) for s in ['up', 'dn']})
-        g_pade = GfReFreq(indices = [0], window = (-8, 8), n_points = 10000)
+        g_pade = GfReFreq(indices = [0], window = (-12, 12), n_points = 1000)
         g_pade.set_from_pade(g['up'], n_points = 101, freq_offset = np.pi/30.)
         mesh = np.array([w for w in g_pade.mesh])
         ax.plot(mesh.real, -1 / np.pi * g_pade.data[:, 0, 0].imag)
@@ -30,7 +30,7 @@ class TestSetupHypercubic(unittest.TestCase):
         ax.clear()
 
     def test_plot_rho_npts_convergence(self):
-        nptss = [10,30,100,300,1000,3000,10000]
+        nptss = [10,30,100,300,1000,4000]
         n = len(nptss)
         colors = [mpl.cm.viridis(i/float(n-1)) for i in range(n)]
         for npts, col in zip(nptss, colors):
