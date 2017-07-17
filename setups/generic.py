@@ -8,7 +8,7 @@ class CycleSetupGeneric:
                 'self_energy': self.se, 'mu': self.mu, 'global_moves': self.global_moves,
                 'quantum_numbers': self.quantum_numbers}
 
-    def set_data(self, storage):
+    def set_data(self, storage, load_mu = True):
         """
         loads the data of g_imp_iw, g_weiss_iw, se_imp_iw, mu from storage into the corresponding
         objects
@@ -22,4 +22,5 @@ class CycleSetupGeneric:
         except KeyError:
             pass
         self.se << storage.load('se_imp_iw')
-        self.mu = storage.load('mu')
+        if load_mu:
+            self.mu = storage.load('mu')
