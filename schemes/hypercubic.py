@@ -27,35 +27,7 @@ class GLocal(GLocalGeneric):
     def calculate(self, selfenergy, mu):
         se = selfenergy.get_as_BlockGf()
         for bn, b in se:
-            self[bn] << self.rho_to_g(se[bn], mu[bn])
-
-    def calculate_unstable(self, selfenergy, mu, fit_tail = True):
-        im = complex(0, 1)
-        sqrt_pi = np.sqrt(np.pi)
-        for bn, b in self:
-            orbitals = [i for i in range(b.data.shape[1])]
-            for i, j in itt.product(orbitals, orbitals):
-                for n, iwn in enumerate(b.mesh):
-                    z = iwn + mu[bn][i, j] - selfenergy[bn].data[n, i, j]
-                    s = np.sign(z.imag)
-                    g = - im *s *sqrt_pi *np.exp(- np.square(z)) *scipy.special.erfc(- im *s *z)
-                    if math.isnan(g.real) or math.isnan(g.imag):
-                        b.data[n,i,j] = 0
-                    else:
-                        b.data[n,i,j] = g
-        if fit_tail:
-            self.fit_tail2(self.w1, self.w2, self.n_mom)
-            print self['up'].tail
-        assert not math.isnan(self.total_density()), 'g(iw) hilbert transf failed'
-
-
-class WeissField(WeissFieldGeneric):
-
-    def calc_selfconsistency(self, glocal, selfenergy, mu, *args, **kwargs):
-        if isinstance(mu, float) or isinstance(mu, int): mu = self._to_blockmatrix(mu)
-        for bn, b in self:
-            bn = self.flip_spin(bn)
-            b << inverse(inverse(glocal[bn]) + selfenergy[bn])
+            self[bn] << self.rho_to_g(se[self.flip_spin(bn)], mu[bn])
 
     def flip_spin(self, blocklabel):
         up, dn = "up", "dn"
@@ -68,6 +40,11 @@ class WeissField(WeissFieldGeneric):
         else:
             assert False, "spin flip failed, spin-labels not recognized"
         return new_label
+
+
+class WeissField(WeissFieldGeneric):
+    pass
+
 
 class SelfEnergy(SelfEnergyGeneric):
     pass
