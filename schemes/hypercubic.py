@@ -59,8 +59,8 @@ class GLocal(GLocalGeneric):
                 b += ceta_b * d * inverse(ceta_ab - e2)
             b << mpi.all_reduce(mpi.world, b, lambda x, y: x+y)
             mpi.barrier()
-        known_mom = [(i, np.zeros((1, 1))) for i in [-2, -1, 0]] + [(1, np.identity(1))]
-        self.fit_tail2(self.w1, self.w2, 8, known_mom)
+        #known_mom = [(i, np.zeros((1, 1))) for i in [-1, 0]] + [(1, np.identity(1))]
+        #self.fit_tail2(self.w1, self.w2, 8, known_mom)
 
     def flip_spin(self, blocklabel):
         up, dn = "up", "dn"
