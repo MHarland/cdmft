@@ -1,5 +1,5 @@
 import numpy as np, itertools as itt, math, scipy
-from pytriqs.gf.local import inverse, iOmega_n
+from pytriqs.gf.local import inverse, iOmega_n, TailGf
 from pytriqs.dos import DOSFromFunction, HilbertTransform
 import pytriqs.utility.mpi as mpi
 
@@ -24,17 +24,18 @@ class GLocal(GLocalGeneric):
         self.rho_lambda = lambda x: np.exp(- np.square(x) /(2 * np.square(t))) /(t *np.sqrt(2 *np.pi))
         self.rho_wmin, self.rho_wmax, self.rho_npts = rho_wmin, rho_wmax, rho_npts
 
-    def calculate2(self, selfenergy, mu):
-        se = selfenergy.get_as_BlockGf()
-        for bn, b in se:
-            #eps = lambda x: [xi**2 * inverse(iOmega_n + mu[bn] - se[self.flip_spin(bn)] for xi in x]
-            self[bn] << self.rho_to_g(se[bn], mu[bn], epsilon_hat = eps, test_convergence = True)
-            
     def calculate(self, selfenergy, mu):
         """
         Fragments taken from TRIQS Hilbert Transf.
+        TODO solve the tail(-2) problem
         """
         #init
+        selfenergy = selfenergy.get_as_BlockGf()
+        g = self.get_as_BlockGf()
+        gceta_a = g.copy()
+        inv_gceta_b = g.copy()
+        #gceta_ab = g.copy()
+        gtmp = g.copy()
         r = (self.rho_wmax - self.rho_wmin)/float(self.rho_npts - 1)
         eps = np.array([self.rho_wmin + r * i for i in range(self.rho_npts)])
         rho = np.array([self.rho_lambda(e) for e in eps])
@@ -45,22 +46,24 @@ class GLocal(GLocalGeneric):
             rho[i] *=  (eps[i+1] - eps[i])/2+(eps[i] - eps[i-1])/2
         rho /= np.sum(rho)
         #calc
-        for bn, b in self:
-            eps2 = np.array([x**2 * np.identity(b.N1) for x in eps])
+        for bn, b in g:
+            eps2 = np.array([x * x * np.identity(b.N1) for x in eps])
+            rhomats = np.array([r * np.identity(b.N1) for r in rho])
+            mumat = np.identity(1) * mu[bn]
             b.zero()
-            ceta_a = b.copy()
-            ceta_b = b.copy()
-            ceta_ab = b.copy()
-            ceta_a << iOmega_n + mu[bn] - selfenergy[bn]
-            ceta_b << iOmega_n + mu[bn] - selfenergy[self.flip_spin(bn)]
-            ceta_ab << ceta_a * ceta_b
-            del ceta_a
-            for d, e2, in itt.izip (*[mpi.slice_array(A) for A in [rho, eps2]]):
-                b += ceta_b * d * inverse(ceta_ab - e2)
+            tmp = gtmp[bn]
+            gceta_a[bn] << iOmega_n + mumat - selfenergy[bn]
+            inv_gceta_b[bn] << iOmega_n + mumat - selfenergy[self.flip_spin(bn)]
+            inv_gceta_b[bn].invert()
+            #gceta_ab[bn] << gceta_a[bn] * gceta_b[bn]
+            #print gceta_ab[bn].tail
+            for d, e2 in itt.izip (*[mpi.slice_array(A) for A in [rho, eps2]]):
+                tmp << gceta_a[bn] - float(e2) * inv_gceta_b[bn]
+                tmp.invert()
+                b += d * tmp
             b << mpi.all_reduce(mpi.world, b, lambda x, y: x+y)
             mpi.barrier()
-        #known_mom = [(i, np.zeros((1, 1))) for i in [-1, 0]] + [(1, np.identity(1))]
-        #self.fit_tail2(self.w1, self.w2, 8, known_mom)
+            self[bn] << b
 
     def flip_spin(self, blocklabel):
         up, dn = "up", "dn"
