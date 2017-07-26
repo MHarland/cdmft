@@ -178,3 +178,19 @@ class MatsubaraGreensFunction(BlockGf):
                 plt.plot(mesh[ia:ie], b.data[ia:ie, i, j].real, ls = 'dashed')
         plt.savefig(file_name)
         plt.close()
+
+    def flip_spin(self, blocklabel):
+        up, dn = "up", "dn"
+        self._checkforspins()
+        if up in blocklabel:
+            splittedlabel = blocklabel.split(up)
+            new_label = splittedlabel[0] + dn + splittedlabel[1]
+        elif dn in blocklabel:
+            splittedlabel = blocklabel.split(dn)
+            new_label = splittedlabel[0] + up + splittedlabel[1]
+        assert isinstance(new_label, str), "couldn't flip spin, spins must be labeled up/dn"
+        return new_label
+
+    def _checkforspins(self):
+        for name in self.blocknames:
+            assert (len(name.split("up")) == 2) ^ (len(name.split("dn")) == 2), "the strings up and dn must occur exactly once in blocknames"

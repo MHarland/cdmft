@@ -4,7 +4,7 @@ from scipy.linalg import expm, eigh
 from bethe.setups.generic import CycleSetupGeneric
 from bethe.operators.hubbard import Site, TriangleMomentum, PlaquetteMomentum, Triangle, TriangleAIAO, TriangleSpinOrbitCoupling
 from bethe.operators.kanamori import Dimer as KanamoriDimer, MomentumDimer as KanamoriMomentumDimer
-from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM, GLocalInhomogeneous, WeissFieldInhomogeneous
+from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM, GLocalInhomogeneous, WeissFieldInhomogeneous, GLocalAIAO
 from bethe.transformation import MatrixTransformation
 
 from pytriqs.gf.local import iOmega_n, inverse
@@ -161,7 +161,7 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
         self.t_loc = transf.transform_matrix(t_loc)
         self.h_int = TriangleSpinOrbitCoupling(bn, u, transf = site_transformation)
         self.mu = mu
-        self.gloc = GLocalWithOffdiagonals(t_bethe, self.t_loc, self.blocknames, blocksizes, beta, n_iw)
+        self.gloc = GLocalAIAO(t_bethe, self.t_loc, self.blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(self.blocknames, blocksizes, beta, n_iw)
         self.g0 = WeissFieldAIAO(self.blocknames, blocksizes, beta, n_iw)
         self.global_moves = {"spin-flip": dict([((bn, i), (bn, (i+3)%6)) for i in range(6)]), "reflection": dict([((bn, 1), (bn, 2)), ((bn, 2), (bn, 1)), ((bn, 4), (bn, 5)), ((bn, 5), (bn, 4))])}
@@ -210,12 +210,16 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
         se = self.se
         u = self.site_transf
         r = [self.spin_transf_mat(i * 2*np.pi /3.) for i in permutation]
+        for ri in r:
+            assert np.allclose(ri.imag, 0), "imag fails tail multiplication"
+            ri = np.array(ri.real, dtype = float)
         bn = self.blocknames[0]
         eps = np.array([e_in, e_out])
         spins, sites = range(2), range(3)
         for s0, i0, s1, i1 in itt.product(spins, sites, spins, sites):
             a0, a1 = self.superindex(s0, i0), self.superindex(s1, i1)
-            se[bn][a0, a1] += np.sum([u[i0, j] * r[j][t, s0].conjugate() * v**2 * inverse(iOmega_n - eps[t]) * r[j][t, s1] *u[i1, j].conjugate() for t, j in itt.product(spins, sites)])
+            #se[bn][a0, a1] += np.sum([u[i0, j] * r[j][t, s0].conjugate() * v**2 * inverse(iOmega_n - eps[t]) * r[j][t, s1] *u[i1, j].conjugate() for t, j in itt.product(spins, sites)])
+            se[bn][a0, a1] += np.sum([u[i0, j] * r[j][t, s0].real * v**2 * inverse(iOmega_n - eps[t]) * r[j][t, s1].real *u[i1, j].conjugate() for t, j in itt.product(spins, sites)])
 
 
 class PlaquetteBetheSetup(CycleSetupGeneric):

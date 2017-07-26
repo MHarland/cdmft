@@ -1,6 +1,6 @@
 import unittest, numpy as np, itertools as itt
 
-from bethe.schemes.bethe import GLocal, SelfEnergy, WeissField, GLocalAFM, WeissFieldAIAO, GLocalWithOffdiagonals
+from bethe.schemes.bethe import GLocal, SelfEnergy, WeissField, GLocalAFM, WeissFieldAIAO, GLocalWithOffdiagonals, GLocalAIAO
 
 
 class TestSchemesBethe(unittest.TestCase):
@@ -24,7 +24,7 @@ class TestSchemesBethe(unittest.TestCase):
         g.set(se, 0)
 
     def test_SchemesBetheAIAO(self):
-        g = GLocalWithOffdiagonals(1, {'spin-site': np.identity(6)}, ['spin-site'], [6], 10, 1001)
+        g = GLocalAIAO(1, {'spin-site': np.identity(6)}, ['spin-site'], [6], 10, 1001)
         se = SelfEnergy(['spin-site'], [6], 10, 1001)
         se.zero()
         testmat = np.array([[i*j for j in range(1,7)] for i in range(1,7)])

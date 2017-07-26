@@ -39,7 +39,6 @@ class GLocal(GLocalGeneric):
 class GLocalAFM(GLocal):
 
     def calculate(self, selfenergy, mu):
-        self.checkforspins()
         for sk, b in self:
             sk = self.flip_spin(sk)
             orbitals = [i for i in range(b.data.shape[1])]
@@ -52,39 +51,33 @@ class GLocalAFM(GLocal):
         self.fit_tail2(self.w1, self.w2, self.n_mom)
         assert not math.isnan(self.total_density()), 'tail fit fail!'
 
-    def checkforspins(self):
-        for name in self.blocknames:
-            assert (len(name.split("up")) == 2) ^ (len(name.split("dn")) == 2), "the strings up and dn must occur exactly once in blocknames"
 
-    def flip_spin(self, blocklabel):
-        up, dn = "up", "dn"
-        if up in blocklabel:
-            splittedlabel = blocklabel.split(up)
-            new_label = splittedlabel[0] + dn + splittedlabel[1]
-        elif dn in blocklabel:
-            splittedlabel = blocklabel.split(dn)
-            new_label = splittedlabel[0] + up + splittedlabel[1]
-        return new_label
-
-
-class GLocalWithOffdiagonals(GLocal):
+class GLocalWithOffdiagonals(GLocalGeneric):
 
     def __init__(self, t_bethe, t_local, *args, **kwargs):
         GLocalGeneric.__init__(self, *args, **kwargs)
         self.t_loc = t_local
         self.t_b = t_bethe
         self._last_g_loc_convergence = []
+        self._g_flipped = self.get_as_BlockGf().copy()
+        self._last_attempt = self.get_as_BlockGf().copy()
+
+    def _set_g_flipped(self):
+        for s, b in self:
+            self._g_flipped[self.flip_spin(s)] << b
 
     def calculate(self, selfenergy, mu, n_g_loc_iterations = 1000):
-        last_attempt = self.copy()
+        self._set_g_flipped()
         for i in range(n_g_loc_iterations):
-            for s, b in self:
-                b << inverse(iOmega_n + mu[s] - self.t_loc[s] - self.t_b**2 * b - selfenergy[s])
-            if self._is_converged(last_attempt):
+            self.calc_selfconsistency(selfenergy, mu)
+            if self._is_converged(self._last_attempt):
                 break
             else:
-                last_attempt << self
-        del last_attempt
+                self._last_attempt << self
+
+    def calc_selfconsistency(self, selfenergy, mu):
+        for s, b in self:
+            b << inverse(iOmega_n + mu[s] - self.t_loc[s] - self.t_b**2 * self._g_flipped[s] - selfenergy[s])
 
     def _is_converged(self, g_to_compare, atol = 10e-3, rtol = 1e-15):
         conv = False
@@ -98,39 +91,54 @@ class GLocalWithOffdiagonals(GLocal):
 
 class GLocalInhomogeneous(GLocalWithOffdiagonals):
 
-    def calculate(self, selfenergy, mu, n_g_loc_iterations = 1000):
-        last_attempt = self.copy()
-        for i in range(n_g_loc_iterations):
-            for s, b in self:
-                b << inverse(iOmega_n + mu[s] - self.t_loc[s] - double_dot_product(self.t_b[s], b, self.t_b[s]) - selfenergy[s])
-            if self._is_converged(last_attempt):
-                break
-            else:
-                last_attempt << self
-        del last_attempt
+    def calc_selfconsistency(self, selfenergy, mu):
+        for s, b in self:
+            b << inverse(iOmega_n + mu[s] - self.t_loc[s] - double_dot_product(self.t_b[s], self._g_flipped[s], self.t_b[s]) - selfenergy[s])
+
+
+class GLocalAIAO(GLocalWithOffdiagonals):
+
+    def __init__(self, *args, **kwargs):
+        GLocalWithOffdiagonals.__init__(self, *args, **kwargs)
+        self.index_map = {}
+        for i,j in itt.product(*[range(6)]*2):
+            if i < 3 and j < 3:
+                self.index_map[(i,j)] = (i+3,j+3,1)
+            elif i >= 3 and j >= 3:
+                self.index_map[(i,j)] = (i-3,j-3,1)
+            elif i < 3 and j >= 3:
+                self.index_map[(i,j)] = (i+3,j-3,-1)
+            elif i >= 3 and j < 3:
+                self.index_map[(i,j)] = (i-3,j+3,-1)
     
+    def _set_g_flipped(self):
+        for s, b in self:
+            for lind, rindsign in self.index_map.items():
+                sign = rindsign[2]
+                rind = (rindsign[0], rindsign[1])
+                dij = int(lind[0] == lind[1])
+                self._g_flipped[s][lind] << sign * b[rind]
+
+
+class WeissField(WeissFieldGeneric):
+    
+    def calc_selfconsistency(self, glocal, selfenergy, mu, *args, **kwargs):
+        if isinstance(mu, float) or isinstance(mu, int): mu = self._to_blockmatrix(mu)
+        for bn, b in self:
+            b << inverse(iOmega_n  + mu[bn] - glocal.t_loc[bn] - glocal.t_b**2 * glocal[bn])
+
 
 class WeissFieldAFM(WeissFieldGeneric):
-
+    
     def calc_selfconsistency(self, glocal, selfenergy, mu, *args, **kwargs):
         if isinstance(mu, float) or isinstance(mu, int): mu = self._to_blockmatrix(mu)
         for bn, b in self:
             bn = self.flip_spin(bn)
             b << inverse(iOmega_n  + mu[bn] - glocal.t_loc[bn] - glocal.t_b**2 * glocal[bn])
 
-    def flip_spin(self, blocklabel):
-        up, dn = "up", "dn"
-        if up in blocklabel:
-            splittedlabel = blocklabel.split(up)
-            new_label = splittedlabel[0] + dn + splittedlabel[1]
-        elif dn in blocklabel:
-            splittedlabel = blocklabel.split(dn)
-            new_label = splittedlabel[0] + up + splittedlabel[1]
-        return new_label
-
 
 class WeissFieldAIAO(WeissFieldGeneric):
-
+    
     def __init__(self, *args, **kwargs):
         WeissFieldGeneric.__init__(self, *args, **kwargs)
         self.index_map = {}
@@ -159,17 +167,8 @@ class WeissFieldAIAO(WeissFieldGeneric):
         self << inverse(tmp)
 
 
-class SelfEnergy(SelfEnergyGeneric):
-    pass
+class WeissFieldInhomogeneous(WeissFieldGeneric):
 
-
-class WeissField(WeissFieldGeneric):
-    def calc_selfconsistency(self, glocal, selfenergy, mu, *args, **kwargs):
-        if isinstance(mu, float) or isinstance(mu, int): mu = self._to_blockmatrix(mu)
-        for bn, b in self:
-            b << inverse(iOmega_n  + mu[bn] - glocal.t_loc[bn] - glocal.t_b**2 * glocal[bn])
-
-class WeissFieldInhomogeneous(WeissFieldAFM):
     def calc_selfconsistency(self, glocal, selfenergy, mu, *args, **kwargs):
         if isinstance(mu, float) or isinstance(mu, int): mu = self._to_blockmatrix(mu)
         for bn, b in self:
@@ -186,3 +185,7 @@ class GLocalNambu(GLocal):
     def set(self, selfenergy, mu, w1, w2, filling = None, dmu_max = None, *args, **kwargs):
         self << inverse(inverse(self.g0_reference) - selfenergy)
         return mu
+
+
+class SelfEnergy(SelfEnergyGeneric):
+    pass
