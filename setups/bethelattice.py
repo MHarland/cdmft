@@ -71,34 +71,36 @@ class TriangleBetheSetup(CycleSetupGeneric):
         self.quantum_numbers = [hubbard.get_n_tot(), hubbard.get_n_per_spin(up)]
 
 
+
 class TwoOrbitalDimerBetheSetup(CycleSetupGeneric):
-    """
-    TODO
-    """
-    def __init__(self, beta, mu, u, j, tc_perp, td_perp, tc_bethe, td_bethe, density_density_only = False, orbitals = ["c", "d"], symmetric_orbitals = [], n_iw = 1025):
-        up = "up"
-        dn = "dn"
-        spins = [up, dn]
+    def __init__(self, beta, mu, u, j, tc_perp, td_perp, tc0_bethe, tc1_bethe, td0_bethe, td1_bethe, density_density_only = False, orbitals = ["c", "d"], symmetric_orbitals = [], n_iw = 1025, site_transformation = np.array([[1/np.sqrt(2), 1/np.sqrt(2)],[1/np.sqrt(2), -1/np.sqrt(2)]])):
+        spins = ["up", "dn"]
         sites = range(2)
+        momenta = ["G", "X"]
         blocknames = [s+"-"+o for s, o in itt.product(spins, orbitals)]
         blocksizes = [2] * 4
         gf_struct = [[n, range(s)] for n, s in zip(blocknames, blocksizes)]
-        tc_loc = np.array([[0,tc_perp,],[tc_perp,0]])
-        td_loc = np.array([[0,td_perp,],[td_perp,0]])
-        t_loc = {bn: t_loc for bn, t_loc in zip(blocknames, [tc_loc, td_loc, tc_loc, td_loc])}
-        tc_b = np.array([[tc_bethe, 0],[0, tc_bethe]])
-        td_b = np.array([[td_bethe, 0],[0, td_bethe]])
-        t_bethe = {bn: t_b for bn, t_b in zip(blocknames, [tc_b, td_b, tc_b, td_b])}
-        self.h_int = KanamoriDimer(u, j, spins, orbitals, density_density_only = density_density_only)
+        tc_loc_site = np.array([[0,tc_perp,],[tc_perp,0]])
+        td_loc_site = np.array([[0,td_perp,],[td_perp,0]])
+        t_loc_site = {bn: t_loc_site for bn, t_loc_site in zip(blocknames, [tc_loc_site, td_loc_site, tc_loc_site, td_loc_site])}
+        tc_bethe_site = np.array([[tc0_bethe, 0],[0, tc1_bethe]])
+        td_bethe_site = np.array([[td0_bethe, 0],[0, td1_bethe]])
+        t_bethe_site = {bn: t_bethe_site for bn, t_bethe_site in zip(blocknames, [tc_bethe_site, td_bethe_site, tc_bethe_site, td_bethe_site])}
+        site_transformation = {bn: site_transformation for bn in blocknames}
+        self.transf = MatrixTransformation(gf_struct, site_transformation)
+        t_loc = self.transf.transform_matrix(t_loc_site)
+        t_bethe = self.transf.transform_matrix(t_bethe_site)
+        self.h_int = KanamoriDimer(u, j, spins, orbitals, density_density_only = density_density_only, transf = site_transformation)
         self.g0 = WeissFieldInhomogeneous(blocknames, blocksizes, beta, n_iw)
         self.gloc = GLocalInhomogeneous(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
         self.mu = mu
         self.global_moves = {}
         self.quantum_numbers = [self.h_int.n_tot(), self.h_int.sz_tot()]
+        
 
 
-class TwoOrbitalMomentumDimerBetheSetup(TwoOrbitalDimerBetheSetup):
+class TwoOrbitalMomentumDimerBetheSetup(CycleSetupGeneric):
     def __init__(self, beta, mu, u, j, tc_perp, td_perp, tc_bethe, td_bethe, density_density_only = False, orbitals = ["c", "d"], symmetric_orbitals = [], n_iw = 1025, site_transformation = np.array([[1/np.sqrt(2), 1/np.sqrt(2)],[1/np.sqrt(2), -1/np.sqrt(2)]])):
         spins = ["up", "dn"]
         sites = range(2)

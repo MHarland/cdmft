@@ -108,10 +108,10 @@ class MomentumDimer(Dimer):
     """
     def __init__(self, *args, **kwargs):
         self.mom = kwargs.pop('momenta')
-        self.r_to_k = {i:self.mom[i] for i in range(len(self.mom))}
+        self.k = {i:self.mom[i] for i in range(len(self.mom))}
         Dimer.__init__(self, *args, **kwargs)
     
     def c(self, spin, orb, site):
         block = spin+'-'+orb
-        c =  np.sum([self.transf[block][i_k, site].conjugate() * C(block+'-'+self.r_to_k[i_k], 0) for i_k in self.kinds], axis = 0)
+        c =  np.sum([self.transf[block][i_k, site].conjugate() * C(block+'-'+self.k[i_k], 0) for i_k in self.kinds], axis = 0)
         return c

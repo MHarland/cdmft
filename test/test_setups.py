@@ -81,7 +81,7 @@ class TestSetups(unittest.TestCase):
             #self.assertTrue(np.allclose(setup.se['spin-mom'].data[1025,j,i], 0.))
 
     def test_TwoOrbitalDimerBetheSetup(self):
-        setup = TwoOrbitalDimerBetheSetup(10, .5, 1, .2, -1, -.1, 1, .1)
+        setup = TwoOrbitalDimerBetheSetup(10, .5, 1, .2, -1, -.1, .2, .25, .2, .2)
 
     def test_TwoOrbitalMomentumDimerBetheSetup(self):
         setup = TwoOrbitalMomentumDimerBetheSetup(10, .5, 1, .2, -1, -.1, 1, .1)
