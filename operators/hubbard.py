@@ -274,7 +274,7 @@ class TriangleMomentum(Hubbard):
         self._to_mom = GfStructTransformationIndex(self.gf_struct, [[self.up, self.sites], [self.dn, self.sites]])
 
     def _c(self, spin, site):
-        return sum([self.transformation[spin][k_index, site] * C(*self._to_mom(spin, k_index)) for k_index in range(len(self.sites))]) # TODO conjugate!
+        return sum([self.transformation[spin][k_index, site].conjugate() * C(*self._to_mom(spin, k_index)) for k_index in range(len(self.sites))])
 
     def doublet_state(self, i, j, sz, pm = -1):
         for site in self.sites:
@@ -330,26 +330,23 @@ class PlaquetteMomentum(Hubbard):
         return sum([self.transformation[spin][site, k_index] * C(*self._to_mom(spin, k_index)) for k_index in range(4)])
 
 
-class PlaquetteMomentumNambu(Hubbard): # TODO
+class PlaquetteMomentumNambu(Hubbard):
     """
     extends PlaquetteMomentum space by anomalous parts, using particle-hole transformation on 
     spin-down
     """
     def __init__(self, u, spins, momenta, transformation):
         self.u = u
-        up = spins[0]
-        dn = spins[1]
-        self.up = up
-        self.dn = dn
-        sites = range(4)
-        self.site_to_mom = dict([(i, momenta[i]) for i in sites])
+        self.sites = range(4)
+        self.up, self.dn = up, dn = spins[0], spins[1]
+        self.site_to_mom = dict([(i, momenta[i]) for i in range(4)])
         self.transformation = transformation
         self.block_labels = [k for k in momenta]
         self.gf_struct = [[l, range(2)] for l in self.block_labels]
 
     def _c(self, spin, site):
         if spin == self.up:
-            return sum([self.transformation[spin][site, k_index] * C(self.site_to_mom[k_index], 0) for k_index in range(len(self.sites))])
+            return sum([self.transformation[spin][k_index, site].conjugate() * C(self.site_to_mom[k_index], 0) for k_index in range(4)])
         elif spin == self.dn:
-            return sum([self.transformation[spin][site, k_index] * CDag(self.site_to_mom[k_index], 1) for k_index in range(len(self.sites))])
+            return sum([self.transformation[spin][k_index, site].conjugate() * CDag(self.site_to_mom[k_index], 1) for k_index in range(4)]) # TODO what's first, momentum or nambu transf?
         assert False, "spin "+spin+" not recognized"

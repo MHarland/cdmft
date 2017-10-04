@@ -2,7 +2,7 @@ import unittest, os, numpy as np
 
 from bethe.h5interface import Storage
 from bethe.selfconsistency import Cycle
-from bethe.setups.bethelattice import SingleBetheSetup, TriangleBetheSetup, PlaquetteBetheSetup, TriangleAIAOBetheSetup, TwoOrbitalDimerBetheSetup, TwoOrbitalMomentumDimerBetheSetup
+from bethe.setups.bethelattice import SingleBetheSetup, TriangleBetheSetup, PlaquetteBetheSetup, TriangleAIAOBetheSetup, TwoOrbitalDimerBetheSetup, TwoOrbitalMomentumDimerBetheSetup, NambuMomentumPlaquette
 from bethe.setups.cdmftchain import MomentumDimerSetup, StrelSetup
 from bethe.setups.cdmftsquarelattice import MomentumPlaquetteSetup
 from bethe.parameters import TestDMFTParameters
@@ -85,3 +85,15 @@ class TestSetups(unittest.TestCase):
 
     def test_TwoOrbitalMomentumDimerBetheSetup(self):
         setup = TwoOrbitalMomentumDimerBetheSetup(10, .5, 1, .2, -1, -.1, 1, .1)
+
+    def test_NambuMomentumPlaquetteSetup(self):
+        setup = NambuMomentumPlaquette(100, 0, 3, -1, 0, 1)
+        sto = Storage('test.h5')
+        par = TestDMFTParameters()
+        cyc = Cycle(sto, par, **setup.initialize_cycle())
+        cyc.run(1, n_cycles = 0, filling = None)
+        os.remove('test.h5')
+        self.assertEqual(cyc.g_loc.total_density_nambu().real, 4)
+        setup.set_anomalous(.2)
+        setup2 = PlaquetteBetheSetup(100, 0, 3, -1, 0, 1)
+        setup.transform_particlehole(setup2.gloc, setup.gloc)

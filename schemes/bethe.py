@@ -1,8 +1,9 @@
 import numpy as np, itertools as itt, math
 from pytriqs.gf.local.descriptor_base import Function
 from pytriqs.gf.local import inverse, iOmega_n
+from pytriqs.utility.bound_and_bisect import bound_and_bisect
 
-from generic import GLocalGeneric, SelfEnergyGeneric, WeissFieldGeneric
+from generic import GLocalGeneric, SelfEnergyGeneric, WeissFieldGeneric, FunctionWithMemory
 from ..gfoperations import double_dot_product
 
 
@@ -59,8 +60,8 @@ class GLocalWithOffdiagonals(GLocalGeneric):
         self.t_loc = t_local
         self.t_b = t_bethe
         self._last_g_loc_convergence = []
-        self._g_flipped = self.get_as_BlockGf().copy()
-        self._last_attempt = self.get_as_BlockGf().copy()
+        self._g_flipped = self.copy()#self.get_as_BlockGf().copy()
+        self._last_attempt = self.copy()#self.get_as_BlockGf().copy()
 
     def _set_g_flipped(self):
         for s, b in self:
@@ -176,15 +177,87 @@ class WeissFieldInhomogeneous(WeissFieldGeneric):
             b << inverse(iOmega_n  + mu[bn] - glocal.t_loc[bn] - double_dot_product(glocal.t_b[bn], glocal[bn], glocal.t_b[bn]))
 
 
-class GLocalNambu(GLocal):
+class WeissFieldNambu(WeissFieldGeneric):
+    """
+    with afm and allows for imaginary gap, too
+    """
+    def __init__(self, *args, **kwargs):
+        WeissFieldGeneric.__init__(self, *args, **kwargs)
+        self._tmp = self.copy()
+        self._ceta = self.copy()
+    
+    def calc_selfconsistency(self, glocal, selfenergy, mu, *args, **kwargs):
+        if isinstance(mu, float) or isinstance(mu, int): mu = self._to_blockmatrix(mu)
+        pauli3 = np.array([[1, 0], [0, -1]])
+        for bn, b in self:
+            ceta = self._ceta[bn]
+            ceta << iOmega_n  + (mu[bn] - glocal.t_loc[bn]).dot(pauli3)
+            self._tmp[bn][0, 0] << ceta[0, 0] - glocal.t_b**2 * (-1) * glocal[bn][1, 1].conjugate()
+            self._tmp[bn][1, 1] << ceta[1, 1] - glocal.t_b**2 * (-1) * glocal[bn][0, 0].conjugate()
+            self._tmp[bn][0, 1] << ceta[0, 1] - glocal.t_b**2 * (-1) * glocal[bn][1, 0]
+            self._tmp[bn][1, 0] << ceta[1, 0] - glocal.t_b**2 * (-1) * glocal[bn][0, 1]
+        self << inverse(self._tmp)
 
-    def __init__(self, block_names, block_states, beta, n_iw, t, t_loc, g0_reference, g_loc = None):
-        GLocal.__init__(self, block_names, block_states, beta, n_iw, t, t_loc, g_loc = None)
-        self.g0_reference = g0_reference
-        
-    def set(self, selfenergy, mu, w1, w2, filling = None, dmu_max = None, *args, **kwargs):
-        self << inverse(inverse(self.g0_reference) - selfenergy)
-        return mu
+
+class GLocalNambu(GLocalWithOffdiagonals):
+
+    def __init__(self, *args, **kwargs):
+        GLocalWithOffdiagonals.__init__(self, *args, **kwargs)
+        self.p3 = np.array([[1, 0], [0, -1]])
+
+    def _set_g_flipped(self):
+        for s, b in self:
+            self._g_flipped[s][0, 0] << (-1) * b[1, 1].conjugate()
+            self._g_flipped[s][1, 1] << (-1) * b[0, 0].conjugate()
+            self._g_flipped[s][0, 1] << b[1, 0]
+            self._g_flipped[s][1, 0] << b[0, 1]
+
+    def calc_selfconsistency(self, selfenergy, mu):
+        for s, b in self:
+            b << inverse(iOmega_n + (mu[s] - self.t_loc[s]).dot(self.p3) - self.t_b**2 * double_dot_product(self.p3, self._g_flipped[s], self.p3) - selfenergy[s])
+
+    def total_density_nambu(self, g = None):
+        if g is None: g = self
+        densities = []
+        for s, b in g:
+            densities.append(b[0, 0].total_density())
+            densities.append(- b[1, 1].conjugate().total_density())
+        density = np.sum(densities)
+        return density
+
+    def _is_converged(self, g_to_compare, atol = 10e-3, rtol = 1e-15):
+        conv = False
+        n = self.total_density_nambu()
+        n_last = self.total_density_nambu(g_to_compare)
+        self._last_g_loc_convergence.append(abs(n-n_last))
+        if np.allclose(n, n_last, rtol, atol):
+            conv = True
+        return conv
+
+    def find_and_set_mu(self, filling, selfenergy, mu0, dmu_max):
+        """
+        Assumes a diagonal-mu basis
+        """
+        # TODO place mu in center of gap
+        if not filling is None:
+            self.filling_with_old_mu = self.total_density_nambu()
+            f = lambda mu: self._set_mu_get_filling(selfenergy, mu)
+            f = FunctionWithMemory(f)
+            self.last_found_mu_number, self.last_found_density = bound_and_bisect(f, mu0, filling, dx = self.mu_dx, x_name = "mu", y_name = "filling", maxiter = self.mu_maxiter, verbosity = self.verbosity)
+            new_mu, limit_applied = self.limit(self.last_found_mu_number, mu0, dmu_max)
+            if limit_applied:
+                self.calculate(selfenergy, self.make_matrix(new_mu))
+            return new_mu
+
+    def _set_mu_get_filling(self, selfenergy, mu):
+        """
+        needed for find_and_set_mu
+        """
+        self.calculate(selfenergy, self.make_matrix(mu))
+        d = self.total_density_nambu()
+        print d.real
+        return d
+
 
 
 class SelfEnergy(SelfEnergyGeneric):

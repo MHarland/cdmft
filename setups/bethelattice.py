@@ -2,9 +2,9 @@ import numpy as np, itertools as itt
 from scipy.linalg import expm, eigh
 
 from bethe.setups.generic import CycleSetupGeneric
-from bethe.operators.hubbard import Site, TriangleMomentum, PlaquetteMomentum, Triangle, TriangleAIAO, TriangleSpinOrbitCoupling
+from bethe.operators.hubbard import Site, TriangleMomentum, PlaquetteMomentum, Triangle, TriangleAIAO, TriangleSpinOrbitCoupling, PlaquetteMomentumNambu
 from bethe.operators.kanamori import Dimer as KanamoriDimer, MomentumDimer as KanamoriMomentumDimer
-from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM, GLocalInhomogeneous, WeissFieldInhomogeneous, GLocalAIAO
+from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM, GLocalInhomogeneous, WeissFieldInhomogeneous, GLocalAIAO, GLocalNambu, WeissFieldNambu
 from bethe.transformation import MatrixTransformation
 
 from pytriqs.gf.local import iOmega_n, inverse
@@ -262,20 +262,15 @@ class PlaquetteBetheSetup(CycleSetupGeneric):
             b << self.gloc.make_matrix(self.mu)[n]
 
 
-class NambuMomentumPlaquette: # TODO
+class NambuMomentumPlaquette(CycleSetupGeneric): # TODO mu?
 
     def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t_bethe = 1, n_iw = 1025):
-        Bethe.__init__(self, beta, mu, u, t_bethe, n_iw)
-        g = "G"
-        x = "X"
-        y = "Y"
-        m = "M"
-        up = "up"
-        dn = "dn"
+        g, x, y, m = "G", "X", "Y", "M"
+        up, dn = "up", "dn"
         self.spins = [up, dn]
         self.sites = range(4)
         self.momenta = [g, x, y, m]
-        self.spinors = range(2)
+        self.spinors = range(2) #nambu spinors: 0: particle, 1: hole
         self.block_labels = [k for k in self.momenta]
         self.gf_struct = [[l, self.spinors] for l in self.block_labels]
         self.gf_struct_site = [[s, self.sites] for s in self.spins]
@@ -284,37 +279,44 @@ class NambuMomentumPlaquette: # TODO
                                                [1,1,-1,-1],
                                                [1,-1,-1,1]])
         self.transformation = dict([(s, transformation_matrix) for s in self.spins])
-        mom_transf = MatrixTransformation(self.gf_struct_site, self.transformation, self.gf_struct)
-        a = tnn_plaquette
-        b = tnnn_plaquette
+        a, b = tnn_plaquette, tnnn_plaquette
         t_loc = np.array([[0,a,a,b],[a,0,b,a],[a,b,0,a],[b,a,a,0]])
         t_loc = {up: np.array(t_loc), dn: np.array(t_loc)}
-        reblock_map = {(up,0,0):(g,0,0), (dn,0,0):(g,1,1), (up,1,1):(x,0,0), (dn,1,1):(x,1,1), (up,2,2):(y,0,0), (dn,2,2):(y,1,1), (up,3,3):(m,0,0), (dn,3,3):(m,1,1)}
-        self.t_loc = mom_transf.reblock_by_map(mom_transf.transform_matrix(t_loc), reblock_map)
-        mu = {up: mu * np.identity(4), dn: mu * np.identity(4)}
-        self.mu = mom_transf.reblock_by_map(mom_transf.transform_matrix(mu), reblock_map)
-        self.operators = HubbardPlaquetteMomentumNambu(u, self.spins, self.momenta, self.transformation)
+        self.reblock_map = {(up,0,0):(g,0,0), (dn,0,0):(g,1,1), (up,1,1):(x,0,0), (dn,1,1):(x,1,1), (up,2,2):(y,0,0), (dn,2,2):(y,1,1), (up,3,3):(m,0,0), (dn,3,3):(m,1,1)}
+        self.mom_transf = MatrixTransformation(self.gf_struct_site, self.transformation, self.gf_struct, reblock_map = self.reblock_map)
+        t_loc = self.mom_transf.transform_matrix(t_loc)
+        self.mu = mu
+        self.operators = PlaquetteMomentumNambu(u, self.spins, self.momenta, self.transformation)
         self.h_int = self.operators.get_h_int()
-        self.g0 = WeissFieldNambu(self.momenta, [self.spinors]*4, self.beta, n_iw, self.t, self.t_loc)
-        self.initial_g = GLocalNambu(self.momenta, [self.spinors]*4, self.beta, n_iw, self.t, self.t_loc, self.g0)
-        self.initial_se = GLocal(self.momenta, [self.spinors]*4, self.beta, n_iw, self.t, self.t_loc)
+        self.gloc = GLocalNambu(t_bethe, t_loc, self.momenta, [2]*4, beta, n_iw)
+        self.g0 = WeissFieldNambu(self.momenta, [2]*4, beta, n_iw)
+        self.se = SelfEnergy(self.momenta, [2]*4, beta, n_iw)
+        self.global_moves = {}
+        self.quantum_numbers = []
 
-    def set_initial_guess(self, selfenergy, g0, anom_field_factor = 0, transform = True):
+    def set_data(self, storage, load_mu = True, transform = True):
         """initializes by previous non-nambu solution and anomalous field or by 
         nambu-solution"""
+        gloc = storage.load('g_imp_iw')
+        g0 = storage.load('g_weiss_iw')
+        se = storage.load('se_imp_iw')
+        if load_mu:
+            mu = storage.load('mu')
+            self.mu = self.mom_transf.reblock_by_map(mom_transf.transform_matrix({up: mu * np.identity(4), dn: mu * np.identity(4)}), self.reblock_map)
         if transform:
-            self._transform_particlehole(selfenergy, self.initial_se)
-            self._transform_particlehole(g0, self.g0)
-            self._set_anomalous(anom_field_factor)
+            self.transform_particlehole(gloc, self.gloc)
+            self.transform_particlehole(g0, self.g0)
+            self.transform_particlehole(se, self.se)
         else:
-            self.initial_se.set_gf(selfenergy)
-            self.g0.set_gf(g0)
+            self.gloc << gloc
+            self.g0 << g0
+            self.se << se
 
-    def _set_anomalous(self, factor):
-        """d-wave, singlet"""
+    def set_anomalous(self, factor):
+        """d-wave, spin-singlet"""
         xi = self.momenta[1]
         yi = self.momenta[2]
-        g = self.initial_se.gf
+        g = self.se
         n_points = len([iwn for iwn in g.mesh])/2
         for offdiag in [[0,1], [1,0]]:
             for n  in [n_points, n_points-1]:
@@ -323,7 +325,7 @@ class NambuMomentumPlaquette: # TODO
             offdiag = tuple(offdiag)
             g[yi][offdiag] << -1 * g[xi][offdiag]
 
-    def _transform_particlehole(self, g_sm, g_nambu):
+    def transform_particlehole(self, g_sm, g_nambu):
         """gets a non-nambu greensfunction to initialize nambu"""
         gf_struct_mom = dict([(s+'-'+k, [0]) for s in self.spins for k in self.momenta])
         to_nambu = MatrixTransformation(gf_struct_mom, None, self.gf_struct)
@@ -334,6 +336,6 @@ class NambuMomentumPlaquette: # TODO
         for b, i, j in g_sm.all_indices:
             b_nam, i_nam, j_nam = reblock_map[(b, int(i), int(j))]
             if i_nam == 0 and j_nam == 0:
-                g_nambu.gf[b_nam][i_nam, j_nam] << g_sm[b][i, j]
+                g_nambu[b_nam][i_nam, j_nam] << g_sm[b][i, j]
             if i_nam == 1 and j_nam == 1:
-                g_nambu.gf[b_nam][i_nam, j_nam] << -1 * g_sm[b][i, j].conjugate()
+                g_nambu[b_nam][i_nam, j_nam] << -1 * g_sm[b][i, j].conjugate()

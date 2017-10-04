@@ -73,6 +73,7 @@ if extensive_test: suite.addTest(TestSetups("test_squarelattice_MomentumPlaquett
 suite.addTest(TestSetups("test_TriangleAIAOBetheSetup"))
 suite.addTest(TestSetups("test_TwoOrbitalDimerBetheSetup"))
 suite.addTest(TestSetups("test_TwoOrbitalMomentumDimerBetheSetup"))
+suite.addTest(TestSetups("test_NambuMomentumPlaquetteSetup"))
 suite.addTest(TestSetupHypercubic("test_init"))
 if extensive_test: suite.addTest(TestSetupHypercubic("test_plot_pade"))
 if extensive_test: suite.addTest(TestSetupHypercubic("test_plot_rho_npts_convergence"))
