@@ -303,12 +303,11 @@ class NambuMomentumPlaquette(CycleSetupGeneric): # TODO mu?
         g0 = storage.load('g_weiss_iw')
         se = storage.load('se_imp_iw')
         if load_mu:
-            mu = storage.load('mu')
-            self.mu = self.mom_transf.reblock_by_map(mom_transf.transform_matrix({up: mu * np.identity(4), dn: mu * np.identity(4)}), self.reblock_map)
+            self.mu = storage.load('mu')
         if transform:
-            self.transform_particlehole(gloc, self.gloc)
-            self.transform_particlehole(g0, self.g0)
-            self.transform_particlehole(se, self.se)
+            self.transform_to_nambu(gloc, self.gloc)
+            self.transform_to_nambu(g0, self.g0)
+            self.transform_to_nambu(se, self.se)
         else:
             self.gloc << gloc
             self.g0 << g0
@@ -327,7 +326,7 @@ class NambuMomentumPlaquette(CycleSetupGeneric): # TODO mu?
             offdiag = tuple(offdiag)
             g[yi][offdiag] << -1 * g[xi][offdiag]
 
-    def transform_particlehole(self, g_sm, g_nambu):
+    def transform_to_nambu(self, g, g_nambu):
         """gets a non-nambu greensfunction to initialize nambu"""
         gf_struct_mom = dict([(s+'-'+k, [0]) for s in self.spins for k in self.momenta])
         to_nambu = MatrixTransformation(gf_struct_mom, None, self.gf_struct)
@@ -335,9 +334,9 @@ class NambuMomentumPlaquette(CycleSetupGeneric): # TODO mu?
         reblock_map = [[(up+'-'+k,0,0), (k,0,0)] for k in self.momenta]
         reblock_map += [[(dn+'-'+k,0,0), (k,1,1)]  for k in self.momenta]
         reblock_map = dict(reblock_map)
-        for b, i, j in g_sm.all_indices:
+        for b, i, j in g.all_indices:
             b_nam, i_nam, j_nam = reblock_map[(b, int(i), int(j))]
             if i_nam == 0 and j_nam == 0:
-                g_nambu[b_nam][i_nam, j_nam] << g_sm[b][i, j]
+                g_nambu[b_nam][i_nam, j_nam] << g[b][i, j]
             if i_nam == 1 and j_nam == 1:
-                g_nambu[b_nam][i_nam, j_nam] << -1 * g_sm[b][i, j].conjugate()
+                g_nambu[b_nam][i_nam, j_nam] << -1 * g[b][i, j].conjugate()

@@ -1,4 +1,4 @@
-import unittest, os, numpy as np
+import unittestimport unittest, os, numpy as np
 
 from bethe.h5interface import Storage
 from bethe.selfconsistency import Cycle
@@ -81,7 +81,7 @@ class TestSetups(unittest.TestCase):
             #self.assertTrue(np.allclose(setup.se['spin-mom'].data[1025,j,i], 0.))
 
     def test_TwoOrbitalDimerBetheSetup(self):
-        setup = TwoOrbitalDimerBetheSetup(10, .5, 1, .2, -1, -.1, .2, .25, .2, .2)
+        setup = TwoOrbitalDimerBetheSetup(10, .5, 1, .2, -1, -.1, )
 
     def test_TwoOrbitalMomentumDimerBetheSetup(self):
         setup = TwoOrbitalMomentumDimerBetheSetup(10, .5, 1, .2, -1, -.1, 1, .1)
@@ -96,4 +96,4 @@ class TestSetups(unittest.TestCase):
         self.assertEqual(cyc.g_loc.total_density_nambu().real, 4)
         setup.set_anomalous(.2)
         setup2 = PlaquetteBetheSetup(100, 0, 3, -1, 0, 1)
-        setup.transform_particlehole(setup2.gloc, setup.gloc)
+        setup.transform_to_nambu(setup2.gloc, setup.gloc)
