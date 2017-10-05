@@ -249,8 +249,8 @@ class PlaquetteBetheSetup(CycleSetupGeneric):
         hubbard = PlaquetteMomentum(u, spins, orbital_labels, transfbmat)
         xy = symmetric_orbitals
         self.h_int = hubbard.get_h_int()
-        self.gloc = GLocal(t_bethe, t_loc, w1, w2, n_mom, blocknames, blocksizes, beta, n_iw)
-        self.g0 = WeissField(blocknames, blocksizes, beta, n_iw)
+        self.gloc = GLocalWithOffdiagonals(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
+        self.g0 = WeissFieldAFM(blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
         self.mu = mu
         self.global_moves = {"spin-flip": dict([((s1+"-"+k, 0), (s2+"-"+k, 0)) for k in orbital_labels for s1, s2 in itt.product(spins, spins) if s1 != s2]), "XY-flip": dict([((s+"-"+k1, 0), (s+"-"+k2, 0)) for s in spins for k1, k2 in itt.product(xy, xy) if k1 != k2])}
@@ -313,8 +313,11 @@ class NambuMomentumPlaquette(CycleSetupGeneric): # TODO mu?
             self.g0 << g0
             self.se << se
 
-    def set_anomalous(self, factor):
-        """d-wave, spin-singlet"""
+    def apply_dynamical_sc_field(self, gap): # TODO is it the gap?
+        """
+        d-wave, spin-singlet, dynamical
+        since it's dynamical it must not be removed
+        """
         xi = self.momenta[1]
         yi = self.momenta[2]
         g = self.se
@@ -322,7 +325,7 @@ class NambuMomentumPlaquette(CycleSetupGeneric): # TODO mu?
         for offdiag in [[0,1], [1,0]]:
             for n  in [n_points, n_points-1]:
                 inds = tuple([n] + offdiag)
-                g[xi].data[inds] = factor * g.beta * .5
+                g[xi].data[inds] = gap * g.beta * .5
             offdiag = tuple(offdiag)
             g[yi][offdiag] << -1 * g[xi][offdiag]
 
@@ -340,3 +343,10 @@ class NambuMomentumPlaquette(CycleSetupGeneric): # TODO mu?
                 g_nambu[b_nam][i_nam, j_nam] << g[b][i, j]
             if i_nam == 1 and j_nam == 1:
                 g_nambu[b_nam][i_nam, j_nam] << -1 * g[b][i, j].conjugate()
+
+"""
+    def add_staggered_field(self, gap):
+        self.sz_gap = gap
+        o = self.operators
+        self.h_int += (o.sz(0)+o.sz(3)-o.sz(1)-o.sz(2)) * gap
+"""

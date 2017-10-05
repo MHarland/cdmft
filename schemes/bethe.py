@@ -2,6 +2,7 @@ import numpy as np, itertools as itt, math
 from pytriqs.gf.local.descriptor_base import Function
 from pytriqs.gf.local import inverse, iOmega_n
 from pytriqs.utility.bound_and_bisect import bound_and_bisect
+from pytriqs.utility import mpi
 
 from generic import GLocalGeneric, SelfEnergyGeneric, WeissFieldGeneric, FunctionWithMemory
 from ..gfoperations import double_dot_product
@@ -75,6 +76,8 @@ class GLocalWithOffdiagonals(GLocalGeneric):
                 break
             else:
                 self._last_attempt << self
+        if mpi.is_master_node():
+            print 'GLocal convergence took '+str(i)+' iterations'
 
     def calc_selfconsistency(self, selfenergy, mu):
         for s, b in self:
@@ -86,6 +89,7 @@ class GLocalWithOffdiagonals(GLocalGeneric):
         n_last = g_to_compare.total_density()
         self._last_g_loc_convergence.append(abs(n-n_last))
         if np.allclose(n, n_last, rtol, atol):
+            # TODO compare G
             conv = True
         return conv
 
