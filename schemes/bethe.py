@@ -196,8 +196,8 @@ class WeissFieldNambu(WeissFieldGeneric):
         for bn, b in self:
             ceta = self._ceta[bn]
             ceta << iOmega_n  + (mu[bn] - glocal.t_loc[bn]).dot(pauli3)
-            self._tmp[bn][0, 0] << ceta[0, 0] - glocal.t_b**2 * glocal[bn][1, 1]
-            self._tmp[bn][1, 1] << ceta[1, 1] - glocal.t_b**2 * glocal[bn][0, 0]
+            self._tmp[bn][0, 0] << ceta[0, 0] - glocal.t_b**2  * (-1) * glocal[bn][1, 1]
+            self._tmp[bn][1, 1] << ceta[1, 1] - glocal.t_b**2  * (-1) * glocal[bn][0, 0]
             self._tmp[bn][0, 1] << ceta[0, 1] - glocal.t_b**2 * (-1) * glocal[bn][0, 1]
             self._tmp[bn][1, 0] << ceta[1, 0] - glocal.t_b**2 * (-1) * glocal[bn][1, 0]
         self << inverse(self._tmp)
@@ -239,8 +239,8 @@ class GLocalNambu(GLocalWithOffdiagonals):
 
     def _set_g_flipped(self):
         for s, b in self:
-            self._g_flipped[s][0, 0] << b[1, 1]
-            self._g_flipped[s][1, 1] << b[0, 0]
+            self._g_flipped[s][0, 0] << (-1) * b[1, 1].conjugate()
+            self._g_flipped[s][1, 1] << (-1) * b[0, 0].conjugate()
             self._g_flipped[s][0, 1] << b[0, 1]
             self._g_flipped[s][1, 0] << b[1, 0]
 
@@ -307,8 +307,8 @@ class GLocalAFMNambu(GLocalNambu):
     """
     def _set_g_flipped(self):
         for s, b in self:
-            self._g_flipped[s][0, 0] << b[1, 1]
-            self._g_flipped[s][1, 1] << b[0, 0]
+            self._g_flipped[s][0, 0] << (-1) * b[1, 1].conjugate()
+            self._g_flipped[s][1, 1] << (-1) * b[0, 0].conjugate()
             self._g_flipped[s][0, 1] << b[1, 0]
             self._g_flipped[s][1, 0] << b[0, 1]
 
