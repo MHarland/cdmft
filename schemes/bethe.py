@@ -77,7 +77,7 @@ class GLocalWithOffdiagonals(GLocalGeneric):
             else:
                 self._last_attempt << self
         if mpi.is_master_node():
-            print 'GLocal convergence took '+str(i)+' iterations'
+            print 'GLocal convergence took '+str(i+1)+' iterations'
 
     def calc_selfconsistency(self, selfenergy, mu):
         for s, b in self:
