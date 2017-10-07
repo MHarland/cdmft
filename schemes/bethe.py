@@ -203,7 +203,7 @@ class WeissFieldNambu(WeissFieldGeneric):
         self << inverse(self._tmp)
 
 
-class WeissFieldAFMNambu(WeissFieldNambu): # TODO
+class WeissFieldAFMNambu(WeissFieldNambu):
     """
     with afm and allows for imaginary gap, too
     """
@@ -213,7 +213,8 @@ class WeissFieldAFMNambu(WeissFieldNambu): # TODO
         one = np.identity(2)
         for bn, b in self:
             ceta = self._ceta[bn]
-            ceta << iOmega_n  + (mu[bn] - glocal.t_loc[bn]).dot(np.kronecker(one, pauli3))
+            ceta << iOmega_n  + (mu[bn] - glocal.t_loc[bn]).dot(np.kron(one, pauli3))
+            #nambu-diagonals:
             #momentum-diagonals:
             self._tmp[bn][0, 0] << ceta[0, 0] - glocal.t_b**2 * (-1) * glocal[bn][1, 1].conjugate()
             self._tmp[bn][1, 1] << ceta[1, 1] - glocal.t_b**2 * (-1) * glocal[bn][0, 0].conjugate()
@@ -305,23 +306,43 @@ class GLocalAFMNambu(GLocalNambu):
     """
     GLocalNambu with broken cluster symmetry(afm)
     """
-    def _set_g_flipped(self):
-        for s, b in self:
-            self._g_flipped[s][0, 0] << (-1) * b[1, 1].conjugate()
-            self._g_flipped[s][1, 1] << (-1) * b[0, 0].conjugate()
-            self._g_flipped[s][0, 1] << b[1, 0]
-            self._g_flipped[s][1, 0] << b[0, 1]
+    def __init__(self, *args, **kwargs):
+        GLocalNambu.__init__(self, *args, **kwargs)
+        self.p3 = np.array([[1, 0], [0, -1]])
+        self._tmp = self.copy()
+        self._ceta = self.copy()
 
-    def calc_selfconsistency(self, selfenergy, mu): # TODO
-        for s, b in self:
-            b << inverse(iOmega_n + (mu[s] - self.t_loc[s]).dot(self.p3) - self.t_b**2 * double_dot_product(self.p3, self._g_flipped[s], self.p3) - selfenergy[s])
+    def calc_selfconsistency(self, selfenergy, mu):
+        pauli3 = np.array([[1, 0], [0, -1]])
+        one = np.identity(2)
+        for bn, b in self:
+            ceta = self._ceta[bn]
+            ceta << iOmega_n+ (mu[bn]- self.t_loc[bn]).dot(np.kron(one, pauli3))- selfenergy[bn]
+            #nambu-diagonals:
+            #momentum-diagonals:
+            self._tmp[bn][0, 0] << ceta[0, 0] - self.t_b**2 * (-1) * self[bn][1, 1].conjugate()
+            self._tmp[bn][1, 1] << ceta[1, 1] - self.t_b**2 * (-1) * self[bn][0, 0].conjugate()
+            self._tmp[bn][2, 2] << ceta[2, 2] - self.t_b**2 * (-1) * self[bn][3, 3].conjugate()
+            self._tmp[bn][3, 3] << ceta[3, 3] - self.t_b**2 * (-1) * self[bn][2, 2].conjugate()
+            #momentum-off-diagonals:
+            self._tmp[bn][0, 2] << ceta[0, 2] - self.t_b**2 * (-1) * self[bn][1, 3].conjugate()
+            self._tmp[bn][1, 3] << ceta[1, 3] - self.t_b**2 * (-1) * self[bn][0, 2].conjugate()
+            self._tmp[bn][2, 0] << ceta[2, 0] - self.t_b**2 * (-1) * self[bn][3, 1].conjugate()
+            self._tmp[bn][3, 1] << ceta[3, 1] - self.t_b**2 * (-1) * self[bn][2, 0].conjugate()
+            #nambu-off-diagonals:
+            indices = [(0,1), (0,3), (1,0), (1,2), (2,1), (2,3), (3,0), (3,2)]
+            for i in indices:
+                self._tmp[bn][i] << ceta[i] - self.t_b**2 * (-1) * self[bn][i]
+        self << inverse(self._tmp)
 
-    def total_density_nambu(self, g = None): # TODO
+    def total_density_nambu(self, g = None):
         if g is None: g = self
         densities = []
         for s, b in g:
             densities.append(b[0, 0].total_density())
             densities.append(- b[1, 1].conjugate().total_density())
+            densities.append(b[2, 2].total_density())
+            densities.append(- b[3, 3].conjugate().total_density())
         density = np.sum(densities)
         return density
 

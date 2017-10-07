@@ -350,3 +350,25 @@ class PlaquetteMomentumNambu(Hubbard):
         elif spin == self.dn:
             return sum([self.transformation[spin][k_index, site].conjugate() * CDag(self.site_to_mom[k_index], 1) for k_index in range(4)]) # TODO what's first, momentum or nambu transf?
         assert False, "spin "+spin+" not recognized"
+
+
+class PlaquetteMomentumAFMNambu(Hubbard):
+    """
+    adds afm
+    """
+    def __init__(self, u, spins, momenta, transformation):
+        self.u = u
+        self.sites = range(4)
+        self.up, self.dn = up, dn = spins[0], spins[1]
+        self.site_to_mom_up = {0: ("GM", 0), 1: ("GM", 2), 2: ("XY", 0), 3: ("XY", 2)}
+        self.site_to_mom_dn = {0: ("GM", 1), 1: ("GM", 3), 2: ("XY", 1), 3: ("XY", 3)}
+        self.transformation = transformation
+        self.block_labels = [k for k in momenta]
+        self.gf_struct = [[l, range(2)] for l in self.block_labels]
+
+    def _c(self, spin, site):
+        if spin == self.up:
+            return sum([self.transformation[spin][k_index, site].conjugate() * C(*self.site_to_mom_up[k_index]) for k_index in range(4)])
+        elif spin == self.dn:
+            return sum([self.transformation[spin][k_index, site].conjugate() * CDag(*self.site_to_mom_dn[k_index]) for k_index in range(4)])
+        assert False, "spin "+spin+" not recognized"

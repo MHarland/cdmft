@@ -2,9 +2,9 @@ import numpy as np, itertools as itt
 from scipy.linalg import expm, eigh
 
 from bethe.setups.generic import CycleSetupGeneric
-from bethe.operators.hubbard import Site, TriangleMomentum, PlaquetteMomentum, Triangle, TriangleAIAO, TriangleSpinOrbitCoupling, PlaquetteMomentumNambu
+from bethe.operators.hubbard import Site, TriangleMomentum, PlaquetteMomentum, Triangle, TriangleAIAO, TriangleSpinOrbitCoupling, PlaquetteMomentumNambu, PlaquetteMomentumAFMNambu
 from bethe.operators.kanamori import Dimer as KanamoriDimer, MomentumDimer as KanamoriMomentumDimer
-from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM, GLocalInhomogeneous, WeissFieldInhomogeneous, GLocalAIAO, GLocalNambu, WeissFieldNambu
+from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM, GLocalInhomogeneous, WeissFieldInhomogeneous, GLocalAIAO, GLocalNambu, WeissFieldNambu, GLocalAFMNambu, WeissFieldAFMNambu
 from bethe.transformation import MatrixTransformation
 
 from pytriqs.gf.local import iOmega_n, inverse
@@ -350,10 +350,9 @@ class AFMNambuMomentumPlaquette(NambuMomentumPlaquette): # TODO
     def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t_bethe = 1, n_iw = 1025):
         gm, xy = "GM", "XY"
         up, dn = "up", "dn"
-        #self.spins = [up, dn]
-        #self.sites = range(4)
-        #self.momenta = [g, x, y, m]
-        #self.spinors = range(2) #nambu spinors: 0: particle, 1: hole
+        self.spins = [up, dn]
+        self.sites = range(4)
+        self.momenta = [gm, xy]
         self.block_labels = [gm, xy]
         self.blocksizes = [4, 4]
         self.gf_struct = [[gm, range(4)], [xy, range(4)]]
@@ -366,21 +365,47 @@ class AFMNambuMomentumPlaquette(NambuMomentumPlaquette): # TODO
         a, b = tnn_plaquette, tnnn_plaquette
         t_loc = np.array([[0,a,a,b],[a,0,b,a],[a,b,0,a],[b,a,a,0]])
         t_loc = {up: np.array(t_loc), dn: np.array(t_loc)}
-        self.reblock_map = {(up,0,0):(g,0,0), (dn,0,0):(g,1,1),
-                            (up,0,1):(g,0,3), (dn,0,1):(g,1,1),
-                            (up,1,1):(m,0,0), (dn,1,1):(m,1,1),
-                            (up,2,2):(x,0,0), (dn,2,2):(x,1,1),
-                            (up,3,3):(y,0,0), (dn,3,3):(y,1,1)}
+        self.reblock_map = {(up,0,0):(gm,0,0), (dn,0,0):(gm,1,1),
+                            (up,1,1):(gm,2,2), (dn,1,1):(gm,3,3),
+                            (up,2,2):(xy,0,0), (dn,2,2):(xy,1,1),
+                            (up,3,3):(xy,2,2), (dn,3,3):(xy,3,3)}
         self.mom_transf = MatrixTransformation(self.gf_struct_site, self.transformation, self.gf_struct, reblock_map = self.reblock_map)
         t_loc = self.mom_transf.transform_matrix(t_loc)
         self.mu = mu
-        self.operators = PlaquetteMomentumNambu(u, self.spins, self.momenta, self.transformation)
+        self.operators = PlaquetteMomentumAFMNambu(u, self.spins, self.momenta, self.transformation)
         self.h_int = self.operators.get_h_int()
-        self.gloc = GLocalNambu(t_bethe, t_loc, self.momenta, [2]*4, beta, n_iw)
-        self.g0 = WeissFieldNambu(self.momenta, [2]*4, beta, n_iw)
-        self.se = SelfEnergy(self.momenta, [2]*4, beta, n_iw)
+        self.gloc = GLocalAFMNambu(t_bethe, t_loc, self.momenta, [4]*2, beta, n_iw)
+        self.g0 = WeissFieldAFMNambu(self.momenta, [4]*2, beta, n_iw)
+        self.se = SelfEnergy(self.momenta, [4]*2, beta, n_iw)
         self.global_moves = {}
         self.quantum_numbers = []
+
+    def apply_dynamical_sc_field(self, gap):
+        """
+        d-wave, spin-singlet, dynamical
+        since it's dynamical it must not be removed
+        """
+        g = self.se
+        n_points = len([iwn for iwn in g.mesh])/2
+        for offdiag in [[0,1], [1,0]]:
+            for n  in [n_points, n_points-1]:
+                inds = tuple([n] + offdiag)
+                g["XY"].data[inds] = gap * g.beta * .5
+        for offdiag in [[2,3], [3,2]]:
+            for n  in [n_points, n_points-1]:
+                inds = tuple([n] + offdiag)
+                g["XY"].data[inds] = -1 * gap * g.beta * .5
+
+    def transform_to_nambu(self, g, g_nambu):
+        """gets a paramagnetic non-nambu greensfunction to initialize nambu"""
+        g_nambu["GM"][0, 0] << g["up-G"][0, 0]
+        g_nambu["GM"][1, 1] << -1 * g["dn-G"][0, 0].conjugate()
+        g_nambu["GM"][2, 2] << g["up-M"][0, 0]
+        g_nambu["GM"][3, 3] << -1 * g["dn-M"][0, 0].conjugate()
+        g_nambu["XY"][0, 0] << g["up-X"][0, 0]
+        g_nambu["XY"][1, 1] << -1 * g["dn-X"][0, 0].conjugate()
+        g_nambu["XY"][2, 2] << g["up-Y"][0, 0]
+        g_nambu["XY"][3, 3] << -1 * g["dn-Y"][0, 0].conjugate()
 
     def add_staggered_field(self, gap):
         self.sz_gap = gap
