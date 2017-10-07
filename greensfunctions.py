@@ -84,6 +84,7 @@ class MatsubaraGreensFunction(BlockGf):
         self.blocknames = blocknames
         self.blocksizes = blocksizes
         self.n_iw = n_iw
+        self.iw_offset = int(.5* self.n_iw)
         self.gf_struct = [(bn, range(bs)) for bn, bs in zip(blocknames, blocksizes)]
         self._gf_lastloop = None
         self.verbosity = verbosity
