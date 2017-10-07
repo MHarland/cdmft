@@ -196,10 +196,38 @@ class WeissFieldNambu(WeissFieldGeneric):
         for bn, b in self:
             ceta = self._ceta[bn]
             ceta << iOmega_n  + (mu[bn] - glocal.t_loc[bn]).dot(pauli3)
+            self._tmp[bn][0, 0] << ceta[0, 0] - glocal.t_b**2 * glocal[bn][1, 1]
+            self._tmp[bn][1, 1] << ceta[1, 1] - glocal.t_b**2 * glocal[bn][0, 0]
+            self._tmp[bn][0, 1] << ceta[0, 1] - glocal.t_b**2 * (-1) * glocal[bn][0, 1]
+            self._tmp[bn][1, 0] << ceta[1, 0] - glocal.t_b**2 * (-1) * glocal[bn][1, 0]
+        self << inverse(self._tmp)
+
+
+class WeissFieldAFMNambu(WeissFieldNambu): # TODO
+    """
+    with afm and allows for imaginary gap, too
+    """
+    def calc_selfconsistency(self, glocal, selfenergy, mu, *args, **kwargs):
+        if isinstance(mu, float) or isinstance(mu, int): mu = self._to_blockmatrix(mu)
+        pauli3 = np.array([[1, 0], [0, -1]])
+        one = np.identity(2)
+        for bn, b in self:
+            ceta = self._ceta[bn]
+            ceta << iOmega_n  + (mu[bn] - glocal.t_loc[bn]).dot(np.kronecker(one, pauli3))
+            #momentum-diagonals:
             self._tmp[bn][0, 0] << ceta[0, 0] - glocal.t_b**2 * (-1) * glocal[bn][1, 1].conjugate()
             self._tmp[bn][1, 1] << ceta[1, 1] - glocal.t_b**2 * (-1) * glocal[bn][0, 0].conjugate()
-            self._tmp[bn][0, 1] << ceta[0, 1] - glocal.t_b**2 * (-1) * glocal[bn][1, 0]
-            self._tmp[bn][1, 0] << ceta[1, 0] - glocal.t_b**2 * (-1) * glocal[bn][0, 1]
+            self._tmp[bn][2, 2] << ceta[2, 2] - glocal.t_b**2 * (-1) * glocal[bn][3, 3].conjugate()
+            self._tmp[bn][3, 3] << ceta[3, 3] - glocal.t_b**2 * (-1) * glocal[bn][2, 2].conjugate()
+            #momentum-off-diagonals:
+            self._tmp[bn][0, 2] << ceta[0, 2] - glocal.t_b**2 * (-1) * glocal[bn][1, 3].conjugate()
+            self._tmp[bn][1, 3] << ceta[1, 3] - glocal.t_b**2 * (-1) * glocal[bn][0, 2].conjugate()
+            self._tmp[bn][2, 0] << ceta[2, 0] - glocal.t_b**2 * (-1) * glocal[bn][3, 1].conjugate()
+            self._tmp[bn][3, 1] << ceta[3, 1] - glocal.t_b**2 * (-1) * glocal[bn][2, 0].conjugate()
+            #nambu-off-diagonals:
+            indices = [(0,1), (0,3), (1,0), (1,2), (2,1), (2,3), (3,0), (3,2)]
+            for i in indices:
+                self._tmp[bn][i] << ceta[i] - glocal.t_b**2 * (-1) * glocal[bn][i]
         self << inverse(self._tmp)
 
 
@@ -211,10 +239,10 @@ class GLocalNambu(GLocalWithOffdiagonals):
 
     def _set_g_flipped(self):
         for s, b in self:
-            self._g_flipped[s][0, 0] << (-1) * b[1, 1].conjugate()
-            self._g_flipped[s][1, 1] << (-1) * b[0, 0].conjugate()
-            self._g_flipped[s][0, 1] << b[1, 0]
-            self._g_flipped[s][1, 0] << b[0, 1]
+            self._g_flipped[s][0, 0] << b[1, 1]
+            self._g_flipped[s][1, 1] << b[0, 0]
+            self._g_flipped[s][0, 1] << b[0, 1]
+            self._g_flipped[s][1, 0] << b[1, 0]
 
     def calc_selfconsistency(self, selfenergy, mu):
         for s, b in self:
@@ -229,13 +257,23 @@ class GLocalNambu(GLocalWithOffdiagonals):
         density = np.sum(densities)
         return density
 
-    def _is_converged(self, g_to_compare, atol = 10e-3, rtol = 1e-15):
+    def _is_converged(self, g_to_compare, atol = 10e-3, rtol = 1e-15, g_atol = 10e-2, n_freq_to_compare = 20):
+        """
+        checks densities first, if positive: checks components of g
+        """
         conv = False
         n = self.total_density_nambu()
         n_last = self.total_density_nambu(g_to_compare)
         self._last_g_loc_convergence.append(abs(n-n_last))
         if np.allclose(n, n_last, rtol, atol):
             conv = True
+            for index_triple in self.all_indices:
+                b, i, j = index_triple
+                x = self[b][i, j].data[self.iw_offset:self.iw_offset+ n_freq_to_compare, 0, 0]
+                y = g_to_compare[b][i, j].data[self.iw_offset:self.iw_offset+ n_freq_to_compare, 0, 0]
+                if not np.allclose(x, y, rtol, g_atol):
+                    conv = False
+                    break
         return conv
 
     def find_and_set_mu(self, filling, selfenergy, mu0, dmu_max):
@@ -262,6 +300,30 @@ class GLocalNambu(GLocalWithOffdiagonals):
         print d.real
         return d
 
+
+class GLocalAFMNambu(GLocalNambu):
+    """
+    GLocalNambu with broken cluster symmetry(afm)
+    """
+    def _set_g_flipped(self):
+        for s, b in self:
+            self._g_flipped[s][0, 0] << b[1, 1]
+            self._g_flipped[s][1, 1] << b[0, 0]
+            self._g_flipped[s][0, 1] << b[1, 0]
+            self._g_flipped[s][1, 0] << b[0, 1]
+
+    def calc_selfconsistency(self, selfenergy, mu): # TODO
+        for s, b in self:
+            b << inverse(iOmega_n + (mu[s] - self.t_loc[s]).dot(self.p3) - self.t_b**2 * double_dot_product(self.p3, self._g_flipped[s], self.p3) - selfenergy[s])
+
+    def total_density_nambu(self, g = None): # TODO
+        if g is None: g = self
+        densities = []
+        for s, b in g:
+            densities.append(b[0, 0].total_density())
+            densities.append(- b[1, 1].conjugate().total_density())
+        density = np.sum(densities)
+        return density
 
 
 class SelfEnergy(SelfEnergyGeneric):

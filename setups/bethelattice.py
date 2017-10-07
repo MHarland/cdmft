@@ -264,7 +264,7 @@ class PlaquetteBetheSetup(CycleSetupGeneric):
             b << self.gloc.make_matrix(self.mu)[n]
 
 
-class NambuMomentumPlaquette(CycleSetupGeneric): # TODO mu?
+class NambuMomentumPlaquette(CycleSetupGeneric):
 
     def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t_bethe = 1, n_iw = 1025):
         g, x, y, m = "G", "X", "Y", "M"
@@ -344,9 +344,45 @@ class NambuMomentumPlaquette(CycleSetupGeneric): # TODO mu?
             if i_nam == 1 and j_nam == 1:
                 g_nambu[b_nam][i_nam, j_nam] << -1 * g[b][i, j].conjugate()
 
-"""
+
+class AFMNambuMomentumPlaquette(NambuMomentumPlaquette): # TODO
+
+    def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t_bethe = 1, n_iw = 1025):
+        gm, xy = "GM", "XY"
+        up, dn = "up", "dn"
+        #self.spins = [up, dn]
+        #self.sites = range(4)
+        #self.momenta = [g, x, y, m]
+        #self.spinors = range(2) #nambu spinors: 0: particle, 1: hole
+        self.block_labels = [gm, xy]
+        self.blocksizes = [4, 4]
+        self.gf_struct = [[gm, range(4)], [xy, range(4)]]
+        self.gf_struct_site = [[s, self.sites] for s in self.spins]
+        transformation_matrix = .5 * np.array([[1,1,1,1],
+                                               [1,-1,-1,1],
+                                               [1,-1,1,-1],
+                                               [1,1,-1,-1]]) # g m x y
+        self.transformation = dict([(s, transformation_matrix) for s in self.spins])
+        a, b = tnn_plaquette, tnnn_plaquette
+        t_loc = np.array([[0,a,a,b],[a,0,b,a],[a,b,0,a],[b,a,a,0]])
+        t_loc = {up: np.array(t_loc), dn: np.array(t_loc)}
+        self.reblock_map = {(up,0,0):(g,0,0), (dn,0,0):(g,1,1),
+                            (up,0,1):(g,0,3), (dn,0,1):(g,1,1),
+                            (up,1,1):(m,0,0), (dn,1,1):(m,1,1),
+                            (up,2,2):(x,0,0), (dn,2,2):(x,1,1),
+                            (up,3,3):(y,0,0), (dn,3,3):(y,1,1)}
+        self.mom_transf = MatrixTransformation(self.gf_struct_site, self.transformation, self.gf_struct, reblock_map = self.reblock_map)
+        t_loc = self.mom_transf.transform_matrix(t_loc)
+        self.mu = mu
+        self.operators = PlaquetteMomentumNambu(u, self.spins, self.momenta, self.transformation)
+        self.h_int = self.operators.get_h_int()
+        self.gloc = GLocalNambu(t_bethe, t_loc, self.momenta, [2]*4, beta, n_iw)
+        self.g0 = WeissFieldNambu(self.momenta, [2]*4, beta, n_iw)
+        self.se = SelfEnergy(self.momenta, [2]*4, beta, n_iw)
+        self.global_moves = {}
+        self.quantum_numbers = []
+
     def add_staggered_field(self, gap):
         self.sz_gap = gap
         o = self.operators
         self.h_int += (o.sz(0)+o.sz(3)-o.sz(1)-o.sz(2)) * gap
-"""
