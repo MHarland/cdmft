@@ -71,7 +71,6 @@ class TriangleBetheSetup(CycleSetupGeneric):
         self.quantum_numbers = [hubbard.get_n_tot(), hubbard.get_n_per_spin(up)]
 
 
-
 class TwoOrbitalDimerBetheSetup(CycleSetupGeneric):
     def __init__(self, beta, mu, u, j, tc_perp, td_perp, tc0_bethe, tc1_bethe, td0_bethe, td1_bethe, density_density_only = False, orbitals = ["c", "d"], symmetric_orbitals = [], n_iw = 1025, site_transformation = np.array([[1/np.sqrt(2), 1/np.sqrt(2)],[1/np.sqrt(2), -1/np.sqrt(2)]])):
         spins = ["up", "dn"]
@@ -97,7 +96,13 @@ class TwoOrbitalDimerBetheSetup(CycleSetupGeneric):
         self.mu = mu
         self.global_moves = {}
         self.quantum_numbers = [self.h_int.n_tot(), self.h_int.sz_tot()]
-        
+
+    def break_site_symmetry(self, v = [i * .05 for i in range(1, 9)], eps = [(-1)**i * i * .05 for i in range(8, 0)]):
+        indices = [('up-d', 0, 1), ('up-d', 1, 0), ('dn-d', 0, 1), ('dn-d', 1, 0)]
+        indices += [('up-c', 0, 1), ('up-c', 1, 0), ('dn-c', 0, 1), ('dn-c', 1, 0)]
+        for vi, epsi, index in zip(v, eps, indices):
+            b, i, j = index
+            self.se[b][i, j] += vi**2 * inverse(iOmega_n - epsi)
 
 
 class TwoOrbitalMomentumDimerBetheSetup(CycleSetupGeneric):
@@ -133,7 +138,6 @@ class TwoOrbitalMomentumDimerBetheSetup(CycleSetupGeneric):
         self.global_moves = {}
         self.quantum_numbers = [self.h_int.n_tot(), self.h_int.sz_tot()]
         
-
 
 class TriangleAIAOBetheSetup(CycleSetupGeneric):
     """
@@ -411,3 +415,10 @@ class AFMNambuMomentumPlaquette(NambuMomentumPlaquette): # TODO
         self.sz_gap = gap
         o = self.operators
         self.h_int += (o.sz(0)+o.sz(3)-o.sz(1)-o.sz(2)) * gap
+
+    def apply_dynamical_staggered_field(self, v = [i * .05 for i in range(1, 9)], eps = [(-1)**i * i * .05 for i in range(8, 0)]):
+        indices = [('GM', 0, 2), ('GM', 1, 3), ('GM', 2, 0), ('GM', 3, 1)]
+        indices += [('XY', 0, 2), ('XY', 1, 3), ('XY', 2, 0), ('XY', 3, 1)]
+        for vi, epsi, index in zip(v, eps, indices):
+            b, i, j = index
+            self.se[b][i, j] += vi**2 * inverse(iOmega_n - epsi)
