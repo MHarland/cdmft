@@ -135,8 +135,9 @@ class MatrixTransformation:
                 result[b_new][i1_new, i2_new] = interface_matrix[b_new, i1_new, i2_new]
         return result
 
-    def reblock_by_map(self, matrix, map_dict, backtransform = False):
+    def reblock_by_map(self, matrix, map_dict = None, backtransform = False):
         """returns a new BlockGf with gf_struct_new. map_dict maps old 3-tupel (block, index1, index2) to a new 3-tupel"""
+        if map_dict is None: map_dict = self.reblock_map
         if backtransform:
             map_dict = dict([(b, a) for a, b in self.reblock_map.items()])
         if isinstance(matrix, BlockGf):
