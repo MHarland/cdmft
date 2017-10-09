@@ -1,8 +1,8 @@
-import unittestimport unittest, os, numpy as np
+import unittest, os, numpy as np
 
 from bethe.h5interface import Storage
 from bethe.selfconsistency import Cycle
-from bethe.setups.bethelattice import SingleBetheSetup, TriangleBetheSetup, PlaquetteBetheSetup, TriangleAIAOBetheSetup, TwoOrbitalDimerBetheSetup, TwoOrbitalMomentumDimerBetheSetup, NambuMomentumPlaquette
+from bethe.setups.bethelattice import SingleBetheSetup, TriangleBetheSetup, PlaquetteBetheSetup, TriangleAIAOBetheSetup, TwoOrbitalDimerBetheSetup, TwoOrbitalMomentumDimerBetheSetup, NambuMomentumPlaquette, AFMNambuMomentumPlaquette
 from bethe.setups.cdmftchain import MomentumDimerSetup, StrelSetup
 from bethe.setups.cdmftsquarelattice import MomentumPlaquetteSetup
 from bethe.parameters import TestDMFTParameters
@@ -94,6 +94,16 @@ class TestSetups(unittest.TestCase):
         cyc.run(1, n_cycles = 0, filling = None)
         os.remove('test.h5')
         self.assertEqual(cyc.g_loc.total_density_nambu().real, 4)
-        setup.set_anomalous(.2)
+        setup.apply_dynamical_sc_field(.2)
         setup2 = PlaquetteBetheSetup(100, 0, 3, -1, 0, 1)
         setup.transform_to_nambu(setup2.gloc, setup.gloc)
+
+    def test_AFMNambuMomentumPlaquetteSetup(self):
+        setup = AFMNambuMomentumPlaquette(100, 1, 3, -1, .3, 1)
+        sto = Storage('test.h5')
+        par = TestDMFTParameters()
+        cyc = Cycle(sto, par, **setup.initialize_cycle())
+        cyc.run(1, n_cycles = 0, filling = None)
+        os.remove('test.h5')
+        setup.add_staggered_field(.2)
+        setup.apply_dynamical_sc_field(.2)
