@@ -97,12 +97,38 @@ class TwoOrbitalDimerBetheSetup(CycleSetupGeneric):
         self.global_moves = {}
         self.quantum_numbers = [self.h_int.n_tot(), self.h_int.sz_tot()]
 
-    def break_site_symmetry(self, v = [i * .05 for i in range(1, 9)], eps = [(-1)**i * i * .05 for i in range(8, 0)]):
-        indices = [('up-d', 0, 1), ('up-d', 1, 0), ('dn-d', 0, 1), ('dn-d', 1, 0)]
-        indices += [('up-c', 0, 1), ('up-c', 1, 0), ('dn-c', 0, 1), ('dn-c', 1, 0)]
-        for vi, epsi, index in zip(v, eps, indices):
-            b, i, j = index
-            self.se[b][i, j] += vi**2 * inverse(iOmega_n - epsi)
+    def break_site_symmetry(self, v = {'up-d': .05, 'dn-d': .1,'up-c': .15, 'dn-c': .2},
+                            e = {'up-d': .05, 'dn-d': -.1,'up-c': .15, 'dn-c': -.2}):
+        for orb in v.keys():
+            self.se[orb][0, 1] += v[orb]**2 * inverse(iOmega_n - e[orb])
+            self.se[orb][1, 0] += v[orb]**2 * inverse(iOmega_n - e[orb])
+
+    def set_data(self, storage, load_mu = True, transform = False):
+        """initializes by previous non-nambu solution and anomalous field or by 
+        nambu-solution"""
+        gloc = storage.load('g_imp_iw')
+        g0 = storage.load('g_weiss_iw')
+        se = storage.load('se_imp_iw')
+        if load_mu:
+            self.mu = storage.load('mu')
+        if transform:
+            self.transform_loaded(gloc, self.gloc)
+            self.transform_loaded(g0, self.g0)
+            self.transform_loaded(se, self.se)
+        else:
+            self.gloc << gloc
+            self.g0 << g0
+            self.se << se
+
+    def transform_loaded(self, g, gtransf):
+        gtransf['up-d'][0, 0] << g['up-d-G'][0, 0]
+        gtransf['up-d'][1, 1] << g['up-d-X'][0, 0]
+        gtransf['dn-d'][0, 0] << g['dn-d-G'][0, 0]
+        gtransf['dn-d'][1, 1] << g['dn-d-X'][0, 0]
+        gtransf['up-c'][0, 0] << g['up-c-G'][0, 0]
+        gtransf['up-c'][1, 1] << g['up-c-X'][0, 0]
+        gtransf['dn-c'][0, 0] << g['dn-c-G'][0, 0]
+        gtransf['dn-c'][1, 1] << g['dn-c-X'][0, 0]
 
 
 class TwoOrbitalMomentumDimerBetheSetup(CycleSetupGeneric):
@@ -416,9 +442,15 @@ class AFMNambuMomentumPlaquette(NambuMomentumPlaquette): # TODO
         o = self.operators
         self.h_int += (o.sz(0)+o.sz(3)-o.sz(1)-o.sz(2)) * gap
 
-    def apply_dynamical_staggered_field(self, v = [i * .05 for i in range(1, 9)], eps = [(-1)**i * i * .05 for i in range(8, 0)]):
-        indices = [('GM', 0, 2), ('GM', 1, 3), ('GM', 2, 0), ('GM', 3, 1)]
-        indices += [('XY', 0, 2), ('XY', 1, 3), ('XY', 2, 0), ('XY', 3, 1)]
-        for vi, epsi, index in zip(v, eps, indices):
+    def apply_dynamical_staggered_field(self, v_up = .1, v_dn = .1, e_up = .1, e_dn = -.1):
+        indices_up = [('GM', 0, 2), ('GM', 2, 0), ('XY', 2, 0), ('XY', 0, 2)]
+        indices_dn = [('XY', 3, 1), ('GM', 1, 3), ('XY', 1, 3), ('GM', 3, 1)]
+        for index in indices_up:
             b, i, j = index
-            self.se[b][i, j] += vi**2 * inverse(iOmega_n - epsi)
+            self.se[b][i, j] += v_up**2 * inverse(iOmega_n - e_up)
+        for index in indices_dn:
+            b, i, j = index
+            tmp = self.se[b][i, j].copy()
+            tmp << v_dn**2 * inverse(iOmega_n - e_dn)
+            tmp << -1 * tmp.conjugate()
+            self.se[b][i, j] += tmp
