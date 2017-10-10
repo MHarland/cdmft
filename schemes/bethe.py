@@ -83,14 +83,20 @@ class GLocalWithOffdiagonals(GLocalGeneric):
         for s, b in self:
             b << inverse(iOmega_n + mu[s] - self.t_loc[s] - self.t_b**2 * self._g_flipped[s] - selfenergy[s])
 
-    def _is_converged(self, g_to_compare, atol = 10e-3, rtol = 1e-15):
+    def _is_converged(self, g_to_compare, atol = 10e-3, rtol = 1e-15, g_atol = 10e-3, n_freq_to_compare = 50):
         conv = False
         n = self.total_density()
-        n_last = g_to_compare.total_density()
+        n_last = self.total_density(g_to_compare)
         self._last_g_loc_convergence.append(abs(n-n_last))
         if np.allclose(n, n_last, rtol, atol):
-            # TODO compare G
             conv = True
+            for index_triple in self.all_indices:
+                b, i, j = index_triple
+                x = self[b][i, j].data[self.iw_offset:self.iw_offset+ n_freq_to_compare, 0, 0]
+                y = g_to_compare[b][i, j].data[self.iw_offset:self.iw_offset+ n_freq_to_compare, 0, 0]
+                if not np.allclose(x, y, rtol, g_atol):
+                    conv = False
+                    break
         return conv
 
 
@@ -258,7 +264,7 @@ class GLocalNambu(GLocalWithOffdiagonals):
         density = np.sum(densities)
         return density
 
-    def _is_converged(self, g_to_compare, atol = 10e-3, rtol = 0, g_atol = 10e-3, n_freq_to_compare = 20):
+    def _is_converged(self, g_to_compare, atol = 10e-3, rtol = 0, g_atol = 10e-3, n_freq_to_compare = 50):
         """
         checks densities first, if positive: checks components of g
         """
