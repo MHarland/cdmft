@@ -86,7 +86,7 @@ class GLocalWithOffdiagonals(GLocalGeneric):
     def _is_converged(self, g_to_compare, atol = 10e-3, rtol = 1e-15, g_atol = 10e-3, n_freq_to_compare = 50):
         conv = False
         n = self.total_density()
-        n_last = self.total_density(g_to_compare)
+        n_last = self.total_density()
         self._last_g_loc_convergence.append(abs(n-n_last))
         if np.allclose(n, n_last, rtol, atol):
             conv = True
