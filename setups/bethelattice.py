@@ -258,8 +258,8 @@ class PlaquetteBetheSetup(CycleSetupGeneric):
     """
     site transformation must be unitary and diagonalize G, assuming all sites are equal
     """
-    def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t_bethe, w1 = None, w2 = None,
-                 n_mom = 3, orbital_labels = ["G", "X", "Y", "M"], symmetric_orbitals = ["X", "Y"],
+    def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t_bethe,
+                 orbital_labels = ["G", "X", "Y", "M"], symmetric_orbitals = [],
                  site_transformation =.5*np.array([[1,1,1,1],[1,-1,1,-1],[1,1,-1,-1],[1,-1,-1,1]]),
                  n_iw = 1025):
         up = "up"
@@ -289,9 +289,12 @@ class PlaquetteBetheSetup(CycleSetupGeneric):
     def init_noninteracting(self):
         self.se.zero()
 
-    def init_centered_semicirculars(self): # TODO test
+    def init_centered_semicirculars(self):
+        """
+        recommended, inits dmft with semicirculars centered around fermi level, causes nice fermionic-sign behavior
+        """
         for n, b in self.se:
-            b << self.gloc.make_matrix(self.mu)[n]
+            b << np.identity(1) * self.mu - self.gloc.t_loc[n]
 
 
 class NambuMomentumPlaquette(CycleSetupGeneric):
