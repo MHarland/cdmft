@@ -462,7 +462,6 @@ class AFMNambuMomentumPlaquette(NambuMomentumPlaquette): # TODO
         """
         recommended, inits dmft with semicirculars centered around fermi level, causes nice fermionic-sign behavior
         """
-        print self.gloc.t_loc
         for n, b in self.se:
             for i in b.indices:
                 i = int(i)
