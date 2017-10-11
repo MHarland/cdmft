@@ -457,3 +457,13 @@ class AFMNambuMomentumPlaquette(NambuMomentumPlaquette): # TODO
             tmp << v_dn**2 * inverse(iOmega_n - e_dn)
             tmp << -1 * tmp.conjugate()
             self.se[b][i, j] += tmp
+
+    def init_centered_semicirculars(self):
+        """
+        recommended, inits dmft with semicirculars centered around fermi level, causes nice fermionic-sign behavior
+        """
+        print self.gloc.t_loc
+        for n, b in self.se:
+            for i in b.indices:
+                i = int(i)
+                b[i, i] << (-1)**i * (np.identity(1) * self.mu - self.gloc.t_loc[n][i, i])
