@@ -429,6 +429,19 @@ class AFMNambuMomentumPlaquette(NambuMomentumPlaquette): # TODO
                 inds = tuple([n] + offdiag)
                 g["XY"].data[inds] = -1 * gap * g.beta * .5
 
+    def apply_static_sc_field(self, gap):
+        """
+        d-wave, spin-singlet, dynamical
+        since it's dynamical it must not be removed
+        """
+        g = self.se
+        for offdiag in [[0,1], [1,0]]:
+            inds = tuple(offdiag)
+                g["XY"][inds] += gap
+        for offdiag in [[2,3], [3,2]]:
+            inds = tuple(offdiag)
+                g["XY"][inds] -= gap
+
     def transform_to_nambu(self, g, g_nambu):
         """gets a paramagnetic non-nambu greensfunction to initialize nambu"""
         g_nambu["GM"][0, 0] << g["up-G"][0, 0]
