@@ -61,8 +61,8 @@ class GLocalWithOffdiagonals(GLocalGeneric):
         self.t_loc = t_local
         self.t_b = t_bethe
         self._last_g_loc_convergence = []
-        self._g_flipped = self.copy()#self.get_as_BlockGf().copy()
-        self._last_attempt = self.copy()#self.get_as_BlockGf().copy()
+        self._g_flipped = self.copy()
+        self._last_attempt = self.copy()
 
     def _set_g_flipped(self):
         for s, b in self:
@@ -76,14 +76,14 @@ class GLocalWithOffdiagonals(GLocalGeneric):
                 break
             else:
                 self._last_attempt << self
-        if mpi.is_master_node():
-            print 'GLocal convergence took '+str(i+1)+' iterations'
+        if mpi.is_master_node() and self.verbosity:
+            print 'gloc convergence took',i,'iterations'
 
     def calc_selfconsistency(self, selfenergy, mu):
         for s, b in self:
             b << inverse(iOmega_n + mu[s] - self.t_loc[s] - self.t_b**2 * self._g_flipped[s] - selfenergy[s])
 
-    def _is_converged(self, g_to_compare, atol = 10e-3, rtol = 1e-15, g_atol = 10e-3, n_freq_to_compare = 50):
+    def _is_converged(self, g_to_compare, atol = 10e-3, rtol = 1e-15, g_atol = 10e-4, n_freq_to_compare = 50):
         conv = False
         n = self.total_density()
         n_last = self.total_density()
@@ -105,6 +105,13 @@ class GLocalInhomogeneous(GLocalWithOffdiagonals):
     def calc_selfconsistency(self, selfenergy, mu):
         for s, b in self:
             b << inverse(iOmega_n + mu[s] - self.t_loc[s] - double_dot_product(self.t_b[s], self._g_flipped[s], self.t_b[s]) - selfenergy[s])
+
+
+class GLocalInhomogeneousFM(GLocalWithOffdiagonals):
+
+    def calc_selfconsistency(self, selfenergy, mu):
+        for s, b in self:
+            b << inverse(iOmega_n + mu[s] - self.t_loc[s] - double_dot_product(self.t_b[s], b, self.t_b[s]) - selfenergy[s])
 
 
 class GLocalAIAO(GLocalWithOffdiagonals):
@@ -184,6 +191,13 @@ class WeissFieldInhomogeneous(WeissFieldGeneric):
         if isinstance(mu, float) or isinstance(mu, int): mu = self._to_blockmatrix(mu)
         for bn, b in self:
             bn = self.flip_spin(bn)
+            b << inverse(iOmega_n  + mu[bn] - glocal.t_loc[bn] - double_dot_product(glocal.t_b[bn], glocal[bn], glocal.t_b[bn]))
+
+class WeissFieldInhomogeneousFM(WeissFieldGeneric):
+
+    def calc_selfconsistency(self, glocal, selfenergy, mu, *args, **kwargs):
+        if isinstance(mu, float) or isinstance(mu, int): mu = self._to_blockmatrix(mu)
+        for bn, b in self:
             b << inverse(iOmega_n  + mu[bn] - glocal.t_loc[bn] - double_dot_product(glocal.t_b[bn], glocal[bn], glocal.t_b[bn]))
 
 
@@ -304,7 +318,6 @@ class GLocalNambu(GLocalWithOffdiagonals):
         """
         self.calculate(selfenergy, self.make_matrix(mu))
         d = self.total_density_nambu()
-        print d.real
         return d
 
 

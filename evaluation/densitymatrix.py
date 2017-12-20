@@ -1,14 +1,19 @@
 import numpy as np
-from pytriqs.applications.impurity_solvers.cthyb import AtomDiag, trace_rho_op, act
+from pytriqs.applications.impurity_solvers.cthyb import AtomDiag, trace_rho_op, act, atomic_density_matrix
 from pytriqs.operators import c as C, c_dag as CDag, n as N
 
 
 class StaticObservable:
     
-    def __init__(self, operator, storage, loop = -1):
+    def __init__(self, operator, storage, loop = -1, atomic = False):
         self.operator = operator
         self.atom = storage.load("h_loc_diagonalization", loop, bcast = False)
-        self.rho = storage.load("density_matrix")
+        if atomic:
+            g = storage.load("g_loc_iw", loop)
+            self.rho = atomic_density_matrix(self.atom, g.beta)
+            del g
+        else:
+            self.rho = storage.load("density_matrix")
 
     def get_expectation_value(self):
         return trace_rho_op(self.rho, self.operator, self.atom)

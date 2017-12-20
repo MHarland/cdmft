@@ -4,7 +4,7 @@ from scipy.linalg import expm, eigh
 from bethe.setups.generic import CycleSetupGeneric
 from bethe.operators.hubbard import Site, TriangleMomentum, PlaquetteMomentum, Triangle, TriangleAIAO, TriangleSpinOrbitCoupling, PlaquetteMomentumNambu, PlaquetteMomentumAFMNambu
 from bethe.operators.kanamori import Dimer as KanamoriDimer, MomentumDimer as KanamoriMomentumDimer
-from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM, GLocalInhomogeneous, WeissFieldInhomogeneous, GLocalAIAO, GLocalNambu, WeissFieldNambu, GLocalAFMNambu, WeissFieldAFMNambu
+from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM, GLocalInhomogeneous, WeissFieldInhomogeneous, GLocalInhomogeneousFM, WeissFieldInhomogeneousFM, GLocalAIAO, GLocalNambu, WeissFieldNambu, GLocalAFMNambu, WeissFieldAFMNambu
 from bethe.transformation import MatrixTransformation
 
 from pytriqs.gf.local import iOmega_n, inverse
@@ -132,7 +132,7 @@ class TwoOrbitalDimerBetheSetup(CycleSetupGeneric):
 
 
 class TwoOrbitalMomentumDimerBetheSetup(CycleSetupGeneric):
-    def __init__(self, beta, mu, u, j, tc_perp, td_perp, tc_bethe, td_bethe, density_density_only = False, orbitals = ["c", "d"], symmetric_orbitals = [], n_iw = 1025, site_transformation = np.array([[1/np.sqrt(2), 1/np.sqrt(2)],[1/np.sqrt(2), -1/np.sqrt(2)]])):
+    def __init__(self, beta, mu, u, j, tc_perp, td_perp, tc_bethe, td_bethe, density_density_only = False, orbitals = ["c", "d"], symmetric_orbitals = [], n_iw = 1025, site_transformation = np.array([[1/np.sqrt(2), 1/np.sqrt(2)],[1/np.sqrt(2), -1/np.sqrt(2)]]), fm = False):
         spins = ["up", "dn"]
         sites = range(2)
         momenta = ["G", "X"]
@@ -157,8 +157,12 @@ class TwoOrbitalMomentumDimerBetheSetup(CycleSetupGeneric):
             else:
                 assert False, "neither "+orbitals[0]+" nor "+orbitals[1]+" in "+bn
         self.h_int = KanamoriMomentumDimer(u, j, spins, orbitals, density_density_only = density_density_only, momenta = momenta, transf = site_transformation)
-        self.g0 = WeissFieldInhomogeneous(blocknames, blocksizes, beta, n_iw)
-        self.gloc = GLocalInhomogeneous(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
+        if not fm:
+            self.g0 = WeissFieldInhomogeneous(blocknames, blocksizes, beta, n_iw)
+            self.gloc = GLocalInhomogeneous(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
+        else:
+            self.g0 = WeissFieldInhomogeneousFM(blocknames, blocksizes, beta, n_iw)
+            self.gloc = GLocalInhomogeneousFM(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
         self.mu = mu
         self.global_moves = {}
@@ -437,10 +441,10 @@ class AFMNambuMomentumPlaquette(NambuMomentumPlaquette): # TODO
         g = self.se
         for offdiag in [[0,1], [1,0]]:
             inds = tuple(offdiag)
-                g["XY"][inds] += gap
+            g["XY"][inds] += gap
         for offdiag in [[2,3], [3,2]]:
             inds = tuple(offdiag)
-                g["XY"][inds] -= gap
+            g["XY"][inds] -= gap
 
     def transform_to_nambu(self, g, g_nambu):
         """gets a paramagnetic non-nambu greensfunction to initialize nambu"""

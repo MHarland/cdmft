@@ -89,6 +89,22 @@ class Dimer:
             jortho = 0
         return uintra + uinter + jpara + jortho
 
+    def u_intra(self, site):
+        return self.u * np.sum([self.n(self.spins[0], o, site) * self.n(self.spins[1], o, site) for o in self.orbs], axis = 0)
+
+    def u_inter(self, site):
+        return self.up * np.sum([self.n(s1, self.orbs[0], site) * self.n(s2, self.orbs[1], site) for s1, s2 in itt.product(self.spins, self.spins)], axis = 0)
+
+    def j_para(self, site):
+        return -self.j * np.sum([self.n(s, self.orbs[0], site) * self.n(s, self.orbs[1], site) for s in self.spins], axis = 0)
+
+    def j_ortho(self, site):
+        cross = np.sum([self.c_dag(self.spins[1], o1, site) * self.c_dag(self.spins[0], o2, site) * self.c(self.spins[1], o2, site) * self.c(self.spins[0], o1, site)
+                            + self.c_dag(self.spins[0], o2, site) * self.c_dag(self.spins[1], o2, site) * self.c(self.spins[0], o1, site) * self.c(self.spins[1], o1, site)
+                            for o1, o2 in itt.product(self.orbs, self.orbs) if o1 != o2], axis = 0)
+        jortho = -.5 * self.j * (cross + dagger(cross))
+        return jortho
+
     def sz(self, orb, site):
         return .5 * (self.n(self.spins[0], orb, site) - self.n(self.spins[1], orb, site))
 
@@ -115,3 +131,6 @@ class MomentumDimer(Dimer):
         block = spin+'-'+orb
         c =  np.sum([self.transf[block][i_k, site].conjugate() * C(block+'-'+self.k[i_k], 0) for i_k in self.kinds], axis = 0)
         return c
+
+    def n_per_momentum(self, k):
+        return np.sum([dagger(C(s+'-'+o+'-'+k, 0)) * C(s+'-'+o+'-'+k, 0) for s, o in itt.product(self.spins, self.orbs)], axis = 0)

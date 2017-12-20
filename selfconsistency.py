@@ -3,6 +3,7 @@ from time import time
 
 from schemes.generic import GLocalGeneric
 from impuritysolver import ImpuritySolver
+from convergence import DMuMaxSqueezer
 
 
 class Cycle:
@@ -22,22 +23,23 @@ class Cycle:
         g0 = self.g0 = weiss_field
         self.imp_solver = ImpuritySolver(g0.beta, dict(g0.gf_struct), g0.n_iw, p['n_tau'], p['n_l'])
         self.g_loc = g_local
-        if hasattr(self.g_loc, 'verbosity'):
-            self.g_loc.verbosity = self.p['verbosity']
-        self.g_imp = GLocalGeneric(gf_init = g_local)
+        self.g_loc.filling = self.p['filling']
+        self.g_loc.dmu_max = self.p['dmu_max']
+        self.g_loc.verbosity = self.p['verbosity']
+        self.g_imp = GLocalGeneric(gf_init = g_local, parameters = p)
         self.mu = mu
         self.se = self_energy
+        self.dmumaxsqueezer = DMuMaxSqueezer(self.g_loc, self.g_imp, par = p)
 
-    def run(self, n_loops, save_loops = True, **parameters_dict):
+    def run(self, n_loops, save_loops = True):
         """
         parameters are taken from initialization, but can also be updated using the optional argument
         """
-        self.p.set(parameters_dict)
         for i in range(n_loops):
             loop_nr = self.storage.get_completed_loops()
             self.report("DMFT loop nr. "+str(loop_nr)+":")
             self.start_time = time()
-            self.mu = self.g_loc.set(self.se, self.mu, self.p["filling"], self.p["dmu_max"])
+            self.mu = self.g_loc.set(self.se, self.mu)
             self.g0.calc_selfconsistency(self.g_loc, self.se, self.mu)
             self.prepare_impurity_run()
             self.imp_solver.run(self.g0, self.h_int, loop_nr, **self.p.run_solver())
@@ -71,6 +73,7 @@ class Cycle:
         self.se.mix(self.p["mix"])
         self.se.symmetrize(self.p["block_symmetries"])
         self.g_imp.calc_dyson(self.g0, self.se)
+        self.g_loc.dmu_max = self.dmumaxsqueezer(self.g_loc.dmu_max)
 
     def prepare_impurity_run(self):
         if self.p["make_g0_tau_real"]:

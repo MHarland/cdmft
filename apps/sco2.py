@@ -5,6 +5,11 @@ from bethe.plot.cfg import plt, ax
 from bethe.transformation import MatrixTransformation
 
 
+verbose = False
+if '-v' in sys.argv:
+    verbose = True
+    sys.argv.remove('-v')
+
 gf_struct = [[k, range(4)] for k in ["GM", "XY"]]
 gf_struct_site = [[s, range(4)] for s in ["up", "dn"]]
 reblock_map = {("GM",0,0):("up",0,0), ("GM",1,1):("dn",0,0),
@@ -30,7 +35,7 @@ for fname in sys.argv[1:]:
     n_loops = sto.get_completed_loops()
     loops = range(n_loops)
     orbs = [(k,i,j) for k, i, j in itt.product(['GM', 'XY'], range(4), range(4))]
-    orders = ['N', 'SC', 'AFM']
+    orders = ['N', 'SC', 'AFM', 'FM']
     nc = len(orbs)
     colors = [matplotlib.cm.jet(i/float(max(1,nc-1))) for i in range(nc)]
     graphs = {orb: [] for orb in orbs + orders}
@@ -56,20 +61,24 @@ for fname in sys.argv[1:]:
         gsite["dn"] << -1 * gsite["dn"].conjugate()
         afm = .125* (gsite["up"][0, 0] +gsite["up"][3, 3] +gsite["dn"][1, 1] +gsite["dn"][2, 2]
                      -gsite["dn"][0, 0] -gsite["dn"][3, 3] -gsite["up"][1, 1] -gsite["up"][2, 2]).total_density()
+        fm = .125* (gsite["up"][0, 0] +gsite["up"][3, 3] +gsite["up"][1, 1] +gsite["up"][2, 2]
+                     -gsite["dn"][0, 0] -gsite["dn"][3, 3] -gsite["dn"][1, 1] -gsite["dn"][2, 2]).total_density()
 
-        for key, val in {'N': ntot, 'SC': sco, 'AFM': afm}.items():
+        for key, val in {'N': ntot, 'SC': sco, 'AFM': afm, 'FM': fm}.items():
             graphs[key].append(abs(val.real))
-        print 'N('+str(l)+') = '+str(np.round(ntot.real, 3))
-        print 'SC('+str(l)+') = '+str(np.round(sco.real, 3))
-        print 'AFM('+str(l)+') = '+str(np.round(afm.real, 3))
-        print g['XY'][0, 1].total_density().real, g['XY'][1, 0].total_density().real, g['XY'][2, 3].total_density().real, g['XY'][3, 2].total_density().real
-        print gsite["up"][0, 0].total_density().real, gsite["up"][3, 3].total_density().real, gsite["dn"][1, 1].total_density().real, gsite["dn"][2, 2].total_density().real
-        print gsite["dn"][0, 0].total_density().real, gsite["dn"][3, 3].total_density().real, gsite["up"][1, 1].total_density().real, gsite["up"][2, 2].total_density().real
+        if verbose:
+            print 'N('+str(l)+') = '+str(np.round(ntot.real, 3))
+            print 'SC('+str(l)+') = '+str(np.round(sco.real, 3))
+            print 'AFM('+str(l)+') = '+str(np.round(afm.real, 3))
+            print 'FM('+str(l)+') = '+str(np.round(fm.real, 3))
+            print g['XY'][0, 1].total_density().real, g['XY'][1, 0].total_density().real, g['XY'][2, 3].total_density().real, g['XY'][3, 2].total_density().real
+            print gsite["up"][0, 0].total_density().real, gsite["up"][3, 3].total_density().real, gsite["dn"][1, 1].total_density().real, gsite["dn"][2, 2].total_density().real
+            print gsite["dn"][0, 0].total_density().real, gsite["dn"][3, 3].total_density().real, gsite["up"][1, 1].total_density().real, gsite["up"][2, 2].total_density().real
     
     for order in orders:
         kwargs = {'label': "$\\mathrm{"+order+"}$"}
         ax.semilogy(loops, graphs[order], **kwargs)
-    ax.set_ylim(bottom = 10**(-3))
+    ax.set_ylim(bottom = 10**(-5))
     ax.legend(loc = "best", fontsize = 6, title = "$O$")
     ax.set_xlabel("$\mathrm{DMFT-Loop}$")
     ax.set_ylabel("$<O>$")

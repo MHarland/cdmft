@@ -163,3 +163,23 @@ class Storage:
             return {"self_energy": sigma, "mu": mu}
         else:
             return {"self_energy": sigma}
+
+    def has_density_matrix(self):
+        n = self.get_last_loop_nr()
+        self._open_archive(read_only = True)
+        if self.disk["dmft_results"][str(n)].is_group('density_matrix'):
+            has = True
+        else:
+            has = False
+        self._close_archive()
+        return has
+
+    def is_dmft_archive(self):
+        is_da = None
+        self._open_archive(read_only = True)
+        if 'dmft_results' in self.disk.keys():
+            is_da = True
+        else:
+            is_da = False
+        self._close_archive()
+        return is_da
