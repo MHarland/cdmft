@@ -50,12 +50,19 @@ class Storage:
             self.dmft_results.create_group(str(new_loop_nr))
             place_to_store = self.dmft_results[str(new_loop_nr)]
             for name, obj in self.memory_container.items():
-                if not obj is None:
+                if isinstance(obj, dict):
+                    place_to_store.create_group(name)
+                    for dname, dobj in obj.items():
+                        try:
+                            place_to_store[name][dname] = dobj
+                        except TypeError:
+                            print "warning: TypeError while writing dict",dname,"of type",type(dobj),"to archive, skipping this one"
+                elif not obj is None:
                     try:
                         place_to_store[name] = obj
                     except TypeError:
                         if mpi.is_master_node():
-                            print "warning: TypeError while writing",name,"to archive"
+                            print "warning: TypeError while writing",name,"of type",type(obj),"to archive, skipping this one"
             self.dmft_results["n_dmft_loops"] += 1
             self._close_archive()
 

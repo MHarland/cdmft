@@ -75,13 +75,13 @@ class TestSetupHypercubic(unittest.TestCase):
 
     def test_Cycle_run(self):
         sto = Storage("test.h5")
-        params = TestDMFTParameters({'verbosity' : 2, 'measure_g_l': True, 'measure_g_tau': False, 'measure_pert_order': False, 'n_cycles': 10**4, 'n_warmup_cycles': 5*10**3, 'n_l': 30})
+        params = TestDMFTParameters({'verbosity' : 0, 'measure_g_l': True, 'measure_g_tau': False, 'measure_pert_order': False, 'n_cycles': 10**4, 'n_warmup_cycles': 5*10**3, 'n_l': 30})
         setup = HypercubicSetup(10, 3, 6, -8, 8, 1000)
         cyc = Cycle(sto, params, verbosity = 2, **setup.initialize_cycle())
         cyc.run(1)
         field = .2 * cyc.h_int.sz_tot()
         cyc.h_int = cyc.h_int.get_h_int() + field
-        cyc.run(1)
+        #cyc.run(1)
         cyc.h_int -= field
-        cyc.run(8)
-        #os.remove("test.h5")
+        #cyc.run(1)
+        os.remove("test.h5")

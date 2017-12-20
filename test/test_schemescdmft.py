@@ -22,8 +22,8 @@ class TestSchemesCDMFT(unittest.TestCase):
         disp = LatticeDispersion(h, 8)
         g = GLocal(disp, ['up', 'dn'], [2, 2], 10, 1000)
         se = SelfEnergy(['up', 'dn'], [2, 2], 10, 1000)
-        mu = g.set(se, 3, 2, .1)
-        self.assertEqual(2.9, mu)
+        mu = g.set(se, 3)
+        self.assertEqual(3, mu)
 
     def test_SchemesCDMFT_calculate_clustersite_basis(self):
         t = -1
@@ -64,8 +64,8 @@ class TestSchemesCDMFT(unittest.TestCase):
         se = SelfEnergy(['up-+', 'up--', 'dn-+', 'dn--'], [1] * 4, 10, 1000)
         g0 = WeissField(['up-+', 'up--', 'dn-+', 'dn--'], [1] * 4, 10, 1000)
         sto = Storage("test.h5")
-        params = TestDMFTParameters()
+        params = TestDMFTParameters(filling = 2)
         h = DimerMomentum(4)
         cyc = Cycle(sto, params, h.get_h_int(), gloc, g0, se, 2)
-        cyc.run(1, filling = 2)
+        cyc.run(1)
         os.remove("test.h5")

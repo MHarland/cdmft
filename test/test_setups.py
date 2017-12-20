@@ -35,25 +35,25 @@ class TestSetups(unittest.TestCase):
     def test_chain_MomentumDimerCDMFTSetup(self):
         setup = MomentumDimerSetup(10, 2, 4, -1, 10)
         sto = Storage('test.h5')
-        par = TestDMFTParameters()
+        par = TestDMFTParameters(n_cycles = 0)
         cyc = Cycle(sto, par, **setup.initialize_cycle())
-        cyc.run(1, n_cycles = 0)
+        cyc.run(1)
         os.remove('test.h5')
         
     def test_squarelattice_MomentumPlaquetteCDMFTSetup(self):
         setup = MomentumPlaquetteSetup(10, 2, 4, -1, .3, 10)
         sto = Storage('test.h5')
-        par = TestDMFTParameters()
+        par = TestDMFTParameters(n_cycles = 0)
         cyc = Cycle(sto, par, **setup.initialize_cycle())
-        cyc.run(1, n_cycles = 0)
+        cyc.run(1)
         os.remove('test.h5')
 
     def test_chain_StrelCDMFTSetup(self):
         setup = StrelSetup(10, 0, -.1, -1, -.1, 0, 2, 16)
         sto = Storage('test.h5')
-        par = TestDMFTParameters()
+        par = TestDMFTParameters(n_cycles = 0)
         cyc = Cycle(sto, par, **setup.initialize_cycle())
-        cyc.run(1, n_cycles = 0)
+        cyc.run(1)
         setup = StrelSetup(10, 0, -1, -1, -1, 1, 2, 8)
         setup.transform_sites(np.pi/4., np.pi/4.)
         e_loc =  np.sum([w * e['up-d'] for k,w,e in setup.gloc.lat.loop_over_bz()], axis = 0)
@@ -65,7 +65,7 @@ class TestSetups(unittest.TestCase):
         e_loc =  np.sum([w * e['up-d'] for k,w,e in setup.gloc.lat.loop_over_bz()], axis = 0)
         self.assertTrue(np.allclose(e_loc[0, 1], 0))
         cyc = Cycle(sto, par, **setup.initialize_cycle())
-        cyc.run(1, n_cycles = 0)
+        cyc.run(1)
         os.remove('test.h5')
         setup = StrelSetup(10, 0, -.1, -1, -.1, 0, 2, 16)
 
@@ -81,7 +81,7 @@ class TestSetups(unittest.TestCase):
             #self.assertTrue(np.allclose(setup.se['spin-mom'].data[1025,j,i], 0.))
 
     def test_TwoOrbitalDimerBetheSetup(self):
-        setup = TwoOrbitalDimerBetheSetup(10, .5, 1, .2, -1, -.1, )
+        setup = TwoOrbitalDimerBetheSetup(10, .5, 1, .2, -1, -.1, .2, .2, .2, .2)
 
     def test_TwoOrbitalMomentumDimerBetheSetup(self):
         setup = TwoOrbitalMomentumDimerBetheSetup(10, .5, 1, .2, -1, -.1, 1, .1)
@@ -89,9 +89,9 @@ class TestSetups(unittest.TestCase):
     def test_NambuMomentumPlaquetteSetup(self):
         setup = NambuMomentumPlaquette(100, 0, 3, -1, 0, 1)
         sto = Storage('test.h5')
-        par = TestDMFTParameters()
+        par = TestDMFTParameters(n_cycles = 0, filling = None)
         cyc = Cycle(sto, par, **setup.initialize_cycle())
-        cyc.run(1, n_cycles = 0, filling = None)
+        cyc.run(1)
         os.remove('test.h5')
         self.assertEqual(cyc.g_loc.total_density_nambu().real, 4)
         setup.apply_dynamical_sc_field(.2)
