@@ -27,9 +27,13 @@ class Cycle:
         self.g_loc.dmu_max = self.p['dmu_max']
         self.g_loc.verbosity = self.p['verbosity']
         self.g_imp = GLocalGeneric(gf_init = g_local, parameters = p)
+        self.convergence_criteria = []
         self.mu = mu
         self.se = self_energy
         self.dmumaxsqueezer = DMuMaxSqueezer(self.g_loc, self.g_imp, par = p)
+
+    def add_convergence_criterion(self, criterion):
+        self.convergence_criteria.append(criterion)
 
     def run(self, n_loops, save_loops = True):
         """
@@ -47,6 +51,18 @@ class Cycle:
             self.process_impurity_results()
             if save_loops: self.save()
             self.report("Loop done.")
+            if self.is_converged():
+                break
+
+    def is_converged(self):
+        if len(self.convergence_criteria) == 0:
+            iscon = False
+        else:
+            iscon = True
+            for c in self.convergence_criteria:
+                if not c.confirms_convergence():
+                    iscon = False
+        return iscon
 
     def save(self):
         results = {}

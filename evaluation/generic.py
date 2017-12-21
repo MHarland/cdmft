@@ -135,6 +135,17 @@ class Evaluation:
                 gsd[b+'_'+str(i)+str(i)] = g[b][i, i].total_density().real#-gtau[b].data[-1, i, i].real
         return gsd
 
+    def get_g_static(self, loop = -1):
+        g = self.archive.load("g_imp_iw", loop)
+        inds = [i for i in g.all_indices]
+        gsd = {}
+        for ind in inds:
+            i = int(ind[1])
+            j = int(ind[2])
+            b = ind[0]
+            gsd[b+'_'+str(i)+str(j)] = g[b][i, j].total_density()
+        return gsd
+
     def get_g_static_blockdiags(self, loop = -1):
         g = self.archive.load("g_imp_iw", loop)
         gsd = {}

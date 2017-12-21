@@ -16,6 +16,7 @@ from test_setups import TestSetups
 from test_tightbinding import TestTightbinding
 from test_schemescdmft import TestSchemesCDMFT
 from test_setuphypercubic import TestSetupHypercubic
+from test_convergence import TestConvergence
 
 
 extensive_test = False
@@ -79,4 +80,7 @@ if extensive_test: suite.addTest(TestSetupHypercubic("test_plot_pade"))
 if extensive_test: suite.addTest(TestSetupHypercubic("test_plot_rho_npts_convergence"))
 if extensive_test: suite.addTest(TestSetupHypercubic("test_plot_rho_w_convergence"))
 if extensive_test: suite.addTest(TestSetupHypercubic("test_Cycle_run"))
+suite.addTest(TestConvergence("test_Criterion_init"))
+if extensive_test: suite.addTest(TestConvergence("test_Criterion_applied"))
+if extensive_test: suite.addTest(TestConvergence("test_Criterion_applied_noisy_case"))
 unittest.TextTestRunner(verbosity = 2).run(suite)
