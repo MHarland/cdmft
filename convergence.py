@@ -30,7 +30,7 @@ class DMuMaxSqueezer:
         return dmu_max
 
 class Criterion:
-    def __init__(self, storage, loops = range(-8,0,1), n_omega = 30, lim_absgdiff = 3e-2, lim_slopes = 1e-3, lim_staticslopes = 1e-3, lim_staticsem = 3e-3, verbose = True):
+    def __init__(self, storage, loops = range(-8,0,1), n_omega = 30, lim_absgdiff = 1e-3, lim_slopes = 1e-3, lim_staticslopes = 1e-3, lim_staticsem = 3e-3, verbose = True):
         self.loops, self.n_omega, self.lim_absgdiff, self.lim_slopes, self.lim_staticslopes, self.lim_staticsem = loops, n_omega, lim_absgdiff, lim_slopes, lim_staticslopes, lim_staticsem
         self.storage = storage
         self.evaluation = Evaluation(storage)
