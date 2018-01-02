@@ -117,6 +117,12 @@ class Dimer:
     def s2_tot(self):
         return np.sum([.5 * (self.s_plus(o1, i1) * self.s_minus(o2, i2) + self.s_minus(o1, i1) * self.s_plus(o2, i2)) + self.sz(o1, i1) * self.sz(o2, i2) for i1, i2, o1, o2 in itt.product(self.sites, self.sites, self.orbs, self.orbs)], axis = 0)
 
+    def s2_dim(self, orb):
+        return np.sum([.5 * (self.s_plus(orb, i1) * self.s_minus(orb, i2) + self.s_minus(orb, i1) * self.s_plus(orb, i2)) + self.sz(orb, i1) * self.sz(orb, i2) for i1, i2 in itt.product(self.sites, self.sites)], axis = 0)
+
+    def s2_loc(self, orb, site):
+        return .5 * (self.s_plus(orb, site) * self.s_minus(orb, site) + self.s_minus(orb, site) * self.s_plus(orb, site)) + self.sz(orb, site) * self.sz(orb, site)
+
 
 class MomentumDimer(Dimer):
     """
