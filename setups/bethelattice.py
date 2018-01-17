@@ -165,7 +165,7 @@ class TwoOrbitalMomentumDimerBetheSetup(CycleSetupGeneric):
             self.gloc = GLocalInhomogeneousFM(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
         self.mu = mu
-        self.global_moves = {}
+        self.global_moves = {"spin-flip": {(s1+"-"+o+"-"+k, 0): (s2+"-"+o+"-"+k, 0) for s1, s2, o, k in itt.product(spins, spins, orbitals, momenta) if s1 != s2}}
         self.quantum_numbers = [self.h_int.n_tot(), self.h_int.sz_tot()]
         
 
