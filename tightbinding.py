@@ -7,9 +7,8 @@ class LatticeDispersion:
     """
     hopping is a dict with numpy vectors in the lattice basis as keys
     """
-    def __init__(self, hopping, k_points_per_dimension, spins = ['up', 'dn'], force_real = True):
+    def __init__(self, hopping, k_points_per_dimension, spins = ['up', 'dn']):
         self.spins = spins
-        self.force_real = force_real
         for r, t in hopping.items():
             self.dimension = len(r) if type(r) != int else 1
             self.n_orbs = len(t)
@@ -38,10 +37,7 @@ class LatticeDispersion:
         self.bz_weights = np.array([1./n_k] * n_k)
 
     def calculate_energies(self):
-        if self.force_real:
-            self.energies = np.array([np.sum([t * np.exp(complex(0,-2*np.pi*k.dot(r))) for t, r in itt.izip(self.hopping_elements, self.translations)], axis = 0).real for k in self.bz_points])
-        else: # TODO
-            self.energies = np.array([np.sum([t * np.exp(complex(0,-2*np.pi*k.dot(r))) for t, r in itt.izip(self.hopping_elements, self.translations)], axis = 0) for k, w in itt.izip(self.bz_points, self.bz_weights)])
+        self.energies = np.array([np.sum([t * np.exp(complex(0,-2*np.pi*k.dot(r))) for t, r in itt.izip(self.hopping_elements, self.translations)], axis = 0) for k, w in itt.izip(self.bz_points, self.bz_weights)])
 
     def loop_over_bz(self):
         for k, w, d in itt.izip(self.bz_points, self.bz_weights, self.energies):
@@ -118,8 +114,6 @@ class SquarelatticeDispersion(LatticeDispersion):
             for t, r in itt.izip(self.hopping_elements, self.translations):
                 #term += np.sum([t * np.exp(complex(0,-2*np.pi*k.dot(r))) for k in kclass], axis = 0)  / len(kclass)
                 term += t * np.exp(complex(0,-2*np.pi*kclass[0].dot(r)))
-            if self.force_real:
-                term = term.real
             self.energies.append(term)
 
 
