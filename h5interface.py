@@ -94,7 +94,7 @@ class Storage:
             try:
                 quantity = self.dmft_results[str(loop_nr)][quantity_name]
             except KeyError:
-                pass
+                if mpi.is_master_node(): 'Warning:', quantity_name, 'could not be loaded'
             self._close_archive()
         if bcast:
             quantity = mpi.bcast(quantity)
