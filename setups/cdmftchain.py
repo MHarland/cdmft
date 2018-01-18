@@ -1,11 +1,33 @@
 import numpy as np, itertools as itt
 
 from bethe.setups.generic import CycleSetupGeneric
-from bethe.operators.hubbard import DimerMomentum
+from bethe.operators.hubbard import DimerMomentum, Site, Dimer
 from bethe.operators.kanamori import Dimer as KanamoriDimer
 from bethe.schemes.cdmft import GLocal, SelfEnergy, WeissField
 from bethe.tightbinding import LatticeDispersion, LatticeDispersionMultiband
 from bethe.transformation import MatrixTransformation
+
+
+class SingleSiteSetup(CycleSetupGeneric):
+    """
+    Dimer-cluster of a 1D chain lattice within Cluster DMFT
+    assumes that transformation_matrix diagonalizes the GLocal on site-space
+    i.e. the two clustersites are equivalent
+    """
+    def __init__(self, beta, mu, u, t, n_k, spins = ['up', 'dn'], n_iw = 1025):
+        clusterhopping = {(1): [[t]], (-1): [[t]]}
+        disp = LatticeDispersion(clusterhopping, n_k)
+        site_transf_mat = dict([(s, np.sqrt(.5) * np.array([[1,1],[1,-1]])) for s in spins])
+        struct = [[s, [0]] for s in spins]
+        up, dn = spins[0], spins[1]
+        hubbard = Site(u, spins)
+        self.h_int = hubbard.get_h_int()
+        self.gloc = GLocal(disp, [s[0] for s in struct], [1] * 2, beta, n_iw)
+        self.g0 = WeissField([s[0] for s in struct], [1] * 2, beta, n_iw)
+        self.se = SelfEnergy([s[0] for s in struct], [1] * 2, beta, n_iw)
+        self.mu = mu
+        self.global_moves = {}#{"spin-flip": dict([((s1, 0), (s2, 0)) for s1, s2 in itt.product(spins, spins) if s1 != s2])}
+        self.quantum_numbers = [hubbard.n_tot(), hubbard.sz_tot()]
 
 
 class MomentumDimerSetup(CycleSetupGeneric):
@@ -29,9 +51,30 @@ class MomentumDimerSetup(CycleSetupGeneric):
         self.g0 = WeissField([s[0] for s in new_struct], [1] * 4, beta, n_iw)
         self.se = SelfEnergy([s[0] for s in new_struct], [1] * 4, beta, n_iw)
         self.mu = mu
-        self.global_moves = {"spin-flip": dict([((s1+"-"+k, 0), (s2+"-"+k, 0)) for k in momenta for s1, s2 in itt.product(spins, spins) if s1 != s2])}
-        self.quantum_numbers = [hubbard.get_n_tot(), hubbard.get_n_per_spin(up)]
-        
+        self.global_moves = {}#{"spin-flip": dict([((s1+"-"+k, 0), (s2+"-"+k, 0)) for k in momenta for s1, s2 in itt.product(spins, spins) if s1 != s2])}
+        self.quantum_numbers = [hubbard.n_tot(), hubbard.sz_tot()]
+
+
+class DimerSetup(CycleSetupGeneric):
+    """
+    Dimer-cluster of a 1D chain lattice within Cluster DMFT
+    assumes that transformation_matrix diagonalizes the GLocal on site-space
+    i.e. the two clustersites are equivalent
+    """
+    def __init__(self, beta, mu, u, t, n_k, spins = ['up', 'dn'], n_iw = 1025, site_transf_mat = dict([(s, np.sqrt(.5) * np.array([[1,1],[1,-1]])) for s in ['up', 'dn']])):
+        clusterhopping = {(0): [[0,t],[t,0]], (1): [[0,t],[0,0]], (-1): [[0,0],[t,0]]}
+        disp = LatticeDispersion(clusterhopping, n_k)
+        if site_transf_mat is not None:
+            disp.transform_site_space(site_transf_mat)
+        hubbard = Dimer(u, spins, site_transf_mat)
+        self.h_int = hubbard.get_h_int()
+        self.gloc = GLocal(disp, [s for s in spins], [2] * 2, beta, n_iw)
+        self.g0 = WeissField([s for s in spins], [2] * 2, beta, n_iw)
+        self.se = SelfEnergy([s for s in spins], [2] * 2, beta, n_iw)
+        self.mu = mu
+        self.global_moves = {}#{"spin-flip": dict([((s1+"-"+k, 0), (s2+"-"+k, 0)) for k in momenta for s1, s2 in itt.product(spins, spins) if s1 != s2])}
+        self.quantum_numbers = [hubbard.n_tot(), hubbard.sz_tot()]
+
         
 class StrelSetup(CycleSetupGeneric):
     """
