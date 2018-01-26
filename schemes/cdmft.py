@@ -4,7 +4,7 @@ from pytriqs.lattice.tight_binding import TBLattice
 from pytriqs.utility import mpi
 from pytriqs.sumk import SumkDiscreteFromLattice
 
-from generic import GLocalGeneric, SelfEnergyGeneric, WeissFieldGeneric
+from generic import GLocalGeneric, SelfEnergyGeneric, WeissFieldGeneric, FunctionWithMemory
 from bethe import WeissFieldNambu
 from ..gfoperations import double_dot_product
 
