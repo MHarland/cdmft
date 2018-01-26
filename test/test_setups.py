@@ -3,8 +3,8 @@ import unittest, os, numpy as np
 from bethe.h5interface import Storage
 from bethe.selfconsistency import Cycle
 from bethe.setups.bethelattice import SingleBetheSetup, TriangleBetheSetup, PlaquetteBetheSetup, TriangleAIAOBetheSetup, TwoOrbitalDimerBetheSetup, TwoOrbitalMomentumDimerBetheSetup, NambuMomentumPlaquette, AFMNambuMomentumPlaquette
-from bethe.setups.cdmftchain import MomentumDimerSetup, StrelSetup
-from bethe.setups.cdmftsquarelattice import MomentumPlaquetteSetup
+from bethe.setups.cdmftchain import MomentumDimerSetup, StrelSetup, SingleSiteSetup
+from bethe.setups.cdmftsquarelattice import MomentumPlaquetteSetup, NambuMomentumPlaquetteSetup
 from bethe.parameters import TestDMFTParameters
 
 
@@ -32,6 +32,14 @@ class TestSetups(unittest.TestCase):
         self.assertTrue(.99 < sto.load("average_sign"))
         os.remove('test.h5')
         
+    def test_chain_SingleSiteCDMFTSetup(self):
+        setup = SingleSiteSetup(10, 2, 4, -1, 10)
+        sto = Storage('test.h5')
+        par = TestDMFTParameters(n_cycles = 0)
+        cyc = Cycle(sto, par, **setup.initialize_cycle())
+        cyc.run(1)
+        os.remove('test.h5')
+
     def test_chain_MomentumDimerCDMFTSetup(self):
         setup = MomentumDimerSetup(10, 2, 4, -1, 10)
         sto = Storage('test.h5')
@@ -42,6 +50,14 @@ class TestSetups(unittest.TestCase):
         
     def test_squarelattice_MomentumPlaquetteCDMFTSetup(self):
         setup = MomentumPlaquetteSetup(10, 2, 4, -1, .3, 10)
+        sto = Storage('test.h5')
+        par = TestDMFTParameters(n_cycles = 0)
+        cyc = Cycle(sto, par, **setup.initialize_cycle())
+        cyc.run(1)
+        os.remove('test.h5')
+
+    def test_squarelattice_NambuMomentumPlaquetteCDMFTSetup(self):
+        setup = NambuMomentumPlaquetteSetup(10, 2, 4, -1, .3, 10)
         sto = Storage('test.h5')
         par = TestDMFTParameters(n_cycles = 0)
         cyc = Cycle(sto, par, **setup.initialize_cycle())

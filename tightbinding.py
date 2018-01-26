@@ -6,6 +6,7 @@ from bethe.transformation import MatrixTransformation
 class LatticeDispersion:
     """
     hopping is a dict with numpy vectors in the lattice basis as keys
+    only for orthogonal lattice vectors, so far
     """
     def __init__(self, hopping, k_points_per_dimension, spins = ['up', 'dn']):
         self.spins = spins
@@ -42,6 +43,11 @@ class LatticeDispersion:
     def loop_over_bz(self):
         for k, w, d in itt.izip(self.bz_points, self.bz_weights, self.energies):
             yield k, w, d
+
+    def transform(self, matrixtransformation):
+        assert isinstance(matrixtransformation, MatrixTransformation), "matrixtransformation must be of type MatrixTransformation"
+        for i, d in enumerate(self.energies):
+            self.energies[i] = matrixtransformation.transform_matrix(d)
 
     def transform_site_space(self, unitary_transformation_matrix, new_blockstructure = None, reblock_map = None):
         """
