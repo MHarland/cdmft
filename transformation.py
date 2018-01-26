@@ -127,7 +127,8 @@ class MatrixTransformation:
             else:
                 result = matrix.__class__(gf_struct = struct_new, beta = matrix.beta, n_iw = matrix.n_iw)
         else:
-            result = dict([[block[0], np.zeros([len(block[1]), len(block[1])], dtype = matrix[matrix.keys()[0]].dtype)] for block in struct_new])
+            #result = dict([[block[0], np.zeros([len(block[1]), len(block[1])], dtype = matrix[matrix.keys()[0]].dtype)] for block in struct_new])
+            result = dict([[block[0], np.zeros([len(block[1]), len(block[1])], dtype = complex)] for block in struct_new])
         for block in struct_new:
             b_new = block[0]
             indices_new = block[1]
@@ -156,9 +157,9 @@ class MatrixTransformation:
 
     def _reblock_matrix_by_map(self, matrix, map_dict, backtransform):
         if not backtransform:
-            result = dict([[block[0], np.zeros([len(block[1]), len(block[1])])] for block in self.gf_struct_new])
+            result = dict([[block[0], np.zeros([len(block[1]), len(block[1])], dtype = complex)] for block in self.gf_struct_new])
         else:
-            result = dict([[block[0], np.zeros([len(block[1]), len(block[1])])] for block in self.gf_struct])
+            result = dict([[block[0], np.zeros([len(block[1]), len(block[1])], dtype = complex)] for block in self.gf_struct])
         for old, new in map_dict.items():
             result[new[0]][new[1], new[2]] = matrix[old[0]][old[1], old[2]]
         return result
