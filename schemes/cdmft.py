@@ -2,6 +2,7 @@ import numpy as np, itertools as itt
 from pytriqs.gf.local import inverse, iOmega_n
 from pytriqs.lattice.tight_binding import TBLattice
 from pytriqs.utility import mpi
+from pytriqs.utility.bound_and_bisect import bound_and_bisect
 from pytriqs.sumk import SumkDiscreteFromLattice
 
 from generic import GLocalGeneric, SelfEnergyGeneric, WeissFieldGeneric, FunctionWithMemory
