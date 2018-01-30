@@ -130,7 +130,7 @@ class TwoOrbitalDimerBetheSetup(CycleSetupGeneric):
 
 
 class TwoMixedOrbitalDimerBetheSetup(CycleSetupGeneric):
-    def __init__(self, beta, mu, u, j, tc_perp, td_perp, tc_bethe, td_bethe, tcd_bethe, density_density_only = False, orbitals = ["c", "d"], symmetric_orbitals = [], n_iw = 1025, site_transformation = np.array([[1/np.sqrt(2), 1/np.sqrt(2)],[1/np.sqrt(2), -1/np.sqrt(2)]])):
+    def __init__(self, beta, mu, u, j, tc_perp, td_perp, tc_bethe, td_bethe, tcd_bethe, density_density_only = False, orbitals = ["c", "d"], symmetric_orbitals = [], n_iw = 1025, site_transformation = np.array([[1/np.sqrt(2), 1/np.sqrt(2)],[1/np.sqrt(2), -1/np.sqrt(2)]]), fm = False):
         spins = ["up", "dn"]
         sites = range(2)
         momenta = ["G", "X"]
@@ -144,8 +144,12 @@ class TwoMixedOrbitalDimerBetheSetup(CycleSetupGeneric):
         tx_bethe = -1 * tg_bethe
         t_bethe = {bn: tb for bn, tb in zip(blocknames, [tg_bethe, tx_bethe, tg_bethe, tx_bethe])}
         self.h_int = KanamoriMixedOrbitalMomentumDimer(u, j, spins, orbs = orbitals, density_density_only = density_density_only, transf = site_transformation, momenta = momenta)
-        self.g0 = WeissFieldInhomogeneous(blocknames, blocksizes, beta, n_iw)
-        self.gloc = GLocalInhomogeneous(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
+        if not fm:
+            self.g0 = WeissFieldInhomogeneous(blocknames, blocksizes, beta, n_iw)
+            self.gloc = GLocalInhomogeneous(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
+        else:
+            self.g0 = WeissFieldInhomogeneousFM(blocknames, blocksizes, beta, n_iw)
+            self.gloc = GLocalInhomogeneousFM(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
         self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
         self.mu = mu
         self.global_moves = {}
