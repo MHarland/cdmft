@@ -405,6 +405,24 @@ class NambuMomentumPlaquette(CycleSetupGeneric):
             if i_nam == 1 and j_nam == 1:
                 g_nambu[b_nam][i_nam, j_nam] << -1 * g[b][i, j].conjugate()
 
+    def backtransform_g(self, giw):
+        """
+        backtransforms a Greensfunction g to the form, where g-up-particle, g-dn-particle
+        are on the diagonals and the anomalous parts are on the off-diagonals
+
+        not tested(!)
+
+        """
+        u = self.transformation[self.spins[0]]
+        i_s = {self.spins: i for i in range(len(self.spins))}
+        i_k = {self.momenta: i for i in range(len(self.momenta))}
+        gtarget = BlockGf(name_block_generator = [[s, GfImFreq(beta = giw.beta, indices = range(8), n_points = len(giw.mesh))] for s in ['full']])
+        for i, j, s1, s2, k in itt.product(self.sites, self.sites, self.spins, self.spins, self.momenta):
+            gtarget['full'][4*i_s[s1]+i, 4*i_s[s2]+j] << gtarget['full'][4*i_s[s1]+i, 4*i_s[s2]+j] + u.transpose().conjugate()[i, i_k[k]] * giw[k][i_s[s1], i_s[2]] * u[i_k[k], j]
+        for i, j in itt.product(range(4,8), range(4,8)):
+            gtarget['full'] << -1 * gtarget['full'][i, j].conjugate()
+        return gtarget
+
 
 class AFMNambuMomentumPlaquette(NambuMomentumPlaquette): # TODO
 
