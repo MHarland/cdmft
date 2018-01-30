@@ -323,7 +323,10 @@ class PlaquetteBetheSetup(CycleSetupGeneric):
 
 
 class NambuMomentumPlaquette(CycleSetupGeneric):
-
+    """
+    Don't use self.mom_transf for the backtransformation! The reblock algorithm will drop 
+    off-diagonals
+    """
     def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t_bethe = 1, n_iw = 1025):
         g, x, y, m = "G", "X", "Y", "M"
         up, dn = "up", "dn"
