@@ -11,8 +11,11 @@ class Dimer:
         self.sites = sites
         self.gap_sz = None
         self.transf = transf
-        if transf:
-            self.kinds = range(self.transf.values()[0].shape[0])
+        if transf is not None:
+            if isinstance(transf, dict):
+                self.kinds = range(self.transf.values()[0].shape[0])
+            else:
+                self.kinds = range(self.transf.shape[0])
         if u is not None and j is not None: self.set_h_int(u, j, density_density_only)
 
     def get_h_int(self):
@@ -140,3 +143,19 @@ class MomentumDimer(Dimer):
 
     def n_per_momentum(self, k):
         return np.sum([dagger(C(s+'-'+o+'-'+k, 0)) * C(s+'-'+o+'-'+k, 0) for s, o in itt.product(self.spins, self.orbs)], axis = 0)
+
+
+class MixedOrbitalMomentumDimer(Dimer):
+    """
+    assumes spin-mom blockstructure
+    """
+    def __init__(self, *args, **kwargs):
+        self.mom = kwargs.pop('momenta')
+        self.orbs = kwargs.pop('orbs')
+        self.k = {i:self.mom[i] for i in range(len(self.mom))}
+        self.m = {self.orbs[i]: i for i in range(len(self.orbs))}
+        Dimer.__init__(self, *args, **kwargs)
+
+    def c(self, spin, orb, site):
+        c =  np.sum([self.transf[i_k, site].conjugate() * C(spin+'-'+self.k[i_k], self.m[orb]) for i_k in self.kinds], axis = 0)
+        return c

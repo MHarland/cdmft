@@ -3,7 +3,7 @@ from scipy.linalg import expm, eigh
 
 from bethe.setups.generic import CycleSetupGeneric
 from bethe.operators.hubbard import Site, TriangleMomentum, PlaquetteMomentum, Triangle, TriangleAIAO, TriangleSpinOrbitCoupling, PlaquetteMomentumNambu, PlaquetteMomentumAFMNambu
-from bethe.operators.kanamori import Dimer as KanamoriDimer, MomentumDimer as KanamoriMomentumDimer
+from bethe.operators.kanamori import Dimer as KanamoriDimer, MomentumDimer as KanamoriMomentumDimer, MixedOrbitalMomentumDimer as KanamoriMixedOrbitalMomentumDimer
 from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM, GLocalInhomogeneous, WeissFieldInhomogeneous, GLocalInhomogeneousFM, WeissFieldInhomogeneousFM, GLocalAIAO, GLocalNambu, WeissFieldNambu, GLocalAFMNambu, WeissFieldAFMNambu
 from bethe.transformation import MatrixTransformation
 
@@ -104,8 +104,6 @@ class TwoOrbitalDimerBetheSetup(CycleSetupGeneric):
             self.se[orb][1, 0] += v[orb]**2 * inverse(iOmega_n - e[orb])
 
     def set_data(self, storage, load_mu = True, transform = False):
-        """initializes by previous non-nambu solution and anomalous field or by 
-        nambu-solution"""
         gloc = storage.load('g_imp_iw')
         g0 = storage.load('g_weiss_iw')
         se = storage.load('se_imp_iw')
@@ -129,6 +127,29 @@ class TwoOrbitalDimerBetheSetup(CycleSetupGeneric):
         gtransf['up-c'][1, 1] << g['up-c-X'][0, 0]
         gtransf['dn-c'][0, 0] << g['dn-c-G'][0, 0]
         gtransf['dn-c'][1, 1] << g['dn-c-X'][0, 0]
+
+
+class TwoMixedOrbitalDimerBetheSetup(CycleSetupGeneric):
+    def __init__(self, beta, mu, u, j, tc_perp, td_perp, tc_bethe, td_bethe, tcd_bethe, density_density_only = False, orbitals = ["c", "d"], symmetric_orbitals = [], n_iw = 1025, site_transformation = np.array([[1/np.sqrt(2), 1/np.sqrt(2)],[1/np.sqrt(2), -1/np.sqrt(2)]])):
+        spins = ["up", "dn"]
+        sites = range(2)
+        momenta = ["G", "X"]
+        blocknames = [s+"-"+m for s, m in itt.product(spins, momenta)]
+        blocksizes = [2] * 4
+        gf_struct = [[n, range(s)] for n, s in zip(blocknames, blocksizes)]
+        tg_loc = np.array([[tc_perp,0],[0,td_perp]])
+        tx_loc = -1 * tg_loc
+        t_loc = {bn: t_loc_site for bn, t_loc_site in zip(blocknames, [tg_loc, tx_loc, tg_loc, tx_loc])}
+        tg_bethe = np.array([[tc_bethe, tcd_bethe],[tcd_bethe, td_bethe]])
+        tx_bethe = -1 * tg_bethe
+        t_bethe = {bn: tb for bn, tb in zip(blocknames, [tg_bethe, tx_bethe, tg_bethe, tx_bethe])}
+        self.h_int = KanamoriMixedOrbitalMomentumDimer(u, j, spins, orbs = orbitals, density_density_only = density_density_only, transf = site_transformation, momenta = momenta)
+        self.g0 = WeissFieldInhomogeneous(blocknames, blocksizes, beta, n_iw)
+        self.gloc = GLocalInhomogeneous(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
+        self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
+        self.mu = mu
+        self.global_moves = {}
+        self.quantum_numbers = [self.h_int.n_tot(), self.h_int.sz_tot()]
 
 
 class TwoOrbitalMomentumDimerBetheSetup(CycleSetupGeneric):

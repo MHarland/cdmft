@@ -2,7 +2,7 @@ import unittest, os, numpy as np
 
 from bethe.h5interface import Storage
 from bethe.selfconsistency import Cycle
-from bethe.setups.bethelattice import SingleBetheSetup, TriangleBetheSetup, PlaquetteBetheSetup, TriangleAIAOBetheSetup, TwoOrbitalDimerBetheSetup, TwoOrbitalMomentumDimerBetheSetup, NambuMomentumPlaquette, AFMNambuMomentumPlaquette
+from bethe.setups.bethelattice import SingleBetheSetup, TriangleBetheSetup, PlaquetteBetheSetup, TriangleAIAOBetheSetup, TwoOrbitalDimerBetheSetup, TwoOrbitalMomentumDimerBetheSetup, NambuMomentumPlaquette, AFMNambuMomentumPlaquette, TwoMixedOrbitalDimerBetheSetup
 from bethe.setups.cdmftchain import MomentumDimerSetup, StrelSetup, SingleSiteSetup
 from bethe.setups.cdmftsquarelattice import MomentumPlaquetteSetup, NambuMomentumPlaquetteSetup
 from bethe.parameters import TestDMFTParameters
@@ -101,6 +101,14 @@ class TestSetups(unittest.TestCase):
 
     def test_TwoOrbitalMomentumDimerBetheSetup(self):
         setup = TwoOrbitalMomentumDimerBetheSetup(10, .5, 1, .2, -1, -.1, 1, .1)
+
+    def test_TwoMixedOrbitalMomentumDimerBetheSetup(self):
+        setup = TwoMixedOrbitalDimerBetheSetup(10, .5, 1, .2, -1, -.1, .2, .2, .1)
+        sto = Storage('test.h5')
+        par = TestDMFTParameters(n_cycles = 0, filling = None)
+        cyc = Cycle(sto, par, **setup.initialize_cycle())
+        cyc.run(1)
+        os.remove('test.h5')
 
     def test_NambuMomentumPlaquetteSetup(self):
         setup = NambuMomentumPlaquette(100, 0, 3, -1, 0, 1)
