@@ -37,7 +37,7 @@ class MomentumPlaquetteSetup(CycleSetupGeneric):
                           (1,-1):[[0,0,0,0],[0,0,0,0],[0,s,0,0],[0,0,0,0]]}
         for r, t in clusterhopping.items():
             clusterhopping[r] = np.array(t)
-        disp = SquarelatticeDispersion(clusterhopping, n_k)
+        disp = LatticeDispersion(clusterhopping, n_k)
         disp.transform(self.momentum_transformation)
         hubbard = PlaquetteMomentum(u, spins, momenta, transf_mat)
         self.h_int = hubbard.get_h_int()
