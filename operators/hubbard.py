@@ -53,6 +53,18 @@ class Hubbard:
         op += self.szsz(i, j)
         return op
 
+    def s_plus(self, i, j):
+        return self._c_dag(self.up, i) * self._c(self.dn, j)
+
+    def s_minus(self, i, j):
+        return self._c_dag(self.dn, i) * self._c(self.up, j)
+    
+    def ss_pm_loc(self, site):
+        return self.s_plus(site, site) * self.s_minus(site, site)
+
+    def ss_mp_loc(self, site):
+        return self.s_minus(site, site) * self.s_plus(site, site)
+
     def ss_tot(self):
         return np.sum([self.ss(i, j) for i, j in itt.product(*[self.sites]*2)])
 
@@ -168,11 +180,14 @@ class TriangleSpinOrbitCoupling(Triangle):
             m = m.real
         return m
 
-    def aiao_op(self):
+    def aiao_op(self, chirality = [0, 1, 2]):
+        """
+        chiralities are either 0,1,2 or 0,2,1
+        """
         operator = 0
         phi = 0
         for i in self.sites:
-            theta = i * 2 * np.pi / 3.
+            theta = chirality[i] * 2 * np.pi / 3.
             for s, sign in zip(self.spins, [+1, -1]):
                 operator += sign * self._c_rot_dag(s, i, theta, phi) * self._c_rot(s, i, theta, phi)
         return operator
