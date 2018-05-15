@@ -37,7 +37,7 @@ class Cycle:
 
     def run(self, n_loops, save_loops = True):
         """
-        parameters are taken from initialization, but can also be updated using the optional argument
+        parameters are taken from initialization
         """
         for i in range(n_loops):
             loop_nr = self.storage.get_completed_loops()
@@ -104,3 +104,29 @@ class Cycle:
     def report_variable(self, **variables):
         for key, val in variables.items():
             self.report(key+" = "+str(val))
+
+
+class CycleCCDMFTG(Cycle):
+
+    def __init__(self, *args, **kwargs):
+        Cycle.__init__(self, *args, **kwargs)
+        self.g_imp << self.g_loc
+    
+    def run(self, n_loops, save_loops = True):
+        """
+        parameters are taken from initialization
+        """
+        for i in range(n_loops):
+            loop_nr = self.storage.get_completed_loops()
+            self.report("DMFT loop nr. "+str(loop_nr)+":")
+            self.start_time = time()
+            self.mu = self.g_loc.set(self.g_imp, self.mu)
+            self.g0.calc_selfconsistency(self.g_loc, self.se, self.mu)
+            self.prepare_impurity_run()
+            self.imp_solver.run(self.g0, self.h_int, loop_nr, **self.p.run_solver())
+            self.g_imp << self.imp_solver.get_g_iw()
+            self.process_impurity_results()
+            if save_loops: self.save()
+            self.report("Loop done.")
+            if self.is_converged():
+                break
