@@ -9,6 +9,15 @@ def double_dot_product(matrix1, gf, matrix2):
         prod[i, l] = sum([matrix1[i, j] * gf[j, k] * matrix2[k, l] for j, k in itt.product(inds, inds)])
     return prod
 
+def double_dot_product_ggg(g1, g2, g3):
+    prod = g1.copy()
+    prod.zero()
+    for s, b in prod:
+        inds = [i for i in b.indices]
+        for i, j, k, l in itt.product(*[inds]*4):
+            b[i,l] << b[i,l] + g1[s][i,j] * g2[s][j,k] * g3[s][k,l]
+    return prod
+
 def dot_product(matrix, gf):
     inds = range(matrix.shape[0])
     prod = gf.copy()
