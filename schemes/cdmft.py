@@ -14,20 +14,28 @@ class GLocal(GLocalGeneric):
     """
     RevModPhys.77.1027
     """
-    def __init__(self, lattice_dispersion, *args, **kwargs):
+    def __init__(self, lattice_dispersion, transf_for_ksum, *args, **kwargs):
         self.lat = lattice_dispersion
-        self.p3 = np.array([[1, 0], [0, -1]])
+        self.transfksum = transf_for_ksum
         assert hasattr(self.lat, 'bz_points') and hasattr(self.lat, 'bz_weights') and hasattr(self.lat, 'energies'), 'make sure lattice_dispersion has the attributes bz_points, bz_weights and energies!'
         self.bz = [self.lat.bz_points, self.lat.bz_weights, self.lat.energies]
         GLocalGeneric.__init__(self, *args, **kwargs)
 
     def calculate(self, selfenergy, mu):
         g = self.get_as_BlockGf() # TODO need BlockGf for __iadd__ and reduce
+        if self.transfksum is not None:
+            g = self.transfksum.transform(g)
+            selfenergy = self.transfksum.transform(selfenergy)
+            mu = self.transfksum.transform(mu)
         g.zero()
+        result = g.copy()
         for k, w, d in itt.izip(*[mpi.slice_array(x) for x in self.bz]): # TODO c++
             for bn, b in g:
                 b << b + w * inverse(iOmega_n + mu[bn] - d[bn] - selfenergy[bn])
-        self << mpi.all_reduce(mpi.world, g, lambda x, y: x + y)
+        result << mpi.all_reduce(mpi.world, g, lambda x, y: x + y)
+        if self.transfksum is not None:
+            result = self.transfksum.backtransform(result)
+        self << result
         mpi.barrier()
 
 
@@ -42,12 +50,21 @@ class GLocalNambu(GLocal):
     """
     """
     def calculate(self, selfenergy, mu):
+        p3 = np.kron(np.array([[1,0],[0,-1]]), np.eye(4))
         g = self.get_as_BlockGf() # TODO need BlockGf for __iadd__ and reduce
+        if self.transfksum is not None:
+            g = self.transfksum.transform(g)
+            selfenergy = self.transfksum.transform(selfenergy)
+            mu = self.transfksum.transform(mu)
         g.zero()
+        result = g.copy()
         for k, w, d in itt.izip(*[mpi.slice_array(x) for x in self.bz]): # TODO c++
             for bn, b in g:
-                b << b + w * inverse(iOmega_n + (mu[bn] - d[bn]).dot(self.p3) - selfenergy[bn])
-        self << mpi.all_reduce(mpi.world, g, lambda x, y: x + y)
+                b << b + w * inverse(iOmega_n + (mu[bn] - d[bn]).dot(p3) - selfenergy[bn])
+        result << mpi.all_reduce(mpi.world, g, lambda x, y: x + y)
+        if self.transfksum is not None:
+            result = self.transfksum.backtransform(result)
+        self << result
         mpi.barrier()
 
     def total_density_nambu(self, g = None):

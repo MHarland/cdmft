@@ -5,7 +5,7 @@ from bethe.setups.bethelattice import NambuMomentumPlaquette as BetheNambuMoment
 from bethe.operators.hubbard import PlaquetteMomentum, PlaquetteMomentumNambu
 from bethe.schemes.cdmft import GLocal, SelfEnergy, WeissField, GLocalNambu
 from bethe.tightbinding import SquarelatticeDispersion, LatticeDispersion
-from bethe.transformation import MatrixTransformation
+from bethe.transformation2 import Transformation, Reblock, UnitaryMatrixTransformation
 
 
 class MomentumPlaquetteSetup(CycleSetupGeneric):
@@ -24,7 +24,9 @@ class MomentumPlaquetteSetup(CycleSetupGeneric):
                        (up,2,2): (up+'-'+c,0,0), (up,3,3): (up+'-'+d,0,0),
                        (dn,0,0): (dn+'-'+a,0,0), (dn,1,1): (dn+'-'+b,0,0),
                        (dn,2,2): (dn+'-'+c,0,0), (dn,3,3): (dn+'-'+d,0,0)}
-        self.momentum_transformation = MatrixTransformation(site_struct, transf_mat, mom_struct)
+        inverse_reblock_map = {val: key for key, val in reblock_map.items()}
+        ksum_unblock = Transformation([Reblock(site_struct, mom_struct, inverse_reblock_map)])
+        self.momentum_transf = Transformation([UnitaryMatrixTransformation(transf_mat)])
         t, s = tnn, tnnn
         clusterhopping = {(0,0):[[0,t,t,s],[t,0,s,t],[t,s,0,t],[s,t,t,0]],
                           (1,0):[[0,t,0,s],[0,0,0,0],[0,s,0,t],[0,0,0,0]],
@@ -38,10 +40,10 @@ class MomentumPlaquetteSetup(CycleSetupGeneric):
         for r, t in clusterhopping.items():
             clusterhopping[r] = np.array(t)
         disp = LatticeDispersion(clusterhopping, n_k)
-        disp.transform(self.momentum_transformation)
+        disp.transform(self.momentum_transf)
         hubbard = PlaquetteMomentum(u, spins, momenta, transf_mat)
         self.h_int = hubbard.get_h_int()
-        self.gloc = GLocal(disp, [s[0] for s in mom_struct], [1] * 8, beta, n_iw)
+        self.gloc = GLocal(disp, ksum_unblock, [s[0] for s in mom_struct], [1] * 8, beta, n_iw)
         self.g0 = WeissField([s[0] for s in mom_struct], [1] * 8, beta, n_iw)
         self.se = SelfEnergy([s[0] for s in mom_struct], [1] * 8, beta, n_iw)
         self.mu = mu
@@ -66,6 +68,7 @@ class NambuMomentumPlaquetteSetup(BetheNambuMomentumPlaquette):
         self.block_labels = [k for k in self.momenta]
         self.gf_struct = [[l, self.spinors] for l in self.block_labels]
         self.gf_struct_site = [[s, self.sites] for s in self.spins]
+        self.gf_struct_tot = [['0', range(8)]]
         self.reblock_map = {(up,0,0):(g,0,0), (dn,0,0):(g,1,1), (up,1,1):(x,0,0), (dn,1,1):(x,1,1), (up,2,2):(y,0,0), (dn,2,2):(y,1,1), (up,3,3):(m,0,0), (dn,3,3):(m,1,1)}
         transformation_matrix = .5 * np.array([[1,1,1,1],
                                                [1,-1,1,-1],
@@ -73,6 +76,14 @@ class NambuMomentumPlaquetteSetup(BetheNambuMomentumPlaquette):
                                                [1,-1,-1,1]])
         self.transformation = dict([(s, transformation_matrix) for s in self.spins])
         self.mom_transf = MatrixTransformation(self.gf_struct_site, self.transformation, self.gf_struct, reblock_map = self.reblock_map)
+        
+        disp_transf_mat =  {'0': np.kron(np.eye(2), transformation_matrix)}
+        disp_transf = Transformation([UnitaryMatrixTransformation(disp_transf_mat)])
+        
+        k = {'G': 0, 'X': 1, 'Y': 2, 'M': 3}
+        reblock_ksum_map = {(K,i,j): ('0', k[K]+i*4, k[K]+j*4) for K, i, j in itt.product(momenta, range(2), range(2))}
+        reblock_ksum = Transformation([Reblock(self.gf_struct_tot, self.gf_struct, reblock_ksum_map)])
+        
         t, s = tnn, tnnn
         clusterhopping = {(0,0):[[0,t,t,s],[t,0,s,t],[t,s,0,t],[s,t,t,0]],
                           (1,0):[[0,t,0,s],[0,0,0,0],[0,s,0,t],[0,0,0,0]],
@@ -84,13 +95,13 @@ class NambuMomentumPlaquetteSetup(BetheNambuMomentumPlaquette):
                           (0,-1):[[0,0,0,0],[0,0,0,0],[t,s,0,0],[s,t,0,0]],
                           (1,-1):[[0,0,0,0],[0,0,0,0],[0,s,0,0],[0,0,0,0]]}
         for r, t in clusterhopping.items():
-            clusterhopping[r] = np.array(t)
-        self.disp = LatticeDispersion(clusterhopping, n_k)
-        self.disp.transform(self.mom_transf)
+            clusterhopping[r] = np.kron(np.eye(2), np.array(t))
+        self.disp = LatticeDispersion(clusterhopping, n_k, spins = ['0'])
+        self.disp.transform(disp_transf)
         self.mu = mu
         self.operators = PlaquetteMomentumNambu(u, self.spins, self.momenta, self.transformation)
         self.h_int = self.operators.get_h_int()
-        self.gloc = GLocalNambu(self.disp, self.momenta, [2]*4, beta, n_iw)
+        self.gloc = GLocalNambu(self.disp, reblock_ksum, self.momenta, [2]*4, beta, n_iw)
         self.g0 = WeissField(self.momenta, [2]*4, beta, n_iw)
         self.se = SelfEnergy(self.momenta, [2]*4, beta, n_iw)
         self.global_moves = {}

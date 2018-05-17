@@ -19,10 +19,12 @@ from test_setuphypercubic import TestSetupHypercubic
 from test_convergence import TestConvergence
 from test_schemesccdmft import TestSchemesCCDMFT
 from test_schemespcdmft import TestSchemesPCDMFT
+from test_transformation2 import TestTransformation2
 
 
 extensive_test = False
 suite = unittest.TestSuite()
+
 suite.addTest(TestMatsubaraGreensFunction("test_MatsubaraGreensFunction_initialization"))
 suite.addTest(TestMatsubaraGreensFunction("test_MatsubaraGreensFunction_hdf"))
 suite.addTest(TestMatsubaraGreensFunction("test_MatsubaraGreensFunction_fit_tail2"))
@@ -92,4 +94,7 @@ if extensive_test: suite.addTest(TestConvergence("test_Criterion_applied_noisy_c
 suite.addTest(TestSchemesCCDMFT("test_SchemesCCDMFT_init"))
 suite.addTest(TestSchemesCCDMFT("test_HoppingLattice"))
 suite.addTest(TestSchemesPCDMFT("test_SchemesPCDMFT_init"))
+suite.addTest(TestTransformation2("test_ReblockG"))
+suite.addTest(TestTransformation2("test_Transformation"))
+
 unittest.TextTestRunner(verbosity = 2).run(suite)

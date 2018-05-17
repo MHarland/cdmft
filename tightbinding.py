@@ -24,8 +24,7 @@ class LatticeDispersion:
         self.create_grid(k_points_per_dimension)
         self.calculate_energies()
         self.energies_k = self.energies
-        up, dn = spins[0], spins[1]
-        self.energies_spinsite_space = np.array([{up: h, dn: h} for h in self.energies])
+        self.energies_spinsite_space = np.array([{s: h for s in self.spins} for h in self.energies])
         self.energies = self.energies_spinsite_space
 
     def create_grid(self, k_points_per_dimension):
@@ -45,9 +44,8 @@ class LatticeDispersion:
             yield k, w, d
 
     def transform(self, matrixtransformation):
-        assert isinstance(matrixtransformation, MatrixTransformation), "matrixtransformation must be of type MatrixTransformation"
         for i, d in enumerate(self.energies):
-            self.energies[i] = matrixtransformation.transform_matrix(d)
+            self.energies[i] = matrixtransformation.transform(d)
 
     def transform_site_space(self, unitary_transformation_matrix, new_blockstructure = None, reblock_map = None):
         """
