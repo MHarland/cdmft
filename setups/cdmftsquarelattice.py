@@ -75,14 +75,14 @@ class NambuMomentumPlaquetteSetup(BetheNambuMomentumPlaquette):
                                                [1,1,-1,-1],
                                                [1,-1,-1,1]])
         self.transformation = dict([(s, transformation_matrix) for s in self.spins])
-        self.mom_transf = MatrixTransformation(self.gf_struct_site, self.transformation, self.gf_struct, reblock_map = self.reblock_map)
+        #self.mom_transf = MatrixTransformation(self.gf_struct_site, self.transformation, self.gf_struct, reblock_map = self.reblock_map)
         
         disp_transf_mat =  {'0': np.kron(np.eye(2), transformation_matrix)}
         disp_transf = Transformation([UnitaryMatrixTransformation(disp_transf_mat)])
         
         k = {'G': 0, 'X': 1, 'Y': 2, 'M': 3}
         reblock_ksum_map = {(K,i,j): ('0', k[K]+i*4, k[K]+j*4) for K, i, j in itt.product(momenta, range(2), range(2))}
-        reblock_ksum = Transformation([Reblock(self.gf_struct_tot, self.gf_struct, reblock_ksum_map)])
+        self.reblock_ksum = Transformation([Reblock(self.gf_struct_tot, self.gf_struct, reblock_ksum_map)])
         
         t, s = tnn, tnnn
         clusterhopping = {(0,0):[[0,t,t,s],[t,0,s,t],[t,s,0,t],[s,t,t,0]],
@@ -101,7 +101,7 @@ class NambuMomentumPlaquetteSetup(BetheNambuMomentumPlaquette):
         self.mu = mu
         self.operators = PlaquetteMomentumNambu(u, self.spins, self.momenta, self.transformation)
         self.h_int = self.operators.get_h_int()
-        self.gloc = GLocalNambu(self.disp, reblock_ksum, self.momenta, [2]*4, beta, n_iw)
+        self.gloc = GLocalNambu(self.disp, self.reblock_ksum, self.momenta, [2]*4, beta, n_iw)
         self.g0 = WeissField(self.momenta, [2]*4, beta, n_iw)
         self.se = SelfEnergy(self.momenta, [2]*4, beta, n_iw)
         self.global_moves = {}
