@@ -3,7 +3,7 @@ import numpy as np, itertools as itt
 from bethe.setups.generic import CycleSetupGeneric
 from bethe.setups.bethelattice import NambuMomentumPlaquette as BetheNambuMomentumPlaquette
 from bethe.operators.hubbard import PlaquetteMomentum, PlaquetteMomentumNambu
-from bethe.schemes.cdmft import GLocal, SelfEnergy, WeissField, GLocalNambu
+from bethe.schemes.cdmft import GLocal, SelfEnergy, WeissField, GLocalNambu, WeissFieldNambu
 from bethe.tightbinding import SquarelatticeDispersion, LatticeDispersion
 from bethe.transformation2 import Transformation, Reblock, UnitaryMatrixTransformation
 
@@ -102,7 +102,7 @@ class NambuMomentumPlaquetteSetup(BetheNambuMomentumPlaquette):
         self.operators = PlaquetteMomentumNambu(u, self.spins, self.momenta, self.transformation)
         self.h_int = self.operators.get_h_int()
         self.gloc = GLocalNambu(self.disp, self.reblock_ksum, self.momenta, [2]*4, beta, n_iw)
-        self.g0 = WeissField(self.momenta, [2]*4, beta, n_iw)
+        self.g0 = WeissFieldNambu(self.momenta, [2]*4, beta, n_iw)
         self.se = SelfEnergy(self.momenta, [2]*4, beta, n_iw)
         self.global_moves = {}
         self.quantum_numbers = []

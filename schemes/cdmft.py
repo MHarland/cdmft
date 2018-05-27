@@ -6,7 +6,6 @@ from pytriqs.utility.bound_and_bisect import bound_and_bisect
 from pytriqs.sumk import SumkDiscreteFromLattice
 
 from generic import GLocalGeneric, SelfEnergyGeneric, WeissFieldGeneric, FunctionWithMemory
-from bethe import WeissFieldNambu
 from ..gfoperations import double_dot_product
 
 
@@ -98,3 +97,16 @@ class GLocalNambu(GLocal):
         self.calculate(selfenergy, self.make_matrix(mu))
         d = self.total_density_nambu()
         return d
+
+class WeissFieldNambu(WeissFieldGeneric):
+    """
+    allows for plaquette-afm
+    """
+    def calc_selfconsistency(self, glocal, selfenergy, mu):
+        tmp = self.get_as_BlockGf()
+        for bn, b in self:
+            b << inverse(inverse(glocal[bn]) + selfenergy[bn])
+            tmp[bn] = b.copy()
+            b[0,0] << -1 * tmp[bn][1,1].conjugate()
+            b[0,0] << -1 * tmp[bn][0,0].conjugate()
+            
