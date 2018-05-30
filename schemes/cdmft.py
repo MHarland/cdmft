@@ -108,5 +108,5 @@ class WeissFieldNambu(WeissFieldGeneric):
             b << inverse(inverse(glocal[bn]) + selfenergy[bn])
             tmp[bn] = b.copy()
             b[0,0] << -1 * tmp[bn][1,1].conjugate()
-            b[0,0] << -1 * tmp[bn][0,0].conjugate()
+            b[1,1] << -1 * tmp[bn][0,0].conjugate()
             
