@@ -267,7 +267,10 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
             self.add_dynamical_aiao_field(e_in * shift, e_out * shift, v, [i, j, k])
 
     def add_dynamical_aiao_field(self, e_in, e_out, v, permutation):
-        """delta_momentum_updn = U R_dag delta_site_aiao R U_dag"""
+        """
+        this feature turned out to be unnessecary, use TriangleSpinOrbitCoupling.aiao_op() instead
+        delta_momentum_updn = U R_dag delta_site_aiao R U_dag
+        """
         se = self.se
         u = self.site_transf
         r = [self.spin_transf_mat(i * 2*np.pi /3.) for i in permutation]
