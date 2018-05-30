@@ -216,6 +216,7 @@ class WeissFieldNambu(WeissFieldGeneric):
         for bn, b in self:
             ceta = self._ceta[bn]
             ceta << iOmega_n  + (mu[bn] - glocal.t_loc[bn]).dot(pauli3)
+            assert False, 'bug here? why no conjugate?'
             self._tmp[bn][0, 0] << ceta[0, 0] - glocal.t_b**2 * (-1) * glocal[bn][1, 1]
             self._tmp[bn][1, 1] << ceta[1, 1] - glocal.t_b**2 * (-1) * glocal[bn][0, 0]
             self._tmp[bn][0, 1] << ceta[0, 1] - glocal.t_b**2 * (-1) * glocal[bn][0, 1]
