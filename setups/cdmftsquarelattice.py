@@ -104,5 +104,5 @@ class NambuMomentumPlaquetteSetup(BetheNambuMomentumPlaquette):
         self.gloc = GLocalNambu(self.disp, self.reblock_ksum, self.momenta, [2]*4, beta, n_iw)
         self.g0 = WeissFieldNambu(self.momenta, [2]*4, beta, n_iw)
         self.se = SelfEnergy(self.momenta, [2]*4, beta, n_iw)
-        self.global_moves = {}
+        self.global_moves = {"XY-flip": dict([((k1, i), (k2, i)) for i in range(2) for k1, k2 in itt.product([x,y], [x,y]) if k1 != k2])}
         self.quantum_numbers = []
