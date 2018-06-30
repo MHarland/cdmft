@@ -8,13 +8,73 @@ from bethe.tightbinding import SquarelatticeDispersion, LatticeDispersion
 from bethe.transformation2 import Transformation, Reblock, UnitaryMatrixTransformation
 
 
+def get_hopping(lattice, tnn, tnnn, tz):
+    t, s = tnn, tnnn
+    assert lattice in ['2d','3d','3dandersen'], 'lattice unkown'
+    if lattice == '2d':
+        clusterhopping = {(0,0):[[0,t,t,s],[t,0,s,t],[t,s,0,t],[s,t,t,0]],
+                          (1,0):[[0,t,0,s],[0,0,0,0],[0,s,0,t],[0,0,0,0]],
+                          (1,1):[[0,0,0,s],[0,0,0,0],[0,0,0,0],[0,0,0,0]],
+                          (0,1):[[0,0,t,s],[0,0,s,t],[0,0,0,0],[0,0,0,0]],
+                          (-1,1):[[0,0,0,0],[0,0,s,0],[0,0,0,0],[0,0,0,0]],
+                          (-1,0):[[0,0,0,0],[t,0,s,0,],[0,0,0,0],[s,0,t,0]],
+                          (-1,-1):[[0,0,0,0],[0,0,0,0],[0,0,0,0],[s,0,0,0]],
+                          (0,-1):[[0,0,0,0],[0,0,0,0],[t,s,0,0],[s,t,0,0]],
+                          (1,-1):[[0,0,0,0],[0,0,0,0],[0,s,0,0],[0,0,0,0]]}
+    elif lattice == '3d':
+        clusterhopping = {(0,0,0): [[0,t,t,s],[t,0,s,t],[t,s,0,t],[s,t,t,0]],
+                          (1,0,0): [[0,t,0,s],[0,0,0,0],[0,s,0,t],[0,0,0,0]],
+                          (1,1,0): [[0,0,0,s],[0,0,0,0],[0,0,0,0],[0,0,0,0]],
+                          (0,1,0): [[0,0,t,s],[0,0,s,t],[0,0,0,0],[0,0,0,0]],
+                          (-1,1,0): [[0,0,0,0],[0,0,s,0],[0,0,0,0],[0,0,0,0]],
+                          (-1,0,0): [[0,0,0,0],[t,0,s,0,],[0,0,0,0],[s,0,t,0]],
+                          (-1,-1,0): [[0,0,0,0],[0,0,0,0],[0,0,0,0],[s,0,0,0]],
+                          (0,-1,0): [[0,0,0,0],[0,0,0,0],[t,s,0,0],[s,t,0,0]],
+                          (1,-1,0): [[0,0,0,0],[0,0,0,0],[0,s,0,0],[0,0,0,0]],
+                          (0,0,1): [[tz,0,0,0],[0,tz,0,0],[0,0,tz,0],[0,0,0,tz]],
+                          (0,0,-1): [[tz,0,0,0],[0,tz,0,0],[0,0,tz,0],[0,0,0,tz]]}
+    elif lattice == '3dandersen':
+        u,v,w = tz, tz*.25, -tz*.5
+        clusterhopping = {(0,0,0): [[0,t,t,s],[t,0,s,t],[t,s,0,t],[s,t,t,0]],
+                          (1,0,0): [[0,t,0,s],[0,0,0,0],[0,s,0,t],[0,0,0,0]],
+                          (1,1,0): [[0,0,0,s],[0,0,0,0],[0,0,0,0],[0,0,0,0]],
+                          (0,1,0): [[0,0,t,s],[0,0,s,t],[0,0,0,0],[0,0,0,0]],
+                          (-1,1,0): [[0,0,0,0],[0,0,s,0],[0,0,0,0],[0,0,0,0]],
+                          (-1,0,0): [[0,0,0,0],[t,0,s,0,],[0,0,0,0],[s,0,t,0]],
+                          (-1,-1,0): [[0,0,0,0],[0,0,0,0],[0,0,0,0],[s,0,0,0]],
+                          (0,-1,0): [[0,0,0,0],[0,0,0,0],[t,s,0,0],[s,t,0,0]],
+                          (1,-1,0): [[0,0,0,0],[0,0,0,0],[0,s,0,0],[0,0,0,0]],
+
+                          (0,0,1): [[u,0,0,w],[0,u,w,0],[0,w,u,0],[w,0,0,u]],
+                          (0,0,-1): [[u,0,0,w],[0,u,w,0],[0,w,u,0],[w,0,0,u]],
+
+                          (1,1,1): [[0,0,0,w],[0,0,0,0],[0,0,0,0],[0,0,0,0]],
+                          (1,1,-1): [[0,0,0,w],[0,0,0,0],[0,0,0,0],[0,0,0,0]],
+                          (-1,1,1): [[0,0,0,0],[0,0,w,0],[0,0,0,0],[0,0,0,0]],
+                          (-1,1,-1): [[0,0,0,0],[0,0,w,0],[0,0,0,0],[0,0,0,0]],
+                          (-1,-1,1): [[0,0,0,0],[0,0,0,0],[0,0,0,0],[w,0,0,0]],
+                          (-1,-1,-1) :[[0,0,0,0],[0,0,0,0],[0,0,0,0],[w,0,0,0]],
+                          (1,-1,1): [[0,0,0,0],[0,0,0,0],[0,w,0,0],[0,0,0,0]],
+                          (1,-1,-1): [[0,0,0,0],[0,0,0,0],[0,w,0,0],[0,0,0,0]],
+
+                          (1,0,-1): [[v,0,0,w],[0,v,0,0],[0,w,v,0],[0,0,0,v]],
+                          (1,0,1): [[v,0,0,w],[0,v,0,0],[0,w,v,0],[0,0,0,v]],
+                          (0,1,-1): [[v,0,0,w],[0,v,w,0],[0,0,v,0],[0,0,0,v]],
+                          (0,1,1): [[v,0,0,w],[0,v,w,0],[0,0,v,0],[0,0,0,v]],
+                          (-1,0,-1): [[v,0,0,0],[0,v,w,0],[0,0,v,0],[w,0,0,v]],
+                          (-1,0,1): [[v,0,0,0],[0,v,w,0],[0,0,v,0],[w,0,0,v]],
+                          (0,-1,-1): [[v,0,0,0],[0,v,0,0],[0,w,v,0],[w,0,0,v]],
+                          (0,-1,1): [[v,0,0,0],[0,v,0,0],[0,w,v,0],[w,0,0,v]]}
+    return clusterhopping
+
+
 class MomentumPlaquetteSetup(CycleSetupGeneric):
     """
     Plaquette(2by2)-cluster of the 2D squarelattice within Cluster DMFT
     assumes that transformation_matrix diagonalizes the GLocal on site-space
     i.e. the four clustersites are equivalent, no broken symmetry
     """
-    def __init__(self, beta, mu, u, tnn, tnnn, n_k, spins = ['up', 'dn'], momenta = ['G', 'X', 'Y', 'M'], equivalent_momenta = ['X', 'Y'], n_iw = 1025):
+    def __init__(self, beta, mu, u, tnn, tnnn, n_k, spins = ['up', 'dn'], momenta = ['G', 'X', 'Y', 'M'], equivalent_momenta = ['X', 'Y'], n_iw = 1025, tightbinding = '2d', tz = -.15):
         self.spins = spins
         transf_mat = dict([(s, .5 * np.array([[1,1,1,1],[1,-1,1,-1],[1,1,-1,-1],[1,-1,-1,1]])) for s in spins])
         mom_struct = [[s+'-'+a, [0]] for s, a in itt.product(spins, momenta)]
@@ -27,23 +87,15 @@ class MomentumPlaquetteSetup(CycleSetupGeneric):
         inverse_reblock_map = {val: key for key, val in reblock_map.items()}
         ksum_unblock = Transformation([Reblock(site_struct, mom_struct, inverse_reblock_map)])
         self.momentum_transf = Transformation([UnitaryMatrixTransformation(transf_mat)])
-        t, s = tnn, tnnn
-        clusterhopping = {(0,0):[[0,t,t,s],[t,0,s,t],[t,s,0,t],[s,t,t,0]],
-                          (1,0):[[0,t,0,s],[0,0,0,0],[0,s,0,t],[0,0,0,0]],
-                          (1,1):[[0,0,0,s],[0,0,0,0],[0,0,0,0],[0,0,0,0]],
-                          (0,1):[[0,0,t,s],[0,0,s,t],[0,0,0,0],[0,0,0,0]],
-                          (-1,1):[[0,0,0,0],[0,0,s,0],[0,0,0,0],[0,0,0,0]],
-                          (-1,0):[[0,0,0,0],[t,0,s,0,],[0,0,0,0],[s,0,t,0]],
-                          (-1,-1):[[0,0,0,0],[0,0,0,0],[0,0,0,0],[s,0,0,0]],
-                          (0,-1):[[0,0,0,0],[0,0,0,0],[t,s,0,0],[s,t,0,0]],
-                          (1,-1):[[0,0,0,0],[0,0,0,0],[0,s,0,0],[0,0,0,0]]}
+
+        clusterhopping = get_hopping(tightbinding, tnn, tnnn, tz)
         for r, t in clusterhopping.items():
             clusterhopping[r] = np.array(t)
-        disp = LatticeDispersion(clusterhopping, n_k)
-        disp.transform(self.momentum_transf)
+        self.disp = LatticeDispersion(clusterhopping, n_k)
+        self.disp.transform(self.momentum_transf)
         hubbard = PlaquetteMomentum(u, spins, momenta, transf_mat)
         self.h_int = hubbard.get_h_int()
-        self.gloc = GLocal(disp, ksum_unblock, [s[0] for s in mom_struct], [1] * 8, beta, n_iw)
+        self.gloc = GLocal(self.disp, ksum_unblock, [s[0] for s in mom_struct], [1] * 8, beta, n_iw)
         self.g0 = WeissField([s[0] for s in mom_struct], [1] * 8, beta, n_iw)
         self.se = SelfEnergy([s[0] for s in mom_struct], [1] * 8, beta, n_iw)
         self.mu = mu
@@ -58,7 +110,7 @@ class NambuMomentumPlaquetteSetup(BetheNambuMomentumPlaquette):
     Don't use self.mom_transf for the backtransformation! The reblock algorithm will drop 
     off-diagonals
     """
-    def __init__(self, beta, mu, u, tnn, tnnn, n_k, spins = ['up', 'dn'], momenta = ['G', 'X', 'Y', 'M'], n_iw = 1025):
+    def __init__(self, beta, mu, u, tnn, tnnn, n_k, spins = ['up', 'dn'], momenta = ['G', 'X', 'Y', 'M'], n_iw = 1025, tightbinding = '2d', tz = -.15):
         g, x, y, m = "G", "X", "Y", "M"
         up, dn = "up", "dn"
         self.spins = [up, dn]
@@ -84,16 +136,7 @@ class NambuMomentumPlaquetteSetup(BetheNambuMomentumPlaquette):
         reblock_ksum_map = {(K,i,j): ('0', k[K]+i*4, k[K]+j*4) for K, i, j in itt.product(momenta, range(2), range(2))}
         self.reblock_ksum = Transformation([Reblock(self.gf_struct_tot, self.gf_struct, reblock_ksum_map)])
         
-        t, s = tnn, tnnn
-        clusterhopping = {(0,0):[[0,t,t,s],[t,0,s,t],[t,s,0,t],[s,t,t,0]],
-                          (1,0):[[0,t,0,s],[0,0,0,0],[0,s,0,t],[0,0,0,0]],
-                          (1,1):[[0,0,0,s],[0,0,0,0],[0,0,0,0],[0,0,0,0]],
-                          (0,1):[[0,0,t,s],[0,0,s,t],[0,0,0,0],[0,0,0,0]],
-                          (-1,1):[[0,0,0,0],[0,0,s,0],[0,0,0,0],[0,0,0,0]],
-                          (-1,0):[[0,0,0,0],[t,0,s,0],[0,0,0,0],[s,0,t,0]],
-                          (-1,-1):[[0,0,0,0],[0,0,0,0],[0,0,0,0],[s,0,0,0]],
-                          (0,-1):[[0,0,0,0],[0,0,0,0],[t,s,0,0],[s,t,0,0]],
-                          (1,-1):[[0,0,0,0],[0,0,0,0],[0,s,0,0],[0,0,0,0]]}
+        clusterhopping = get_hopping(tightbinding, tnn, tnnn, tz)
         for r, t in clusterhopping.items():
             clusterhopping[r] = np.kron(np.eye(2), np.array(t))
         self.disp = LatticeDispersion(clusterhopping, n_k, spins = ['0'])
