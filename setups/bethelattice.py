@@ -532,3 +532,88 @@ class AFMNambuMomentumPlaquette(NambuMomentumPlaquette): # TODO
             for i in b.indices:
                 i = int(i)
                 b[i, i] << (-1)**i * (np.identity(1) * self.mu - self.gloc.t_loc[n][i, i])
+
+
+class SextupleBetheSetup(CycleSetupGeneric):
+    """
+    site transformation must be unitary and diagonalize G, assuming all sites are equal
+    """
+    def __init__(self, beta, mu, u, tnn, t_bethe,
+                 orbital_labels = ["A", "B", "C", "D","E","F"], symmetric_orbitals = [],
+                 n_iw = 1025):
+        up = "up"
+        dn = "dn"
+        spins = [up, dn]
+        sites = range(6)
+        blocknames = [s+"-"+k for s in spins for k in orbital_labels]
+        blocksizes = [1] * len(blocknames)
+        gf_struct = [[n, range(s)] for n, s in zip(blocknames, blocksizes)]
+        gf_struct_site = [[s, sites] for s in spins]
+        u,v,w = 1/np.sqrt(6), 1/np.sqrt(4), 1/np.sqrt(12)
+        site_transformation = [[u, u, u, u, u, u],
+                               [-u, u, -u, u, -u, u],
+                               [0, -v, -v, 0, v, v],
+                               [-2*w, w, w, -2*w, w, w],
+                               [2*w, w, -w, -2*w, -w, w],
+                               [0, -v, v, 0, -v, v]]
+        site_transformation = np.array(site_transformation)
+        transfbmat = dict([(s, site_transformation) for s in spins])
+        transf = MatrixTransformation(gf_struct_site, transfbmat, gf_struct)
+        a = tnn_plaquette
+
+        # go on here:
+        t_loc_per_spin = np.array([[0,a,a,b],[a,0,b,a],[a,b,0,a],[b,a,a,0]])
+        t_loc = {up: t_loc_per_spin, dn: t_loc_per_spin}
+        t_loc = transf.transform_matrix(t_loc)
+        hubbard = PlaquetteMomentum(u, spins, orbital_labels, transfbmat)
+        xy = symmetric_orbitals
+        self.h_int = hubbard.get_h_int()
+        self.gloc = GLocalWithOffdiagonals(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
+        self.g0 = WeissFieldAFM(blocknames, blocksizes, beta, n_iw)
+        self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
+        self.mu = mu
+        self.se << mu
+        self.global_moves = {"spin-flip": dict([((s1+"-"+k, 0), (s2+"-"+k, 0)) for k in orbital_labels for s1, s2 in itt.product(spins, spins) if s1 != s2]), "XY-flip": dict([((s+"-"+k1, 0), (s+"-"+k2, 0)) for s in spins for k1, k2 in itt.product(xy, xy) if k1 != k2])}
+        self.quantum_numbers = [hubbard.get_n_tot(), hubbard.get_n_per_spin(up)]
+
+class SextupleBetheTopologicalSetup(CycleSetupGeneric):
+    """
+    
+    """
+    def __init__(self, beta, mu, u, tnn, tnnn, t_bethe,
+                 orbital_labels = ["A", "B", "CDEF"], symmetric_orbitals = [],
+                 n_iw = 1025):
+        up = "up"
+        dn = "dn"
+        spins = [up, dn]
+        sites = range(6)
+        blocknames = [s+"-"+k for s in spins for k in orbital_labels]
+        blocksizes = [1,1,4]
+        gf_struct = [[n, range(s)] for n, s in zip(blocknames, blocksizes)]
+        gf_struct_site = [[s, sites] for s in spins]
+        u,v,w = 1/np.sqrt(6), 1/np.sqrt(4), 1/np.sqrt(12)
+        site_transformation = [[u, u, u, u, u, u],
+                               [-u, u, -u, u, -u, u],
+                               [0, -v, -v, 0, v, v],
+                               [-2*w, w, w, -2*w, w, w],
+                               [2*w, w, -w, -2*w, -w, w],
+                               [0, -v, v, 0, -v, v]]
+        site_transformation = np.array(site_transformation)
+        transfbmat = dict([(s, site_transformation) for s in spins])
+        transf = MatrixTransformation(gf_struct_site, transfbmat, gf_struct)
+        a = tnn_plaquette
+
+        # go on here:
+        t_loc_per_spin = np.array([[0,a,a,b],[a,0,b,a],[a,b,0,a],[b,a,a,0]])
+        t_loc = {up: t_loc_per_spin, dn: t_loc_per_spin}
+        t_loc = transf.transform_matrix(t_loc)
+        hubbard = PlaquetteMomentum(u, spins, orbital_labels, transfbmat)
+        xy = symmetric_orbitals
+        self.h_int = hubbard.get_h_int()
+        self.gloc = GLocalWithOffdiagonals(t_bethe, t_loc, blocknames, blocksizes, beta, n_iw)
+        self.g0 = WeissFieldAFM(blocknames, blocksizes, beta, n_iw)
+        self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
+        self.mu = mu
+        self.se << mu
+        self.global_moves = {"spin-flip": dict([((s1+"-"+k, 0), (s2+"-"+k, 0)) for k in orbital_labels for s1, s2 in itt.product(spins, spins) if s1 != s2]), "XY-flip": dict([((s+"-"+k1, 0), (s+"-"+k2, 0)) for s in spins for k1, k2 in itt.product(xy, xy) if k1 != k2])}
+        self.quantum_numbers = [hubbard.get_n_tot(), hubbard.get_n_per_spin(up)]
