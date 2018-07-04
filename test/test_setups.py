@@ -56,6 +56,17 @@ class TestSetups(unittest.TestCase):
         cyc.run(1)
         os.remove('test.h5')
 
+    def test_squarelattice_PlaquetteCDMFT_hoppingsymmetry(self):
+        for tb in ['2d', '3d', '3dandersen']:
+            setup = MomentumPlaquetteSetup(10, 2, 4, -1, .3, 16, tightbinding = tb)
+            hloc = np.sum(setup.disp.energies_k, axis = 0) / setup.disp.energies_k.shape[0]
+            for i in range(3):
+                self.assertAlmostEqual(hloc[i,i],hloc[i+1,i+1])
+            for i, j in [(0,1), (0,2), (1,3), (2,3), (2,0), (3,1), (3,2)]:
+                self.assertAlmostEqual(hloc[1,0],hloc[i,j])
+            for i, j in [(0,3), (1,2), (2,1)]:
+                self.assertAlmostEqual(hloc[3,0],hloc[i,j])
+        
     def test_squarelattice_NambuMomentumPlaquetteCDMFTSetup(self):
         setup = NambuMomentumPlaquetteSetup(10, 2, 4, -1, .3, 10)
         sto = Storage('test.h5')
