@@ -8,19 +8,20 @@ from bethe.tightbinding import SquarelatticeDispersion, LatticeDispersion
 from bethe.transformation2 import Transformation, Reblock, UnitaryMatrixTransformation
 
 
-def get_hopping(lattice, tnn, tnnn, tz):
+def get_hopping(lattice, tnn, tnnn, tz, alpha_x = 1, alpha_y = 1, alpha_prime = 1):
     t, s = tnn, tnnn
+    tax, tay, sap = alpha_x*t, alpha_y*t, alpha_prime*s
     assert lattice in ['2d','3d','3dandersen'], 'lattice unkown'
     if lattice == '2d':
         clusterhopping = {(0,0):[[0,t,t,s],[t,0,s,t],[t,s,0,t],[s,t,t,0]],
-                          (1,0):[[0,t,0,s],[0,0,0,0],[0,s,0,t],[0,0,0,0]],
-                          (1,1):[[0,0,0,s],[0,0,0,0],[0,0,0,0],[0,0,0,0]],
-                          (0,1):[[0,0,t,s],[0,0,s,t],[0,0,0,0],[0,0,0,0]],
-                          (-1,1):[[0,0,0,0],[0,0,s,0],[0,0,0,0],[0,0,0,0]],
-                          (-1,0):[[0,0,0,0],[t,0,s,0,],[0,0,0,0],[s,0,t,0]],
-                          (-1,-1):[[0,0,0,0],[0,0,0,0],[0,0,0,0],[s,0,0,0]],
-                          (0,-1):[[0,0,0,0],[0,0,0,0],[t,s,0,0],[s,t,0,0]],
-                          (1,-1):[[0,0,0,0],[0,0,0,0],[0,s,0,0],[0,0,0,0]]}
+                          (1,0):[[0,tax,0,sap],[0,0,0,0],[0,sap,0,tax],[0,0,0,0]],
+                          (1,1):[[0,0,0,sap],[0,0,0,0],[0,0,0,0],[0,0,0,0]],
+                          (0,1):[[0,0,tay,sap],[0,0,sap,tay],[0,0,0,0],[0,0,0,0]],
+                          (-1,1):[[0,0,0,0],[0,0,sap,0],[0,0,0,0],[0,0,0,0]],
+                          (-1,0):[[0,0,0,0],[tax,0,sap,0,],[0,0,0,0],[sap,0,tax,0]],
+                          (-1,-1):[[0,0,0,0],[0,0,0,0],[0,0,0,0],[sap,0,0,0]],
+                          (0,-1):[[0,0,0,0],[0,0,0,0],[tay,sap,0,0],[sap,tay,0,0]],
+                          (1,-1):[[0,0,0,0],[0,0,0,0],[0,sap,0,0],[0,0,0,0]]}
     elif lattice == '3d':
         clusterhopping = {(0,0,0): [[0,t,t,s],[t,0,s,t],[t,s,0,t],[s,t,t,0]],
                           (1,0,0): [[0,t,0,s],[0,0,0,0],[0,s,0,t],[0,0,0,0]],
@@ -110,7 +111,7 @@ class NambuMomentumPlaquetteSetup(BetheNambuMomentumPlaquette):
     Don't use self.mom_transf for the backtransformation! The reblock algorithm will drop 
     off-diagonals
     """
-    def __init__(self, beta, mu, u, tnn, tnnn, n_k, spins = ['up', 'dn'], momenta = ['G', 'X', 'Y', 'M'], n_iw = 1025, tightbinding = '2d', tz = -.15):
+    def __init__(self, beta, mu, u, tnn, tnnn, n_k, spins = ['up', 'dn'], momenta = ['G', 'X', 'Y', 'M'], n_iw = 1025, tightbinding = '2d', tz = -.15, alpha_x = 1, alpha_y = 1, alpha_prime = 1):
         g, x, y, m = "G", "X", "Y", "M"
         up, dn = "up", "dn"
         self.spins = [up, dn]
@@ -136,7 +137,7 @@ class NambuMomentumPlaquetteSetup(BetheNambuMomentumPlaquette):
         reblock_ksum_map = {(K,i,j): ('0', k[K]+i*4, k[K]+j*4) for K, i, j in itt.product(momenta, range(2), range(2))}
         self.reblock_ksum = Transformation([Reblock(self.gf_struct_tot, self.gf_struct, reblock_ksum_map)])
         
-        clusterhopping = get_hopping(tightbinding, tnn, tnnn, tz)
+        clusterhopping = get_hopping(tightbinding, tnn, tnnn, tz, alpha_x, alpha_y, alpha_prime)
         for r, t in clusterhopping.items():
             clusterhopping[r] = np.kron(np.eye(2), np.array(t))
         self.disp = LatticeDispersion(clusterhopping, n_k, spins = ['0'])
