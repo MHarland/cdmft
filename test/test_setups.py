@@ -136,9 +136,24 @@ class TestSetups(unittest.TestCase):
     def test_AFMNambuMomentumPlaquetteSetup(self):
         setup = AFMNambuMomentumPlaquette(100, 1, 3, -1, .3, 1)
         sto = Storage('test.h5')
-        par = TestDMFTParameters()
+        par = TestDMFTParameters(n_cycles = 0, filling = None)
         cyc = Cycle(sto, par, **setup.initialize_cycle())
-        cyc.run(1, n_cycles = 0, filling = None)
+        cyc.run(1)
         os.remove('test.h5')
         setup.add_staggered_field(.2)
         setup.apply_dynamical_sc_field(.2)
+        tbg, tbm, tbx, tby, tbgm, tbxy = .1,.2,.3,.4,.5,.6
+        tb = {'GM': np.array([[tbg,0,tbgm,0],
+                              [0,-tbg,0,-tbgm],
+                              [tbgm,0,tbm,0],
+                              [0,-tbgm,0,-tbm]]),
+              'XY': np.array([[tbx,0,tbxy,0],
+                              [0,-tbx,0,-tbxy],
+                              [tbxy,0,tby,0],
+                              [0,-tbxy,0,-tby]])}
+        setup = AFMNambuMomentumPlaquette(100, 1, 3, -1, .3, tb)
+        sto = Storage('test.h5')
+        par = TestDMFTParameters(n_cycles = 0, filling = None)
+        cyc = Cycle(sto, par, **setup.initialize_cycle())
+        cyc.run(1)
+        os.remove('test.h5')

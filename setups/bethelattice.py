@@ -431,7 +431,7 @@ class NambuMomentumPlaquette(CycleSetupGeneric):
         return gtarget
 
 
-class AFMNambuMomentumPlaquette(NambuMomentumPlaquette): # TODO
+class AFMNambuMomentumPlaquette(NambuMomentumPlaquette):
 
     def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t_bethe = 1, n_iw = 1025):
         gm, xy = "GM", "XY"
@@ -457,6 +457,11 @@ class AFMNambuMomentumPlaquette(NambuMomentumPlaquette): # TODO
                             (up,3,3):(xy,2,2), (dn,3,3):(xy,3,3)}
         self.mom_transf = MatrixTransformation(self.gf_struct_site, self.transformation, self.gf_struct, reblock_map = self.reblock_map)
         t_loc = self.mom_transf.transform_matrix(t_loc)
+        if not isinstance(t_bethe, dict):
+            t_bethe = {gm: t_bethe * np.identity(4), xy: t_bethe * np.identity(4)}
+            for s, m in t_bethe.items():
+                t_bethe[s][1,1] *= -1
+                t_bethe[s][3,3] *= -1
         self.mu = mu
         self.operators = PlaquetteMomentumAFMNambu(u, self.spins, self.momenta, self.transformation)
         self.h_int = self.operators.get_h_int()

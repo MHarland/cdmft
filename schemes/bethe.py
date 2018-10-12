@@ -216,9 +216,8 @@ class WeissFieldNambu(WeissFieldGeneric):
         for bn, b in self:
             ceta = self._ceta[bn]
             ceta << iOmega_n  + (mu[bn] - glocal.t_loc[bn]).dot(pauli3)
-            assert False, 'bug here? why no conjugate?'
-            self._tmp[bn][0, 0] << ceta[0, 0] - glocal.t_b**2 * (-1) * glocal[bn][1, 1]
-            self._tmp[bn][1, 1] << ceta[1, 1] - glocal.t_b**2 * (-1) * glocal[bn][0, 0]
+            self._tmp[bn][0, 0] << ceta[0, 0] - glocal.t_b**2 * (-1) * glocal[bn][1, 1].conjugate()
+            self._tmp[bn][1, 1] << ceta[1, 1] - glocal.t_b**2 * (-1) * glocal[bn][0, 0].conjugate()
             self._tmp[bn][0, 1] << ceta[0, 1] - glocal.t_b**2 * (-1) * glocal[bn][0, 1]
             self._tmp[bn][1, 0] << ceta[1, 0] - glocal.t_b**2 * (-1) * glocal[bn][1, 0]
         self << inverse(self._tmp)
@@ -229,28 +228,9 @@ class WeissFieldAFMNambu(WeissFieldNambu):
     with afm and allows for imaginary gap, too
     """
     def calc_selfconsistency(self, glocal, selfenergy, mu, *args, **kwargs):
-        if isinstance(mu, float) or isinstance(mu, int): mu = self._to_blockmatrix(mu)
-        pauli3 = np.array([[1, 0], [0, -1]])
-        one = np.identity(2)
+        glocal._set_g_flipped()
         for bn, b in self:
-            ceta = self._ceta[bn]
-            ceta << iOmega_n  + (mu[bn] - glocal.t_loc[bn]).dot(np.kron(one, pauli3))
-            #nambu-diagonals:
-            #momentum-diagonals:
-            self._tmp[bn][0, 0] << ceta[0, 0] - glocal.t_b**2 * (-1) * glocal[bn][1, 1].conjugate()
-            self._tmp[bn][1, 1] << ceta[1, 1] - glocal.t_b**2 * (-1) * glocal[bn][0, 0].conjugate()
-            self._tmp[bn][2, 2] << ceta[2, 2] - glocal.t_b**2 * (-1) * glocal[bn][3, 3].conjugate()
-            self._tmp[bn][3, 3] << ceta[3, 3] - glocal.t_b**2 * (-1) * glocal[bn][2, 2].conjugate()
-            #momentum-off-diagonals:
-            self._tmp[bn][0, 2] << ceta[0, 2] - glocal.t_b**2 * (-1) * glocal[bn][1, 3].conjugate()
-            self._tmp[bn][1, 3] << ceta[1, 3] - glocal.t_b**2 * (-1) * glocal[bn][0, 2].conjugate()
-            self._tmp[bn][2, 0] << ceta[2, 0] - glocal.t_b**2 * (-1) * glocal[bn][3, 1].conjugate()
-            self._tmp[bn][3, 1] << ceta[3, 1] - glocal.t_b**2 * (-1) * glocal[bn][2, 0].conjugate()
-            #nambu-off-diagonals:
-            indices = [(0,1), (0,3), (1,0), (1,2), (2,1), (2,3), (3,0), (3,2)]
-            for i in indices:
-                self._tmp[bn][i] << ceta[i] - glocal.t_b**2 * (-1) * glocal[bn][i]
-        self << inverse(self._tmp)
+            b << inverse(inverse(glocal._g_flipped[bn]) + selfenergy[bn])
 
 
 class GLocalNambu(GLocalWithOffdiagonals):
@@ -332,27 +312,19 @@ class GLocalAFMNambu(GLocalNambu):
         self._tmp = self.copy()
         self._ceta = self.copy()
 
+    def _set_g_flipped(self):
+        flipmap = {(0,0):(1,1), (0,2):(1,3), (2,0):(3,1), (2,2):(3,3)}
+        for s, b in self:
+            for i, j in flipmap.items():
+                self._g_flipped[s][i] << (-1) * b[j].conjugate()
+                self._g_flipped[s][j] << (-1) * b[i].conjugate()
+            
     def calc_selfconsistency(self, selfenergy, mu):
-        pauli3 = np.array([[1, 0], [0, -1]])
         one = np.identity(2)
         for bn, b in self:
             ceta = self._ceta[bn]
-            ceta << iOmega_n+ (mu[bn]- self.t_loc[bn]).dot(np.kron(one, pauli3))- selfenergy[bn]
-            #nambu-diagonals:
-            #momentum-diagonals:
-            self._tmp[bn][0, 0] << ceta[0, 0] - self.t_b**2 * (-1) * self[bn][1, 1].conjugate()
-            self._tmp[bn][1, 1] << ceta[1, 1] - self.t_b**2 * (-1) * self[bn][0, 0].conjugate()
-            self._tmp[bn][2, 2] << ceta[2, 2] - self.t_b**2 * (-1) * self[bn][3, 3].conjugate()
-            self._tmp[bn][3, 3] << ceta[3, 3] - self.t_b**2 * (-1) * self[bn][2, 2].conjugate()
-            #momentum-off-diagonals:
-            self._tmp[bn][0, 2] << ceta[0, 2] - self.t_b**2 * (-1) * self[bn][1, 3].conjugate()
-            self._tmp[bn][1, 3] << ceta[1, 3] - self.t_b**2 * (-1) * self[bn][0, 2].conjugate()
-            self._tmp[bn][2, 0] << ceta[2, 0] - self.t_b**2 * (-1) * self[bn][3, 1].conjugate()
-            self._tmp[bn][3, 1] << ceta[3, 1] - self.t_b**2 * (-1) * self[bn][2, 0].conjugate()
-            #nambu-off-diagonals:
-            indices = [(0,1), (0,3), (1,0), (1,2), (2,1), (2,3), (3,0), (3,2)]
-            for i in indices:
-                self._tmp[bn][i] << ceta[i] - self.t_b**2 * (-1) * self[bn][i]
+            ceta << iOmega_n+ (mu[bn] - self.t_loc[bn]).dot(np.kron(one, self.p3))- selfenergy[bn]
+            self._tmp[bn] << ceta - double_dot_product(self.t_b[bn], self._g_flipped[bn], self.t_b[bn])
         self << inverse(self._tmp)
 
     def total_density_nambu(self, g = None):
