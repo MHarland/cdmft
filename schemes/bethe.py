@@ -228,9 +228,8 @@ class WeissFieldAFMNambu(WeissFieldNambu):
     with afm and allows for imaginary gap, too
     """
     def calc_selfconsistency(self, glocal, selfenergy, mu, *args, **kwargs):
-        glocal._set_g_flipped()
         for bn, b in self:
-            b << inverse(inverse(glocal._g_flipped[bn]) + selfenergy[bn])
+            b << inverse(inverse(glocal[bn]) + selfenergy[bn])
 
 
 class GLocalNambu(GLocalWithOffdiagonals):
