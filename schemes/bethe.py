@@ -316,6 +316,7 @@ class GLocalAFMNambu(GLocalNambu):
     def _set_g_flipped(self):
         flipmap = {(0,0):(1,1), (0,2):(1,3), (2,0):(3,1), (2,2):(3,3)}
         for s, b in self:
+            self._g_flipped[s] << b
             for i, j in flipmap.items():
                 self._g_flipped[s][i] << (-1) * b[j].conjugate()
                 self._g_flipped[s][j] << (-1) * b[i].conjugate()
@@ -348,6 +349,7 @@ class SelfEnergyAFMNambu(SelfEnergyGeneric):
     def _set_g_flipped(self):
         flipmap = {(0,0):(1,1), (0,2):(1,3), (2,0):(3,1), (2,2):(3,3)}
         for s, b in self:
+            self._g_flipped[s] << b
             for i, j in flipmap.items():
                 self._g_flipped[s][i] << (-1) * b[j].conjugate()
                 self._g_flipped[s][j] << (-1) * b[i].conjugate()
