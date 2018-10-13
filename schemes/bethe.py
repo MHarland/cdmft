@@ -228,8 +228,10 @@ class WeissFieldAFMNambu(WeissFieldNambu):
     with afm and allows for imaginary gap, too
     """
     def calc_selfconsistency(self, glocal, selfenergy, mu, *args, **kwargs):
+        glocal._set_g_flipped()
+        selfenergy._set_g_flipped()
         for bn, b in self:
-            b << inverse(inverse(glocal[bn]) + selfenergy[bn])
+            b << inverse(inverse(glocal._g_flipped[bn]) + selfenergy._g_flipped[bn])
 
 
 class GLocalNambu(GLocalWithOffdiagonals):
@@ -336,6 +338,19 @@ class GLocalAFMNambu(GLocalNambu):
             densities.append(- b[3, 3].conjugate().total_density())
         density = np.sum(densities)
         return density
+
+
+class SelfEnergyAFMNambu(SelfEnergyGeneric):
+    def __init__(self, *args, **kwargs):
+        SelfEnergyGeneric.__init__(self, *args, **kwargs)
+        self._g_flipped = self.copy()
+
+    def _set_g_flipped(self):
+        flipmap = {(0,0):(1,1), (0,2):(1,3), (2,0):(3,1), (2,2):(3,3)}
+        for s, b in self:
+            for i, j in flipmap.items():
+                self._g_flipped[s][i] << (-1) * b[j].conjugate()
+                self._g_flipped[s][j] << (-1) * b[i].conjugate()
 
 
 class SelfEnergy(SelfEnergyGeneric):

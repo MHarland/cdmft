@@ -4,7 +4,7 @@ from scipy.linalg import expm, eigh
 from bethe.setups.generic import CycleSetupGeneric
 from bethe.operators.hubbard import Site, TriangleMomentum, PlaquetteMomentum, Triangle, TriangleAIAO, TriangleSpinOrbitCoupling, PlaquetteMomentumNambu, PlaquetteMomentumAFMNambu
 from bethe.operators.kanamori import Dimer as KanamoriDimer, MomentumDimer as KanamoriMomentumDimer, MixedOrbitalMomentumDimer as KanamoriMixedOrbitalMomentumDimer
-from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM, GLocalInhomogeneous, WeissFieldInhomogeneous, GLocalInhomogeneousFM, WeissFieldInhomogeneousFM, GLocalAIAO, GLocalNambu, WeissFieldNambu, GLocalAFMNambu, WeissFieldAFMNambu
+from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM, GLocalInhomogeneous, WeissFieldInhomogeneous, GLocalInhomogeneousFM, WeissFieldInhomogeneousFM, GLocalAIAO, GLocalNambu, WeissFieldNambu, GLocalAFMNambu, WeissFieldAFMNambu, SelfEnergyAFMNambu
 from bethe.transformation import MatrixTransformation
 
 from pytriqs.gf.local import iOmega_n, inverse
@@ -467,7 +467,7 @@ class AFMNambuMomentumPlaquette(NambuMomentumPlaquette):
         self.h_int = self.operators.get_h_int()
         self.gloc = GLocalAFMNambu(t_bethe, t_loc, self.momenta, [4]*2, beta, n_iw)
         self.g0 = WeissFieldAFMNambu(self.momenta, [4]*2, beta, n_iw)
-        self.se = SelfEnergy(self.momenta, [4]*2, beta, n_iw)
+        self.se = SelfEnergyAFMNambu(self.momenta, [4]*2, beta, n_iw)
         self.global_moves = {}
         self.quantum_numbers = []
 
