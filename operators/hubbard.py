@@ -336,6 +336,7 @@ class PlaquetteMomentum(Hubbard):
         self.dn = spins[1]
         self.sites = range(4)
         self.spins = spins
+        self.momenta = momenta
         self.transformation = transformation
         self.block_labels = [spin+"-"+k for spin in spins for k in momenta]
         self.gf_struct = [[l, range(1)] for l in self.block_labels]
@@ -343,6 +344,10 @@ class PlaquetteMomentum(Hubbard):
 
     def _c(self, spin, site):
         return sum([self.transformation[spin][site, k_index] * C(*self._to_mom(spin, k_index)) for k_index in range(4)])
+
+    def cdup_cup_cddn_cdn(self, i, j, k, l):
+        """i,j,k,l being momenta"""
+        return CDag(self.up+'-'i) * C(self.up+'-'j) * CDag(self.dn+'-'k) * C(self.dn+'-'l)
 
 
 class PlaquetteMomentumNambu(Hubbard):
