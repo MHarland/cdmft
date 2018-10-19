@@ -392,3 +392,7 @@ class PlaquetteMomentumAFMNambu(Hubbard):
         elif spin == self.dn:
             return sum([self.transformation[spin][k_index, site].conjugate() * CDag(*self.site_to_mom_dn[k_index]) for k_index in range(4)])
         assert False, "spin "+spin+" not recognized"
+
+    def cdup_cup_cddn_cdn(self, i, j, k, l):
+        """i,j,k,l being momenta"""
+        return  CDag(*self.site_to_mom_up[i]) * C(*self.site_to_mom_up[j]) * C(*self.site_to_mom_dn[k]) * CDag(*self.site_to_mom_dn[l])
