@@ -347,7 +347,7 @@ class PlaquetteMomentum(Hubbard):
 
     def cdup_cup_cddn_cdn(self, i, j, k, l):
         """i,j,k,l being momenta"""
-        return CDag(self.up+'-'i) * C(self.up+'-'j) * CDag(self.dn+'-'k) * C(self.dn+'-'l)
+        return CDag(self.up+'-'+i,0) * C(self.up+'-'+j,0) * CDag(self.dn+'-'+k,0) * C(self.dn+'-'+l,0)
 
 
 class PlaquetteMomentumNambu(Hubbard):
