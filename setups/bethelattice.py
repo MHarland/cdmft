@@ -433,7 +433,7 @@ class NambuMomentumPlaquette(CycleSetupGeneric):
 
 class AFMNambuMomentumPlaquette(NambuMomentumPlaquette):
 
-    def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t_bethe = 1, n_iw = 1025):
+    def __init__(self, beta, mu, u, tnn_plaquette, tnnn_plaquette, t_bethe = -1, n_iw = 1025):
         gm, xy = "GM", "XY"
         up, dn = "up", "dn"
         self.spins = [up, dn]
