@@ -516,18 +516,18 @@ class AFMNambuMomentumPlaquette(NambuMomentumPlaquette):
         o = self.operators
         self.h_int += (o.sz(0)+o.sz(3)-o.sz(1)-o.sz(2)) * gap
 
-    def apply_dynamical_staggered_field(self, v_up = .1, v_dn = .1, e_up = .1, e_dn = -.1):
+    def apply_dynamical_staggered_field(self, gap):
         indices_up = [('GM', 0, 2), ('GM', 2, 0), ('XY', 2, 0), ('XY', 0, 2)]
         indices_dn = [('XY', 3, 1), ('GM', 1, 3), ('XY', 1, 3), ('GM', 3, 1)]
+        n_points = len([iwn for iwn in self.se.mesh])/2
         for index in indices_up:
-            b, i, j = index
-            self.se[b][i, j] += v_up**2 * inverse(iOmega_n - e_up)
+            for n in [n_points, n_points-1]:
+                b, i, j = index
+                self.se[b].data[n,i,j] += gap * self.se.beta * .5
         for index in indices_dn:
-            b, i, j = index
-            tmp = self.se[b][i, j].copy()
-            tmp << v_dn**2 * inverse(iOmega_n - e_dn)
-            tmp << -1 * tmp.conjugate()
-            self.se[b][i, j] += tmp
+            for n in [n_points, n_points-1]:
+                b, i, j = index
+                self.se[b].data[n,i,j] -= gap * self.se.beta * .5
 
     def init_centered_semicirculars(self):
         """
