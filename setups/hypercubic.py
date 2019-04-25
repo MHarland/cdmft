@@ -23,4 +23,4 @@ class HypercubicSetup(CycleSetupGeneric):
         self.se = SelfEnergy(blocknames, blocksizes, beta, n_iw)
         self.mu = mu
         self.global_moves = {"spin-flip": {("up", 0): ("dn", 0), ("dn", 0): ("up", 0)}}
-        self.quantum_numbers = [hubbard.get_n_tot(), hubbard.get_n_per_spin(up)]
+        self.quantum_numbers = [hubbard.get_n_tot()]#, hubbard.get_n_per_spin(up)]

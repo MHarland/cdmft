@@ -2,7 +2,8 @@ import sys
 from pytriqs.archive import HDFArchive
 from pytriqs.gf.local import GfReFreq, GfLegendre, GfImTime, rebinning_tau, BlockGf, MatsubaraToLegendre, LegendreToMatsubara, GfImFreq, inverse
 from pytriqs.utility import mpi
-from triqs_som.som import Som
+#from triqs_som.som import Som
+from pytriqs.applications.analytical_continuation.som import Som
 import numpy as np
 from time import time
 from scipy.interpolate import interp1d
@@ -17,20 +18,21 @@ hfl = False
 domain = "legendre"
 npts = None
 s_by = "const"
-orbitals = [('GM', 0, 0), ('XY', 0, 0), ('GM', 2, 2)]
-gimp = True
+#orbitals = [('GM', 0, 0), ('XY', 0, 0), ('GM', 2, 2)]
+orbitals = [('up-G', 0, 0), ('up-X', 0, 0), ('up-M', 0, 0)]
+gimp = False
 nptss = [None] * len(fnames)
 run_params = {}
 #dSC
-run_params['energy_window'] = (-24,24)
+run_params['energy_window'] = (-16,16) #(-12,12)
 run_params['max_time'] = -1
 run_params['verbosity'] = 2
 run_params['t'] = 50
 run_params['f'] = 30000
-run_params['min_rect_width'] = 3e-4
-run_params['max_rects'] = 1000
+run_params['min_rect_width'] = 1e-3#3e-4
+run_params['max_rects'] = 100#1000
 run_params['adjust_f'] = False
-run_params['l'] = 192
+run_params['l'] = 96*8
 run_params['adjust_l'] = False
 run_params['make_histograms'] = True
 run_params['hist_max'] = 10
