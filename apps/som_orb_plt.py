@@ -6,8 +6,9 @@ from scipy.signal import savgol_filter
 from bethe.plot.cfg import plt, ax
 
 
-gn = 'som_results_orb'
-orbitals = [('GM', 0, 0), ('XY', 0, 0), ('GM', 2, 2)]
+gn = 'som_results_orb_gloc'
+#orbitals = [('GM', 0, 0), ('XY', 0, 0), ('GM', 2, 2)]
+orbitals = [('up-G', 0, 0), ('up-X', 0, 0), ('up-M', 0, 0)]
 lss = ['--', '-', ':']
 n_files = len(sys.argv[1:])
 colors = [mpl.cm.jet(float(i)/max(2,n_files-1)) for i in range(n_files)]
@@ -32,12 +33,12 @@ for archive_name, color, lab in zip(sys.argv[1:], colors, labels):
             ax.plot(mesh.real, a, label = '$'+lab+'$', color = color, ls = ls)
         else:
             ax.plot(mesh.real, a, color = color, ls = ls)
-ax.legend(loc = "best", frameon = False, fontsize = 6)#, title = '$U$')
+#ax.legend(loc = "best", frameon = False, fontsize = 6)#, title = '$U$')
 ax.set_xlabel("$\\omega$")
-ax.set_xlim(-4,4)
+ax.set_xlim(-1,1)
 ax.set_ylabel("$A(\\omega)$")
 ax.set_ylim(bottom = 0)
-ax.set_ylim(0, 2)
+ax.set_ylim(0,2)
 ax.plot([0,0], [0,ax.get_ylim()[1]], alpha=.5, color='gray')
 plt.savefig("som_orb.pdf")
 print "som_orb.pdf ready"

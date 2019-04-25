@@ -11,9 +11,12 @@ for archive_name in sys.argv[1:]:
     fig = plt.figure()
     ax = fig.add_axes([.12,.12,.83,.82])
     archive = Storage(archive_name)
-    histos_orb = archive.load('perturbation_order')
-    histo_tot = archive.load('perturbation_order_total')
+    histos_orb = archive.load('perturbation_order', bcast = False)
+    histo_tot = archive.load('perturbation_order_total', bcast = False)
+    if histo_tot is None:
+        continue
     hist = histo_tot
+    print "max at:", np.argmax(hist)
     i_max = len(hist)
     for i in range(1, len(hist)):
         pt = hist[-i]
@@ -28,6 +31,7 @@ for archive_name in sys.argv[1:]:
             i_min += 1
         else:
             break
+    i_min = 0
     x = np.linspace(i_min, i_max, i_max - i_min, True)
     n_bins = i_max - i_min
     n_orb = len(histos_orb)

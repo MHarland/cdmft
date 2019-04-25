@@ -19,7 +19,7 @@ for fname, color in zip(sys.argv[1:], colors):
     ax.plot(x, y, marker = "+", color = color, label = '$\\mathrm{'+fname[:-3]+'}$')
 ax.set_xlabel("$\mathrm{DMFT-Loop}$")
 ax.set_ylabel("$t[min]$")
-ax.legend(loc = "lower left")
+ax.legend(loc = "upper right", fontsize = 6)
 plt.savefig("looptime.pdf")
 print "looptime.pdf ready"
 plt.close()

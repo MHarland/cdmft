@@ -7,6 +7,7 @@ from bethe.plot.cfg import plt
 
 
 for archive_name in sys.argv[1:]:
+    #results_groupname = 'som_results'
     results_groupname = 'som_results'
     fig = plt.figure()
     ax = fig.add_axes([.12,.1+.5,.83,.82-.45])
@@ -35,7 +36,7 @@ for archive_name in sys.argv[1:]:
         ax.set_ylabel("$\\mathrm{log}\,|G(l)|$")
     elif isinstance(gori, GfImTime):
         center = int(len(mesh)*.5)
-        halfrange = int(len(mesh)*.1)
+        halfrange = int(len(mesh)*.5)
         pr = (center - halfrange, center + halfrange)
         ax.plot(mesh[pr[0]:pr[1]], gori.data[pr[0]:pr[1],0,0].real, label = "original", marker = "+")
         ax.plot(mesh[pr[0]:pr[1]], grec.data[pr[0]:pr[1],0,0].real, ls = '--', label = "reconstructed", marker = 'x')

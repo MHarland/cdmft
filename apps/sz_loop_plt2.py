@@ -4,13 +4,14 @@ from bethe.h5interface import Storage
 from bethe.plot.cfg import plt, ax
 
 
-n_loops_ave = 1
+n_loops_ave = 8
 y = []
 x = []
 for fname in sys.argv[1:]:
     sto = Storage(fname)
     n_loops = sto.get_completed_loops()
     ave = 0
+    if n_loops < n_loops_ave: continue
     for l in range(-1*n_loops_ave, 0, 1):
         g = sto.load('g_imp_iw', l)
         up = 0

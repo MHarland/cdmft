@@ -55,7 +55,7 @@ for fname in sys.argv[1:]:
             if i == j:
                 ntot += n
         sco = (g['XY'][0, 1].total_density() + g['XY'][1, 0].total_density() - g['XY'][2, 3].total_density() - g['XY'][3, 2].total_density()) * .25
-        
+        #print g['XY'][0, 1].total_density(), g['XY'][1, 0].total_density(), g['XY'][2, 3].total_density(), g['XY'][3, 2].total_density()
         gsite = reblock.reblock_by_map(g)
         gsite = transform.transform_g(gsite, False)
         gsite["dn"] << -1 * gsite["dn"].conjugate()
@@ -66,8 +66,9 @@ for fname in sys.argv[1:]:
 
         for key, val in {'N': ntot, 'SC': sco, 'AFM': afm, 'FM': fm}.items():
             graphs[key].append(abs(val.real))
-        if verbose:
+        if verbose and l == loops[-1]:
             print 'N('+str(l)+') = '+str(np.round(ntot.real, 3))
+            print 'delta('+str(l)+') = '+str(np.round(1-ntot.real*.25, 3))
             print 'SC('+str(l)+') = '+str(np.round(sco.real, 3))
             print 'AFM('+str(l)+') = '+str(np.round(afm.real, 3))
             print 'FM('+str(l)+') = '+str(np.round(fm.real, 3))
@@ -96,6 +97,14 @@ for fname in sys.argv[1:]:
     ax.set_xlabel("$\mathrm{DMFT-Loop}$")
     ax.set_ylabel("$n$")
     outname = fname[:-3]+"_sco2.pdf"
+    plt.savefig(outname)
+    print outname, "ready"
+    ax.clear()
+
+    ax.plot(loops, graphs['SC'])
+    ax.set_xlabel("$\mathrm{DMFT-Loop}$")
+    ax.set_ylabel("$SC$")
+    outname = fname[:-3]+"_sco3.pdf"
     plt.savefig(outname)
     print outname, "ready"
     ax.clear()

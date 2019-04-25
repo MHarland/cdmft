@@ -1,17 +1,18 @@
 import numpy as np, sys
 
-from bethe.setups.cdmftchain import StrelSetup
-from bethe.operators.kanamori import Dimer as Ops # model/setup -dependend!
+from bethe.setups.bethelattice import TriangleMomentum as Setup
+#from bethe.operators.kanamori import Dimer as Ops # model/setup -dependend!
+from bethe.operators.hubbard import TriangleMomentum as Ops
 from bethe.h5interface import Storage
 from bethe.evaluation.generic import Evaluation
 from bethe.evaluation.densitymatrix import StaticObservable
 from bethe.plot.cfg import plt, ax
 
 
-setup = StrelSetup(10, 0, 0, 0, 0, 0, 0, 32) # model/setup -dependend!
-ops = Ops(transf = setup._site_transf(np.pi/4., np.pi/4.)) # model/setup -dependend!
-n_bins = 1200
-omega_max = .5
+setup = Setup()
+ops = Ops()
+n_bins = 1000
+omega_max = 2
 log = False
 offdiag_rows = []
 plot_atomic = False
@@ -46,7 +47,8 @@ for arch in sys.argv[1:]:
     if degeneracy_labels:
         n_obs = StaticObservable(ops.n_tot(), sto)
         obs1 = n_obs.get_expectation_value_statewise()
-        s2_obs = StaticObservable(ops.s2_tot(), sto)
+        #s2_obs = StaticObservable(ops.s2_tot(), sto)
+        s2_obs = StaticObservable(ops.ss_tot(), sto)
         obs2 = s2_obs.get_expectation_value_statewise()
         bin_degeneracies = np.zeros([len(bins)])
         bin_obs1 = np.zeros([len(bins)])
@@ -83,4 +85,4 @@ for arch in sys.argv[1:]:
     outname = arch[:-3]+"_density_matrix_diag.pdf"
     plt.savefig(outname)
     print outname+" ready"
-    plt.close()
+    plt.cla()

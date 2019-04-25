@@ -26,6 +26,7 @@ for archive_name, color in zip(sys.argv[1:], colors):
     ax.set_xlabel("$\\omega$")
     ax.set_ylabel("$A(\\omega)$")
     ax.set_ylim(bottom = 0)
+    ax.set_xlim(-2,2)
     plt.savefig(archive_name[:-3]+"_pade_atomic.pdf")
     plt.cla()
     print archive_name[:-3]+"_pade_atomic.pdf ready"

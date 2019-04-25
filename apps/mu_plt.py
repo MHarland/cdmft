@@ -20,7 +20,7 @@ for fname, c in zip(sys.argv[1:], colors):
         y.append(mu)
         x.append(l)
     ax.plot(x, y, marker = "+", label = '$\\mathrm{'+fname[:-3]+'}$', color = c)
-ax.legend(loc = "upper left")
+ax.legend(loc = "best", fontsize = 6)
 ax.set_xlabel("$\mathrm{DMFT-Loop}$")
 ax.set_ylabel("$\\mu$")
 plt.savefig("mu.pdf")

@@ -1,4 +1,5 @@
 import matplotlib, sys, numpy as np
+from scipy.stats import sem
 
 from bethe.h5interface import Storage
 from bethe.plot.cfg import plt, ax
@@ -24,11 +25,15 @@ for fname, c in zip(sys.argv[1:], colors):
             else:
                 assert False, 'need up/dn-blocks'
             n_blocks += 1
-        y.append(((up - dn)/float(n_blocks)).real)
+        y.append((up - dn).real*.5)
         x.append(l)
+    print fname, np.mean(y[-6:]), sem(y[-6:])
     ax.plot(x, y, marker = "+", label = '$\\mathrm{'+fname[:-3]+'}$', color = c)
-ax.legend(loc = "upper left")
+#ax.plot([0,16], [0,0], color = 'gray')
+ax.legend(loc = "best", fontsize = 6, framealpha = .5)
 ax.set_xlabel("$\mathrm{DMFT-Loop}$")
+#ax.set_ylim(-2,2)
+#ax.set_ylim(-.1,.1)
 ax.set_ylabel("$<S_{z}>$")
 plt.savefig("sz.pdf")
 print "sz.pdf ready"
