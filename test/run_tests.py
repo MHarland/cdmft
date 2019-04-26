@@ -1,4 +1,5 @@
 import unittest
+import sys
 from pytriqs.utility import mpi #initializes MPI, required on some clusters
 
 from test_greensfunctions import TestMatsubaraGreensFunction
@@ -21,8 +22,11 @@ from test_schemesccdmft import TestSchemesCCDMFT
 from test_schemespcdmft import TestSchemesPCDMFT
 from test_transformation2 import TestTransformation2
 
+if '-extended' in sys.argv[1:]:
+    extended = True
+else:
+    extended = False
 
-extensive_test = False
 suite = unittest.TestSuite()
 
 suite.addTest(TestMatsubaraGreensFunction("test_MatsubaraGreensFunction_initialization"))
@@ -59,24 +63,24 @@ suite.addTest(TestSchemesBethe("test_SchemesBethe_calculate"))
 suite.addTest(TestSchemesBethe("test_SchemesBetheAFM_calculate"))
 suite.addTest(TestSchemesBethe("test_SchemesBetheAIAO"))
 suite.addTest(TestSchemesBethe("test_SchemesBethe_find_and_set_mu_single"))
-if extensive_test: suite.addTest(TestSchemesBethe("test_SchemesBethe_find_and_set_mu_double")) # TODO very unstable
+if extended: suite.addTest(TestSchemesBethe("test_SchemesBethe_find_and_set_mu_double")) # TODO very unstable
 suite.addTest(TestCycle("test_Cycle_initialization"))
-if extensive_test: suite.addTest(TestCycle("test_Cycle_run"))
+if extended: suite.addTest(TestCycle("test_Cycle_run"))
 suite.addTest(TestSetups("test_BetheSetups_init"))
 suite.addTest(TestTightbinding("test_LatticeDispersion_dimer_in_chain"))
 suite.addTest(TestTightbinding("test_LatticeDispersion_dimer_in_chain_transform"))
 suite.addTest(TestTightbinding("test_SquarelatticeDispersion"))
-#if extensive_test: suite.addTest(TestSetups("test_SingleBetheSetup_with_cycle_run"))
+#if extended: suite.addTest(TestSetups("test_SingleBetheSetup_with_cycle_run"))
 suite.addTest(TestSchemesCDMFT("test_SchemesCDMFT_init"))
-if extensive_test: suite.addTest(TestSchemesCDMFT("test_SchemesCDMFT_dmu"))
+if extended: suite.addTest(TestSchemesCDMFT("test_SchemesCDMFT_dmu"))
 suite.addTest(TestSchemesCDMFT("test_SchemesCDMFT_calculate_clustersite_basis"))
 suite.addTest(TestSchemesCDMFT("test_SchemesCDMFT_calculate_clustermomentum_basis"))
-if extensive_test: suite.addTest(TestSchemesCDMFT("test_SchemesCDMFT_Cycle"))
+if extended: suite.addTest(TestSchemesCDMFT("test_SchemesCDMFT_Cycle"))
 suite.addTest(TestSetups("test_chain_MomentumDimerCDMFTSetup"))
 suite.addTest(TestSetups("test_chain_SingleSiteCDMFTSetup"))
-if extensive_test: suite.addTest(TestSetups("test_chain_StrelCDMFTSetup"))
-if extensive_test: suite.addTest(TestSetups("test_squarelattice_MomentumPlaquetteCDMFTSetup"))
-if extensive_test: suite.addTest(TestSetups("test_squarelattice_NambuMomentumPlaquetteCDMFTSetup"))
+if extended: suite.addTest(TestSetups("test_chain_StrelCDMFTSetup"))
+if extended: suite.addTest(TestSetups("test_squarelattice_MomentumPlaquetteCDMFTSetup"))
+if extended: suite.addTest(TestSetups("test_squarelattice_NambuMomentumPlaquetteCDMFTSetup"))
 suite.addTest(TestSetups("test_squarelattice_PlaquetteCDMFT_hoppingsymmetry"))
 suite.addTest(TestSetups("test_TriangleAIAOBetheSetup"))
 suite.addTest(TestSetups("test_TwoOrbitalDimerBetheSetup"))
@@ -85,13 +89,13 @@ suite.addTest(TestSetups("test_TwoMixedOrbitalMomentumDimerBetheSetup"))
 suite.addTest(TestSetups("test_NambuMomentumPlaquetteSetup"))
 suite.addTest(TestSetups("test_AFMNambuMomentumPlaquetteSetup"))
 suite.addTest(TestSetupHypercubic("test_init"))
-if extensive_test: suite.addTest(TestSetupHypercubic("test_plot_pade"))
-if extensive_test: suite.addTest(TestSetupHypercubic("test_plot_rho_npts_convergence"))
-if extensive_test: suite.addTest(TestSetupHypercubic("test_plot_rho_w_convergence"))
-if extensive_test: suite.addTest(TestSetupHypercubic("test_Cycle_run"))
+if extended: suite.addTest(TestSetupHypercubic("test_plot_pade"))
+if extended: suite.addTest(TestSetupHypercubic("test_plot_rho_npts_convergence"))
+if extended: suite.addTest(TestSetupHypercubic("test_plot_rho_w_convergence"))
+if extended: suite.addTest(TestSetupHypercubic("test_Cycle_run"))
 suite.addTest(TestConvergence("test_Criterion_init"))
-if extensive_test: suite.addTest(TestConvergence("test_Criterion_applied"))
-if extensive_test: suite.addTest(TestConvergence("test_Criterion_applied_noisy_case"))
+if extended: suite.addTest(TestConvergence("test_Criterion_applied"))
+if extended: suite.addTest(TestConvergence("test_Criterion_applied_noisy_case"))
 suite.addTest(TestSchemesCCDMFT("test_SchemesCCDMFT_init"))
 suite.addTest(TestSchemesCCDMFT("test_HoppingLattice"))
 suite.addTest(TestSchemesPCDMFT("test_SchemesPCDMFT_init"))

@@ -1,10 +1,10 @@
 import numpy as np, itertools as itt
 from pytriqs.gf.local import SemiCircular
 
-from bethe.setups.generic import CycleSetupGeneric
-from bethe.operators.hubbard import DimerMomentum
-from bethe.schemes.ccdmft_g import GLocal, SelfEnergy, WeissField
-from bethe.transformation import MatrixTransformation
+from cdmft.setups.generic import CycleSetupGeneric
+from cdmft.operators.hubbard import DimerMomentum
+from cdmft.schemes.ccdmft_g import GLocal, SelfEnergy, WeissField
+from cdmft.transformation import MatrixTransformation
 
 
 class MomentumDimerSetup(CycleSetupGeneric):

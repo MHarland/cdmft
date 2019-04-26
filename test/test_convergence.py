@@ -1,10 +1,10 @@
 import unittest, os, numpy as np
 
-from bethe.convergence import Criterion
-from bethe.h5interface import Storage
-from bethe.selfconsistency import Cycle
-from bethe.setups.bethelattice import SingleBetheSetup
-from bethe.parameters import TestDMFTParameters
+from cdmft.convergence import Criterion
+from cdmft.h5interface import Storage
+from cdmft.selfconsistency import Cycle
+from cdmft.setups.bethelattice import SingleBetheSetup
+from cdmft.parameters import TestDMFTParameters
 
 
 class TestConvergence(unittest.TestCase):

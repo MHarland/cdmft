@@ -1,11 +1,11 @@
 import unittest, numpy as np, os, matplotlib as mpl
 from pytriqs.gf.local import GfReFreq
 
-from bethe.setups.hypercubic import HypercubicSetup
-from bethe.h5interface import Storage
-from bethe.selfconsistency import Cycle
-from bethe.parameters import TestDMFTParameters
-from bethe.plot.cfg import plt, ax
+from cdmft.setups.hypercubic import HypercubicSetup
+from cdmft.h5interface import Storage
+from cdmft.selfconsistency import Cycle
+from cdmft.parameters import TestDMFTParameters
+from cdmft.plot.cfg import plt, ax
 
 
 class TestSetupHypercubic(unittest.TestCase):

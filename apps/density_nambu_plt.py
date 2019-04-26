@@ -1,8 +1,8 @@
 import matplotlib, sys, numpy as np
 
-from bethe.h5interface import Storage
-from bethe.plot.cfg import plt, ax
-from bethe.schemes.bethe import GLocalAFMNambu
+from cdmft.h5interface import Storage
+from cdmft.plot.cfg import plt, ax
+from cdmft.schemes.bethe import GLocalAFMNambu
 
 
 for fname in sys.argv[1:]:

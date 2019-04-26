@@ -1,7 +1,7 @@
 import unittest, numpy as np
 from pytriqs.gf.local import BlockGf, GfImFreq
 
-from bethe.transformation2 import Transformation, Reblock, UnitaryMatrixTransformation
+from cdmft.transformation2 import Transformation, Reblock, UnitaryMatrixTransformation
 
 
 class TestTransformation2(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest, numpy as np, itertools as itt
 
-from bethe.schemes.bethe import GLocal, SelfEnergy, WeissField, GLocalAFM, WeissFieldAIAO, GLocalWithOffdiagonals, GLocalAIAO
+from cdmft.schemes.bethe import GLocal, SelfEnergy, WeissField, GLocalAFM, WeissFieldAIAO, GLocalWithOffdiagonals, GLocalAIAO
 
 
 class TestSchemesBethe(unittest.TestCase):

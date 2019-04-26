@@ -1,7 +1,7 @@
 import matplotlib, sys, numpy as np
 
-from bethe.h5interface import Storage
-from bethe.plot.cfg import plt, fig
+from cdmft.h5interface import Storage
+from cdmft.plot.cfg import plt, fig
 
 
 def nice_index(index):

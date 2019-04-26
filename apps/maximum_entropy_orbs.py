@@ -4,7 +4,7 @@ from pytriqs.gf.local import BlockGf, GfImTime, inverse
 from pytriqs.utility import mpi
 from maxent.bryanToTRIQS import MaximumEntropy
 
-from bethe.h5interface import Storage
+from cdmft.h5interface import Storage
 
 
 ntau = 500

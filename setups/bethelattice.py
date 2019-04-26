@@ -1,11 +1,11 @@
 import numpy as np, itertools as itt
 from scipy.linalg import expm, eigh
 
-from bethe.setups.generic import CycleSetupGeneric
-from bethe.operators.hubbard import Site, TriangleMomentum, PlaquetteMomentum, Triangle, TriangleAIAO, TriangleSpinOrbitCoupling, PlaquetteMomentumNambu, PlaquetteMomentumAFMNambu
-from bethe.operators.kanamori import Dimer as KanamoriDimer, MomentumDimer as KanamoriMomentumDimer, MixedOrbitalMomentumDimer as KanamoriMixedOrbitalMomentumDimer
-from bethe.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM, GLocalInhomogeneous, WeissFieldInhomogeneous, GLocalInhomogeneousFM, WeissFieldInhomogeneousFM, GLocalAIAO, GLocalNambu, WeissFieldNambu, GLocalAFMNambu, WeissFieldAFMNambu, SelfEnergyAFMNambu
-from bethe.transformation import MatrixTransformation
+from cdmft.setups.generic import CycleSetupGeneric
+from cdmft.operators.hubbard import Site, TriangleMomentum, PlaquetteMomentum, Triangle, TriangleAIAO, TriangleSpinOrbitCoupling, PlaquetteMomentumNambu, PlaquetteMomentumAFMNambu
+from cdmft.operators.kanamori import Dimer as KanamoriDimer, MomentumDimer as KanamoriMomentumDimer, MixedOrbitalMomentumDimer as KanamoriMixedOrbitalMomentumDimer
+from cdmft.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM, GLocalInhomogeneous, WeissFieldInhomogeneous, GLocalInhomogeneousFM, WeissFieldInhomogeneousFM, GLocalAIAO, GLocalNambu, WeissFieldNambu, GLocalAFMNambu, WeissFieldAFMNambu, SelfEnergyAFMNambu
+from cdmft.transformation import MatrixTransformation
 
 from pytriqs.gf.local import iOmega_n, inverse
 
@@ -459,7 +459,7 @@ class AFMNambuMomentumPlaquette(NambuMomentumPlaquette):
         t_loc = self.mom_transf.transform_matrix(t_loc)
         if not isinstance(t_bethe, dict):
             t_bethe = {gm: t_bethe * np.identity(4), xy: t_bethe * np.identity(4)}
-            for s, m in t_bethe.items():
+            for s, m in t_cdmft.items():
                 t_bethe[s][1,1] *= -1
                 t_bethe[s][3,3] *= -1
         self.mu = mu

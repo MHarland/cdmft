@@ -1,6 +1,6 @@
 import sys
-from bethe.h5interface import Storage
-from bethe.convergence import Criterion
+from cdmft.h5interface import Storage
+from cdmft.convergence import Criterion
 
 
 for fname in sys.argv[1:]:

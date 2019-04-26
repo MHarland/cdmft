@@ -1,12 +1,12 @@
 import numpy as np, sys
 
-from bethe.setups.bethelattice import TriangleMomentum as Setup
-#from bethe.operators.kanamori import Dimer as Ops # model/setup -dependend!
-from bethe.operators.hubbard import TriangleMomentum as Ops
-from bethe.h5interface import Storage
-from bethe.evaluation.generic import Evaluation
-from bethe.evaluation.densitymatrix import StaticObservable
-from bethe.plot.cfg import plt, ax
+from cdmft.setups.bethelattice import TriangleMomentum as Setup
+#from cdmft.operators.kanamori import Dimer as Ops # model/setup -dependend!
+from cdmft.operators.hubbard import TriangleMomentum as Ops
+from cdmft.h5interface import Storage
+from cdmft.evaluation.generic import Evaluation
+from cdmft.evaluation.densitymatrix import StaticObservable
+from cdmft.plot.cfg import plt, ax
 
 
 setup = Setup()

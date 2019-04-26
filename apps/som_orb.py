@@ -8,8 +8,8 @@ import numpy as np
 from time import time
 from scipy.interpolate import interp1d
 
-from bethe.h5interface import Storage
-from bethe.gfoperations import trace, cut_coefficients
+from cdmft.h5interface import Storage
+from cdmft.gfoperations import trace, cut_coefficients
 
 
 fnames = sys.argv[1:]

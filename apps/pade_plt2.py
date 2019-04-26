@@ -2,7 +2,7 @@ import matplotlib as mpl, sys, numpy as np
 from pytriqs.gf.local import GfReFreq, BlockGf
 from pytriqs.archive import HDFArchive
 
-from bethe.plot.cfg import plt, ax
+from cdmft.plot.cfg import plt, ax
 
 
 n_graphs = len(sys.argv[1:])

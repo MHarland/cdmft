@@ -2,8 +2,8 @@ import numpy as np, itertools as itt
 from scipy.linalg import expm, inv
 from pytriqs.operators import c as C, c_dag as CDag, n as N, dagger
 
-from bethe.gfoperations import sum
-from bethe.transformation import GfStructTransformationIndex
+from cdmft.gfoperations import sum
+from cdmft.transformation import GfStructTransformationIndex
 
 
 class Hubbard:

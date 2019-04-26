@@ -1,8 +1,8 @@
 import matplotlib, sys, numpy as np
 from scipy.stats import sem
 
-from bethe.h5interface import Storage
-from bethe.plot.cfg import plt, ax
+from cdmft.h5interface import Storage
+from cdmft.plot.cfg import plt, ax
 
 colors = [matplotlib.cm.jet(i/max(1.,float(len(sys.argv[1:])-1))) for i in range(len(sys.argv[1:]))]
 for fname, c in zip(sys.argv[1:], colors):

@@ -1,11 +1,11 @@
 import numpy as np, itertools as itt
 
-from bethe.setups.generic import CycleSetupGeneric
-from bethe.setups.bethelattice import NambuMomentumPlaquette as BetheNambuMomentumPlaquette
-from bethe.operators.hubbard import PlaquetteMomentum, PlaquetteMomentumNambu
-from bethe.schemes.cdmft import GLocal, SelfEnergy, WeissField, GLocalNambu, WeissFieldNambu
-from bethe.tightbinding import SquarelatticeDispersion, LatticeDispersion
-from bethe.transformation2 import Transformation, Reblock, UnitaryMatrixTransformation
+from cdmft.setups.generic import CycleSetupGeneric
+from cdmft.setups.bethelattice import NambuMomentumPlaquette as BetheNambuMomentumPlaquette
+from cdmft.operators.hubbard import PlaquetteMomentum, PlaquetteMomentumNambu
+from cdmft.schemes.cdmft import GLocal, SelfEnergy, WeissField, GLocalNambu, WeissFieldNambu
+from cdmft.tightbinding import SquarelatticeDispersion, LatticeDispersion
+from cdmft.transformation2 import Transformation, Reblock, UnitaryMatrixTransformation
 
 
 def get_hopping(lattice, tnn, tnnn, tz, alpha_x = 1, alpha_y = 1, alpha_prime = 1):

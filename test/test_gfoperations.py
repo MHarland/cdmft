@@ -1,6 +1,6 @@
 import unittest, numpy as np, itertools as itt
 
-from bethe.gfoperations import double_dot_product, sum
+from cdmft.gfoperations import double_dot_product, sum
 
 
 class TestGfOperations(unittest.TestCase):

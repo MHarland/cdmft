@@ -1,11 +1,11 @@
 import unittest, os, numpy as np
 
-from bethe.h5interface import Storage
-from bethe.selfconsistency import Cycle
-from bethe.setups.bethelattice import SingleBetheSetup, TriangleBetheSetup, PlaquetteBetheSetup, TriangleAIAOBetheSetup, TwoOrbitalDimerBetheSetup, TwoOrbitalMomentumDimerBetheSetup, NambuMomentumPlaquette, AFMNambuMomentumPlaquette, TwoMixedOrbitalDimerBetheSetup
-from bethe.setups.cdmftchain import MomentumDimerSetup, StrelSetup, SingleSiteSetup
-from bethe.setups.cdmftsquarelattice import MomentumPlaquetteSetup, NambuMomentumPlaquetteSetup
-from bethe.parameters import TestDMFTParameters
+from cdmft.h5interface import Storage
+from cdmft.selfconsistency import Cycle
+from cdmft.setups.bethelattice import SingleBetheSetup, TriangleBetheSetup, PlaquetteBetheSetup, TriangleAIAOBetheSetup, TwoOrbitalDimerBetheSetup, TwoOrbitalMomentumDimerBetheSetup, NambuMomentumPlaquette, AFMNambuMomentumPlaquette, TwoMixedOrbitalDimerBetheSetup
+from cdmft.setups.cdmftchain import MomentumDimerSetup, StrelSetup, SingleSiteSetup
+from cdmft.setups.cdmftsquarelattice import MomentumPlaquetteSetup, NambuMomentumPlaquetteSetup
+from cdmft.parameters import TestDMFTParameters
 
 
 class TestSetups(unittest.TestCase):

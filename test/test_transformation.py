@@ -1,6 +1,6 @@
 import unittest, numpy as np
 
-from bethe.transformation import GfStructTransformationIndex, MatrixTransformation, InterfaceToBlockstructure
+from cdmft.transformation import GfStructTransformationIndex, MatrixTransformation, InterfaceToBlockstructure
 
 
 class TestTransformation(unittest.TestCase):

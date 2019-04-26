@@ -1,8 +1,8 @@
 import matplotlib, sys, numpy as np
 
-from bethe.h5interface import Storage
-from bethe.plot.cfg import plt, ax
-from bethe.setups.bethelattice import TriangleBetheSetup as Setup
+from cdmft.h5interface import Storage
+from cdmft.plot.cfg import plt, ax
+from cdmft.setups.bethelattice import TriangleBetheSetup as Setup
 
 
 part = "Im"

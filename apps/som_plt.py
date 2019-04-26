@@ -3,7 +3,7 @@ from pytriqs.gf.local import GfReFreq
 from pytriqs.archive import HDFArchive
 from scipy.signal import savgol_filter
 
-from bethe.plot.cfg import plt, ax
+from cdmft.plot.cfg import plt, ax
 
 
 #gn = 'som_scgap_results'

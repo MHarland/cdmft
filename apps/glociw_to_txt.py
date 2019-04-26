@@ -3,8 +3,8 @@ from pytriqs.archive import HDFArchive
 from pytriqs.gf.local import BlockGf, GfImTime, GfReFreq, GfImFreq
 from pytriqs.utility import mpi
 
-from bethe.h5interface import Storage
-from bethe.gfoperations import trace
+from cdmft.h5interface import Storage
+from cdmft.gfoperations import trace
 
 
 nambu = False

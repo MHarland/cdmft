@@ -1,6 +1,6 @@
 import unittest, numpy as np
 
-from bethe.operators.hubbard import Site, Plaquette, PlaquetteMomentum, PlaquetteMomentumNambu, TriangleMomentum, TriangleSpinOrbitCoupling
+from cdmft.operators.hubbard import Site, Plaquette, PlaquetteMomentum, PlaquetteMomentumNambu, TriangleMomentum, TriangleSpinOrbitCoupling
 
 
 class TestHubbard(unittest.TestCase):

@@ -1,5 +1,5 @@
 import unittest, os, numpy as np
-from bethe.greensfunctions import MatsubaraGreensFunction
+from cdmft.greensfunctions import MatsubaraGreensFunction
 from pytriqs.gf.local import BlockGf, GfImFreq, iOmega_n, inverse, GfImTime, delta, is_gf_real_in_tau
 from pytriqs.archive import HDFArchive
 

@@ -1,10 +1,10 @@
 import unittest, os, numpy as np
 
-from bethe.parameters import TestDMFTParameters
-from bethe.selfconsistency import Cycle
-from bethe.h5interface import Storage
-from bethe.schemes.bethe import GLocal, SelfEnergy, WeissField
-from bethe.operators.hubbard import Site
+from cdmft.parameters import TestDMFTParameters
+from cdmft.selfconsistency import Cycle
+from cdmft.h5interface import Storage
+from cdmft.schemes.bethe import GLocal, SelfEnergy, WeissField
+from cdmft.operators.hubbard import Site
 
 
 class TestCycle(unittest.TestCase):

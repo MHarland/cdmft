@@ -1,6 +1,6 @@
 import numpy as np, itertools as itt
 
-from bethe.transformation import MatrixTransformation
+from cdmft.transformation import MatrixTransformation
 
 
 class LatticeDispersion:

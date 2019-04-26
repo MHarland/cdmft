@@ -1,7 +1,7 @@
 import unittest, numpy as np
 from pytriqs.operators import Operator
 
-from bethe.operators.kanamori import Dimer
+from cdmft.operators.kanamori import Dimer
 
 
 class TestKanamori(unittest.TestCase):

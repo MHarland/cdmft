@@ -1,8 +1,8 @@
 import matplotlib, sys, numpy as np
 from pytriqs.gf.local import InverseFourier, GfImTime, BlockGf
 
-from bethe.h5interface import Storage
-from bethe.plot.cfg import plt, ax
+from cdmft.h5interface import Storage
+from cdmft.plot.cfg import plt, ax
 
 
 only_diag = False

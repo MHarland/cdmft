@@ -1,8 +1,8 @@
 import matplotlib, sys, numpy as np
 
-from bethe.h5interface import Storage
-from bethe.plot.cfg import plt, ax
-from bethe.setups.bethelattice import TriangleBetheSetup as Setup
+from cdmft.h5interface import Storage
+from cdmft.plot.cfg import plt, ax
+from cdmft.setups.bethelattice import TriangleBetheSetup as Setup
 
 n_colors = len(sys.argv[1:])
 colors = [matplotlib.cm.jet(i/float(max(1,n_colors-1))) for i in range(n_colors)]

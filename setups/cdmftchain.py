@@ -1,11 +1,11 @@
 import numpy as np, itertools as itt
 
-from bethe.setups.generic import CycleSetupGeneric
-from bethe.operators.hubbard import DimerMomentum, Site, Dimer
-from bethe.operators.kanamori import Dimer as KanamoriDimer
-from bethe.schemes.cdmft import GLocal, SelfEnergy, WeissField
-from bethe.tightbinding import LatticeDispersion, LatticeDispersionMultiband
-from bethe.transformation import MatrixTransformation
+from cdmft.setups.generic import CycleSetupGeneric
+from cdmft.operators.hubbard import DimerMomentum, Site, Dimer
+from cdmft.operators.kanamori import Dimer as KanamoriDimer
+from cdmft.schemes.cdmft import GLocal, SelfEnergy, WeissField
+from cdmft.tightbinding import LatticeDispersion, LatticeDispersionMultiband
+from cdmft.transformation import MatrixTransformation
 
 
 class SingleSiteSetup(CycleSetupGeneric):

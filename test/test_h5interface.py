@@ -1,7 +1,7 @@
 import unittest, os
 from pytriqs.utility import mpi
 
-from bethe.h5interface import Storage
+from cdmft.h5interface import Storage
 
 
 class TestStorage(unittest.TestCase):

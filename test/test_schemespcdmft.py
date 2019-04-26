@@ -1,12 +1,12 @@
 import unittest, numpy as np, os, itertools as itt
 
-from bethe.parameters import TestDMFTParameters
-from bethe.selfconsistency import Cycle
-from bethe.h5interface import Storage
-from bethe.schemes.pcdmft import GLocal, SelfEnergy, WeissField
-from bethe.greensfunctions import MatsubaraGreensFunction
-from bethe.transformation import MatrixTransformation
-from bethe.operators.hubbard import DimerMomentum
+from cdmft.parameters import TestDMFTParameters
+from cdmft.selfconsistency import Cycle
+from cdmft.h5interface import Storage
+from cdmft.schemes.pcdmft import GLocal, SelfEnergy, WeissField
+from cdmft.greensfunctions import MatsubaraGreensFunction
+from cdmft.transformation import MatrixTransformation
+from cdmft.operators.hubbard import DimerMomentum
 
 
 class TestSchemesPCDMFT(unittest.TestCase):

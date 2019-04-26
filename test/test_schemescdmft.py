@@ -1,11 +1,11 @@
 import unittest, numpy as np, os, itertools as itt
 
-from bethe.parameters import TestDMFTParameters
-from bethe.selfconsistency import Cycle
-from bethe.h5interface import Storage
-from bethe.schemes.cdmft import GLocal, SelfEnergy, WeissField
-from bethe.tightbinding import LatticeDispersion
-from bethe.operators.hubbard import DimerMomentum
+from cdmft.parameters import TestDMFTParameters
+from cdmft.selfconsistency import Cycle
+from cdmft.h5interface import Storage
+from cdmft.schemes.cdmft import GLocal, SelfEnergy, WeissField
+from cdmft.tightbinding import LatticeDispersion
+from cdmft.operators.hubbard import DimerMomentum
 
 
 class TestSchemesCDMFT(unittest.TestCase):

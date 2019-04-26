@@ -1,7 +1,7 @@
 import numpy as np, itertools as itt
 from pytriqs.gf.local import BlockGf, GfImFreq
 
-from bethe.greensfunctions import MatsubaraGreensFunction
+from cdmft.greensfunctions import MatsubaraGreensFunction
 
 
 class Transformation:

@@ -1,7 +1,7 @@
 import sys, numpy as np
 
-from bethe.evaluation.generic import Evaluation
-from bethe.h5interface import Storage
+from cdmft.evaluation.generic import Evaluation
+from cdmft.h5interface import Storage
 
 
 for fname in sys.argv[1:]:

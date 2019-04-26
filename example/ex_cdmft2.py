@@ -1,11 +1,11 @@
 import numpy as np
 
-from bethe.h5interface import Storage
-from bethe.schemes.cdmft import SelfEnergy
-from bethe.selfconsistency import Cycle
-from bethe.setups.cdmftsquarelattice import MomentumPlaquetteSetup
-from bethe.transformation import MatrixTransformation
-from bethe.parameters import DefaultDMFTParameters
+from cdmft.h5interface import Storage
+from cdmft.schemes.cdmft import SelfEnergy
+from cdmft.selfconsistency import Cycle
+from cdmft.setups.cdmftsquarelattice import MomentumPlaquetteSetup
+from cdmft.transformation import MatrixTransformation
+from cdmft.parameters import DefaultDMFTParameters
 
 
 beta = 10

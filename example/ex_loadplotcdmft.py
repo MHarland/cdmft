@@ -2,9 +2,9 @@ import matplotlib, sys, numpy as np
 matplotlib.use("PDF")
 from matplotlib import pyplot as plt
 
-from bethe.h5interface import Storage
-from bethe.setups.cdmftsquarelattice import MomentumPlaquetteSetup
-from bethe.transformation import MatrixTransformation
+from cdmft.h5interface import Storage
+from cdmft.setups.cdmftsquarelattice import MomentumPlaquetteSetup
+from cdmft.transformation import MatrixTransformation
 
 
 sto = Storage('ex_cdmft.h5')

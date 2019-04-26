@@ -1,6 +1,6 @@
 import sys
 
-from bethe.h5interface import Storage
+from cdmft.h5interface import Storage
 
 sto_target = sys.argv[1]
 sto_to_append = sys.argv[2]

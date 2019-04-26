@@ -2,7 +2,7 @@ import matplotlib, sys, numpy as np
 matplotlib.use("Agg")
 from matplotlib import pyplot as plt
 
-from bethe.storage import LoopStorage
+from cdmft.storage import LoopStorage
 
 
 archive_name = sys.argv[1]

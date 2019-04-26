@@ -1,6 +1,6 @@
 import numpy as np, itertools as itt
 
-from bethe.schemes.bethe import SelfEnergy
+from cdmft.schemes.bethe import SelfEnergy
 
 
 class SelfEnergyForSymmetrizationInTransformedBasis(SelfEnergy):

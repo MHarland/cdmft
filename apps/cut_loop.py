@@ -1,6 +1,6 @@
 import sys
 
-from bethe.h5interface import Storage
+from cdmft.h5interface import Storage
 
 arch_name = sys.argv[1]
 loop = int(sys.argv[2])

@@ -2,9 +2,9 @@ import numpy as np, sys
 from scipy.linalg import logm
 from getnr.getnr import get_nr
 
-from bethe.evaluation.generic import Evaluation
-from bethe.h5interface import Storage
-from bethe.plot.cfg import plt
+from cdmft.evaluation.generic import Evaluation
+from cdmft.h5interface import Storage
+from cdmft.plot.cfg import plt
 
 
 entropies = []

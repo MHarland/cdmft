@@ -1,7 +1,7 @@
 import numpy as np, itertools as itt
 from pytriqs.gf.local import BlockGf, GfImTime, InverseFourier
 
-from bethe.evaluation.generic import Evaluation as GenericEvaluation
+from cdmft.evaluation.generic import Evaluation as GenericEvaluation
 
 
 class Evaluation(GenericEvaluation):

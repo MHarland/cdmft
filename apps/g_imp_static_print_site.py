@@ -1,7 +1,7 @@
 import sys, numpy as np, itertools
 
-from bethe.h5interface import Storage
-from bethe.transformation import MatrixTransformation
+from cdmft.h5interface import Storage
+from cdmft.transformation import MatrixTransformation
 
 gf_struct = [[k, range(4)] for k in ["GM", "XY"]]
 gf_struct_site = [[s, range(4)] for s in ["up", "dn"]]

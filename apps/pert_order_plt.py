@@ -1,8 +1,8 @@
 import matplotlib, sys, numpy as np
 from pytriqs.statistics.histograms import Histogram
 
-from bethe.h5interface import Storage
-from bethe.plot.cfg import plt, ax
+from cdmft.h5interface import Storage
+from cdmft.plot.cfg import plt, ax
 
 
 nc = len(sys.argv[1:])

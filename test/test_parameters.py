@@ -1,6 +1,6 @@
 import unittest
 
-from bethe.parameters import DMFTParameters, UnkownParameters, MissingParameters, DefaultDMFTParameters
+from cdmft.parameters import DMFTParameters, UnkownParameters, MissingParameters, DefaultDMFTParameters
 
 
 class TestDMFTParameters(unittest.TestCase):

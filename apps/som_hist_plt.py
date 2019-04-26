@@ -3,7 +3,7 @@ from pytriqs.gf.local import GfReFreq, GfImTime, GfLegendre
 from pytriqs.archive import HDFArchive
 from pytriqs.statistics.histograms import Histogram
 
-from bethe.plot.cfg import plt
+from cdmft.plot.cfg import plt
 
 
 for archive_name in sys.argv[1:]:

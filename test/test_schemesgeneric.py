@@ -1,6 +1,6 @@
 import unittest
 
-from bethe.schemes.generic import GLocalGeneric, WeissFieldGeneric, SelfEnergyGeneric
+from cdmft.schemes.generic import GLocalGeneric, WeissFieldGeneric, SelfEnergyGeneric
 
 
 class TestSchemesGeneric(unittest.TestCase):

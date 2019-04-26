@@ -1,8 +1,8 @@
 import matplotlib, sys, numpy as np, itertools as itt
 
-from bethe.h5interface import Storage
-from bethe.plot.cfg import plt, ax
-from bethe.transformation import MatrixTransformation
+from cdmft.h5interface import Storage
+from cdmft.plot.cfg import plt, ax
+from cdmft.transformation import MatrixTransformation
 
 
 verbose = False

@@ -1,6 +1,6 @@
 import unittest, numpy as np, itertools as itt
 
-from bethe.tightbinding import LatticeDispersion, SquarelatticeDispersion, SquarelatticeDispersionFast
+from cdmft.tightbinding import LatticeDispersion, SquarelatticeDispersion, SquarelatticeDispersionFast
 
 
 class TestTightbinding(unittest.TestCase):

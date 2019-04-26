@@ -17,3 +17,5 @@ auto
 checkmatsubaratransfofanomfield
 /betheplaquette.bib.bak
 apps/temp
+*.DS_Store
+dev
