@@ -1,15 +1,16 @@
-This python code provides a generic DMFT cycle with evaluation tools. It's based on the TRIQS library. So far, it has been written for model-type calculations, i.e. no explicit DFT interface.
+This python code provides a generic (C)DMFT cycle with evaluation tools. It's based on the TRIQS library.
 
 Mandatory Prerequisites:
 git@github.com:TRIQS/triqs.git
-git@github.com:TRIQS/cthyb.git
+git@github.com:TRIQS/cthyb.git 
 
 Optional for analytic continuation:
 git@github.com:krivenko/som.git
 git@bitbucket.org:MHarland/maxent.git
 
 Installation:
-TRIQS is the most demanding installation in terms of linking. Add the bethe (and also the maxent) package to PYTHONPATH.
+Add the cdmft package to PYTHONPATH (e.g. in .bashrc):
+export PYTHONPATH="$PYTHONPATH:$<PATHTOCDMFT>"
 
 Tests:
 Change to the test directory and run <pytriqs run_tests.py>
