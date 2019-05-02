@@ -1,10 +1,10 @@
 import numpy as np, itertools as itt
 from pytriqs.gf.local import BlockGf, GfImTime, InverseFourier
 
-from cdmft.evaluation.generic import Evaluation as GenericEvaluation
+from cdmft.evaluation.common import Evaluation as CommonEvaluation
 
 
-class Evaluation(GenericEvaluation):
+class Evaluation(CommonEvaluation):
     def __init__(self, archive):
         self.archive = archive
         self.n_loops = self.archive.get_completed_loops()

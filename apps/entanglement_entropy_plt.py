@@ -2,7 +2,7 @@ import numpy as np, sys
 from scipy.linalg import logm
 from getnr.getnr import get_nr
 
-from cdmft.evaluation.generic import Evaluation
+from cdmft.evaluation.common import Evaluation
 from cdmft.h5interface import Storage
 from cdmft.plot.cfg import plt
 

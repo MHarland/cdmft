@@ -1,12 +1,12 @@
 import numpy as np
 
-from cdmft.setups.generic import CycleSetupGeneric
+from cdmft.setups.common import CycleSetupCommon
 from cdmft.operators.hubbard import Site
 from cdmft.schemes.dmft import GLocal, WeissField, SelfEnergy
 from cdmft.tightbinding import LatticeDispersion
 
 
-class SingleSite(CycleSetupGeneric):
+class SingleSite(CycleSetupCommon):
     def __init__(self, beta, mu, u, t = -1, nk = 64, n_iw = 1025):
         up = "up"
         dn = "dn"

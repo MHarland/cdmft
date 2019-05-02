@@ -1,7 +1,7 @@
 from mpi4py import MPI
 from time import time
 
-from schemes.generic import GLocalGeneric
+from schemes.common import GLocalCommon
 from impuritysolver import ImpuritySolver
 from convergence import DMuMaxSqueezer
 
@@ -26,7 +26,7 @@ class Cycle:
         self.g_loc.filling = self.p['filling']
         self.g_loc.dmu_max = self.p['dmu_max']
         self.g_loc.verbosity = self.p['verbosity']
-        self.g_imp = GLocalGeneric(gf_init = g_local, parameters = p)
+        self.g_imp = GLocalCommon(gf_init = g_local, parameters = p)
         self.convergence_criteria = []
         self.mu = mu
         self.se = self_energy

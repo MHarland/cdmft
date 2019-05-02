@@ -5,11 +5,11 @@ from pytriqs.utility import mpi
 from pytriqs.utility.bound_and_bisect import bound_and_bisect
 from pytriqs.sumk import SumkDiscreteFromLattice
 
-from generic import GLocalGeneric, SelfEnergyGeneric, WeissFieldGeneric, FunctionWithMemory
+from common import GLocalCommon, SelfEnergyCommon, WeissFieldCommon, FunctionWithMemory
 from ..gfoperations import double_dot_product
 
 
-class GLocal(GLocalGeneric):
+class GLocal(GLocalCommon):
     """
     RevModPhys.77.1027
     transf_for_ksum allows for a unitary transformation for the k-summation of G_local; it is automatically 
@@ -20,7 +20,7 @@ class GLocal(GLocalGeneric):
         self.transfksum = transf_for_ksum
         assert hasattr(self.lat, 'bz_points') and hasattr(self.lat, 'bz_weights') and hasattr(self.lat, 'energies'), 'make sure lattice_dispersion has the attributes bz_points, bz_weights and energies!'
         self.bz = [self.lat.bz_points, self.lat.bz_weights, self.lat.energies]
-        GLocalGeneric.__init__(self, *args, **kwargs)
+        GLocalCommon.__init__(self, *args, **kwargs)
 
     def calculate(self, selfenergy, mu):
         g = self.get_as_BlockGf() # TODO need BlockGf for __iadd__ and reduce
@@ -40,11 +40,11 @@ class GLocal(GLocalGeneric):
         mpi.barrier()
 
 
-class SelfEnergy(SelfEnergyGeneric):
+class SelfEnergy(SelfEnergyCommon):
     pass
 
 
-class WeissField(WeissFieldGeneric):
+class WeissField(WeissFieldCommon):
     pass
 
 class GLocalNambu(GLocal):
@@ -100,7 +100,7 @@ class GLocalNambu(GLocal):
         d = self.total_density_nambu()
         return d
 
-class WeissFieldNambu(WeissFieldGeneric):
+class WeissFieldNambu(WeissFieldCommon):
     """
     allows for plaquette-afm
     """

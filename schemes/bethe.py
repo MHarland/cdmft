@@ -4,11 +4,11 @@ from pytriqs.gf.local import inverse, iOmega_n
 from pytriqs.utility.bound_and_bisect import bound_and_bisect
 from pytriqs.utility import mpi
 
-from generic import GLocalGeneric, SelfEnergyGeneric, WeissFieldGeneric, FunctionWithMemory
+from common import GLocalCommon, SelfEnergyCommon, WeissFieldCommon, FunctionWithMemory
 from ..gfoperations import double_dot_product
 
 
-class GLocal(GLocalGeneric):
+class GLocal(GLocalCommon):
     """
     w1, w2, n_mom are used for calculate only, the fitting after the impurity solver is defined in
     the selfconsistency parameters
@@ -18,7 +18,7 @@ class GLocal(GLocalGeneric):
             for i, j in itt.product(*[range(b.shape[0])]*2):
                 if i != j:
                     assert b[i, j] == 0, "Bethe Greensfunction must be diagonal for the self-consistency condition of this class"
-        GLocalGeneric.__init__(self, *args, **kwargs)
+        GLocalCommon.__init__(self, *args, **kwargs)
         self.t_loc = t_local
         self.t_b = t_bethe
         self.w1 = (2 * self.n_iw * .8 + 1) * np.pi / self.beta if w1 is None else w1
@@ -54,10 +54,10 @@ class GLocalAFM(GLocal):
         assert not math.isnan(self.total_density()), 'tail fit fail!'
 
 
-class GLocalWithOffdiagonals(GLocalGeneric):
+class GLocalWithOffdiagonals(GLocalCommon):
 
     def __init__(self, t_bethe, t_local, *args, **kwargs):
-        GLocalGeneric.__init__(self, *args, **kwargs)
+        GLocalCommon.__init__(self, *args, **kwargs)
         self.t_loc = t_local
         self.t_b = t_bethe
         self._last_g_loc_convergence = []
@@ -138,7 +138,7 @@ class GLocalAIAO(GLocalWithOffdiagonals):
                 self._g_flipped[s][lind] << sign * b[rind]
 
 
-class WeissField(WeissFieldGeneric):
+class WeissField(WeissFieldCommon):
     
     def calc_selfconsistency(self, glocal, selfenergy, mu, *args, **kwargs):
         if isinstance(mu, float) or isinstance(mu, int): mu = self._to_blockmatrix(mu)
@@ -146,7 +146,7 @@ class WeissField(WeissFieldGeneric):
             b << inverse(iOmega_n  + mu[bn] - glocal.t_loc[bn] - glocal.t_b**2 * glocal[bn])
 
 
-class WeissFieldAFM(WeissFieldGeneric):
+class WeissFieldAFM(WeissFieldCommon):
     
     def calc_selfconsistency(self, glocal, selfenergy, mu, *args, **kwargs):
         if isinstance(mu, float) or isinstance(mu, int): mu = self._to_blockmatrix(mu)
@@ -155,10 +155,10 @@ class WeissFieldAFM(WeissFieldGeneric):
             b << inverse(iOmega_n  + mu[bn] - glocal.t_loc[bn] - glocal.t_b**2 * glocal[bn])
 
 
-class WeissFieldAIAO(WeissFieldGeneric):
+class WeissFieldAIAO(WeissFieldCommon):
     
     def __init__(self, *args, **kwargs):
-        WeissFieldGeneric.__init__(self, *args, **kwargs)
+        WeissFieldCommon.__init__(self, *args, **kwargs)
         self.index_map = {}
         for i,j in itt.product(*[range(6)]*2):
             if i < 3 and j < 3:
@@ -185,7 +185,7 @@ class WeissFieldAIAO(WeissFieldGeneric):
         self << inverse(tmp)
 
 
-class WeissFieldInhomogeneous(WeissFieldGeneric):
+class WeissFieldInhomogeneous(WeissFieldCommon):
 
     def calc_selfconsistency(self, glocal, selfenergy, mu, *args, **kwargs):
         if isinstance(mu, float) or isinstance(mu, int): mu = self._to_blockmatrix(mu)
@@ -193,7 +193,7 @@ class WeissFieldInhomogeneous(WeissFieldGeneric):
             bn = self.flip_spin(bn)
             b << inverse(iOmega_n  + mu[bn] - glocal.t_loc[bn] - double_dot_product(glocal.t_b[bn], glocal[bn], glocal.t_b[bn]))
 
-class WeissFieldInhomogeneousFM(WeissFieldGeneric):
+class WeissFieldInhomogeneousFM(WeissFieldCommon):
 
     def calc_selfconsistency(self, glocal, selfenergy, mu, *args, **kwargs):
         if isinstance(mu, float) or isinstance(mu, int): mu = self._to_blockmatrix(mu)
@@ -201,12 +201,12 @@ class WeissFieldInhomogeneousFM(WeissFieldGeneric):
             b << inverse(iOmega_n  + mu[bn] - glocal.t_loc[bn] - double_dot_product(glocal.t_b[bn], glocal[bn], glocal.t_b[bn]))
 
 
-class WeissFieldNambu(WeissFieldGeneric):
+class WeissFieldNambu(WeissFieldCommon):
     """
     with afm and allows for imaginary gap, too
     """
     def __init__(self, *args, **kwargs):
-        WeissFieldGeneric.__init__(self, *args, **kwargs)
+        WeissFieldCommon.__init__(self, *args, **kwargs)
         self._tmp = self.copy()
         self._ceta = self.copy()
     
@@ -345,9 +345,9 @@ class GLocalAFMNambu(GLocalNambu):
         return density
 
 
-class SelfEnergyAFMNambu(SelfEnergyGeneric):
+class SelfEnergyAFMNambu(SelfEnergyCommon):
     def __init__(self, *args, **kwargs):
-        SelfEnergyGeneric.__init__(self, *args, **kwargs)
+        SelfEnergyCommon.__init__(self, *args, **kwargs)
         self._g_flipped = self.copy()
 
     def _set_g_flipped(self):
@@ -359,5 +359,5 @@ class SelfEnergyAFMNambu(SelfEnergyGeneric):
                 self._g_flipped[s][j] << (-1) * b[i].conjugate()
 
 
-class SelfEnergy(SelfEnergyGeneric):
+class SelfEnergy(SelfEnergyCommon):
     pass

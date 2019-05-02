@@ -1,6 +1,6 @@
 import numpy as np, itertools as itt
 
-from cdmft.setups.generic import CycleSetupGeneric
+from cdmft.setups.common import CycleSetupCommon
 from cdmft.operators.hubbard import DimerMomentum, Site, Dimer
 from cdmft.operators.kanamori import Dimer as KanamoriDimer
 from cdmft.schemes.cdmft import GLocal, SelfEnergy, WeissField
@@ -8,7 +8,7 @@ from cdmft.tightbinding import LatticeDispersion, LatticeDispersionMultiband
 from cdmft.transformation import MatrixTransformation
 
 
-class SingleSiteSetup(CycleSetupGeneric):
+class SingleSiteSetup(CycleSetupCommon):
     """
     Dimer-cluster of a 1D chain lattice within Cluster DMFT
     assumes that transformation_matrix diagonalizes the GLocal on site-space
@@ -30,7 +30,7 @@ class SingleSiteSetup(CycleSetupGeneric):
         self.quantum_numbers = [hubbard.n_tot(), hubbard.sz_tot()]
 
 
-class MomentumDimerSetup(CycleSetupGeneric):
+class MomentumDimerSetup(CycleSetupCommon):
     """
     Dimer-cluster of a 1D chain lattice within Cluster DMFT
     assumes that transformation_matrix diagonalizes the GLocal on site-space
@@ -55,7 +55,7 @@ class MomentumDimerSetup(CycleSetupGeneric):
         self.quantum_numbers = [hubbard.n_tot(), hubbard.sz_tot()]
 
 
-class DimerSetup(CycleSetupGeneric):
+class DimerSetup(CycleSetupCommon):
     """
     Dimer-cluster of a 1D chain lattice within Cluster DMFT
     assumes that transformation_matrix diagonalizes the GLocal on site-space
@@ -76,7 +76,7 @@ class DimerSetup(CycleSetupGeneric):
         self.quantum_numbers = [hubbard.n_tot(), hubbard.sz_tot()]
 
         
-class StrelSetup(CycleSetupGeneric):
+class StrelSetup(CycleSetupCommon):
     """
     TODO
     """

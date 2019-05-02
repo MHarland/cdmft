@@ -1,7 +1,7 @@
 from mpi4py import MPI
 from time import time
 
-from schemes.generic import GLocalGeneric
+from schemes.common import GLocalCommon
 from impuritysolver import ImpuritySolver
 from storage import LoopStorage
 
@@ -23,7 +23,7 @@ class SelfConsistencyCycle:
         g0 = self.g0 = weiss_field
         self.imp_solver = ImpuritySolver(g0.beta, dict(g0.gf_struct), g0.n_iw, p['n_tau'], p['n_l'])
         self.g_loc = g_local
-        self.g_imp = GLocalGeneric(gf_init = g_local)
+        self.g_imp = GLocalCommon(gf_init = g_local)
         self.mu = mu
         self.se = self_energy
 

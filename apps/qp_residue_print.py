@@ -1,6 +1,6 @@
 import sys
 
-from cdmft.evaluation.generic import Evaluation
+from cdmft.evaluation.common import Evaluation
 from cdmft.h5interface import Storage
 
 

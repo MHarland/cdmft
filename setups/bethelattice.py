@@ -1,7 +1,7 @@
 import numpy as np, itertools as itt
 from scipy.linalg import expm, eigh
 
-from cdmft.setups.generic import CycleSetupGeneric
+from cdmft.setups.common import CycleSetupCommon
 from cdmft.operators.hubbard import Site, TriangleMomentum, PlaquetteMomentum, Triangle, TriangleAIAO, TriangleSpinOrbitCoupling, PlaquetteMomentumNambu, PlaquetteMomentumAFMNambu
 from cdmft.operators.kanamori import Dimer as KanamoriDimer, MomentumDimer as KanamoriMomentumDimer, MixedOrbitalMomentumDimer as KanamoriMixedOrbitalMomentumDimer
 from cdmft.schemes.bethe import GLocal, WeissField, SelfEnergy, GLocalAFM, WeissFieldAFM, GLocalWithOffdiagonals, WeissFieldAIAO, WeissFieldAFM, GLocalInhomogeneous, WeissFieldInhomogeneous, GLocalInhomogeneousFM, WeissFieldInhomogeneousFM, GLocalAIAO, GLocalNambu, WeissFieldNambu, GLocalAFMNambu, WeissFieldAFMNambu, SelfEnergyAFMNambu
@@ -10,7 +10,7 @@ from cdmft.transformation import MatrixTransformation
 from pytriqs.gf.local import iOmega_n, inverse
 
 
-class SingleBetheSetup(CycleSetupGeneric):
+class SingleBetheSetup(CycleSetupCommon):
 
     def __init__(self, beta, mu, u, t_bethe, n_iw = 1025, afm = False):
         up = "up"
@@ -35,7 +35,7 @@ class SingleBetheSetup(CycleSetupGeneric):
         self.quantum_numbers = [hubbard.get_n_tot(), hubbard.get_n_per_spin(up)]
 
 
-class TriangleBetheSetup(CycleSetupGeneric):
+class TriangleBetheSetup(CycleSetupCommon):
     """
     Contributions by Kristina Klafka
     """
@@ -71,7 +71,7 @@ class TriangleBetheSetup(CycleSetupGeneric):
         self.quantum_numbers = [hubbard.get_n_tot(), hubbard.get_n_per_spin(up)]
 
 
-class TwoOrbitalDimerBetheSetup(CycleSetupGeneric):
+class TwoOrbitalDimerBetheSetup(CycleSetupCommon):
     def __init__(self, beta, mu, u, j, tc_perp, td_perp, tc0_bethe, tc1_bethe, td0_bethe, td1_bethe, density_density_only = False, orbitals = ["c", "d"], symmetric_orbitals = [], n_iw = 1025, site_transformation = np.array([[1/np.sqrt(2), 1/np.sqrt(2)],[1/np.sqrt(2), -1/np.sqrt(2)]])):
         spins = ["up", "dn"]
         sites = range(2)
@@ -129,7 +129,7 @@ class TwoOrbitalDimerBetheSetup(CycleSetupGeneric):
         gtransf['dn-c'][1, 1] << g['dn-c-X'][0, 0]
 
 
-class TwoMixedOrbitalDimerBetheSetup(CycleSetupGeneric):
+class TwoMixedOrbitalDimerBetheSetup(CycleSetupCommon):
     def __init__(self, beta, mu, u, j, tc_perp, td_perp, tc_bethe, td_bethe, tcd_bethe, density_density_only = False, orbitals = ["c", "d"], symmetric_orbitals = [], n_iw = 1025, site_transformation = np.array([[1/np.sqrt(2), 1/np.sqrt(2)],[1/np.sqrt(2), -1/np.sqrt(2)]]), fm = False):
         spins = ["up", "dn"]
         sites = range(2)
@@ -156,7 +156,7 @@ class TwoMixedOrbitalDimerBetheSetup(CycleSetupGeneric):
         self.quantum_numbers = [self.h_int.n_tot(), self.h_int.sz_tot()]
 
 
-class TwoOrbitalMomentumDimerBetheSetup(CycleSetupGeneric):
+class TwoOrbitalMomentumDimerBetheSetup(CycleSetupCommon):
     def __init__(self, beta, mu, u, j, tc_perp, td_perp, tc_bethe, td_bethe, density_density_only = False, orbitals = ["c", "d"], symmetric_orbitals = [], n_iw = 1025, site_transformation = np.array([[1/np.sqrt(2), 1/np.sqrt(2)],[1/np.sqrt(2), -1/np.sqrt(2)]]), fm = False):
         spins = ["up", "dn"]
         sites = range(2)
@@ -194,7 +194,7 @@ class TwoOrbitalMomentumDimerBetheSetup(CycleSetupGeneric):
         self.quantum_numbers = [self.h_int.n_tot(), self.h_int.sz_tot()]
         
 
-class TriangleAIAOBetheSetup(CycleSetupGeneric):
+class TriangleAIAOBetheSetup(CycleSetupCommon):
     """
     merges spin and sitespaces
     space hierarchy: spin, site
@@ -286,7 +286,7 @@ class TriangleAIAOBetheSetup(CycleSetupGeneric):
             se[bn][a0, a1] += np.sum([u[i0, j] * r[j][t, s0].real * v**2 * inverse(iOmega_n - eps[t]) * r[j][t, s1].real *u[i1, j].conjugate() for t, j in itt.product(spins, sites)])
 
 
-class PlaquetteBetheSetup(CycleSetupGeneric):
+class PlaquetteBetheSetup(CycleSetupCommon):
     """
     site transformation must be unitary and diagonalize G, assuming all sites are equal
     """
@@ -329,7 +329,7 @@ class PlaquetteBetheSetup(CycleSetupGeneric):
             b << np.identity(1) * self.mu - self.gloc.t_loc[n]
 
 
-class NambuMomentumPlaquette(CycleSetupGeneric):
+class NambuMomentumPlaquette(CycleSetupCommon):
     """
     Don't use self.mom_transf for the backtransformation! The reblock algorithm will drop 
     off-diagonals
@@ -539,7 +539,7 @@ class AFMNambuMomentumPlaquette(NambuMomentumPlaquette):
                 b[i, i] << (-1)**i * (np.identity(1) * self.mu - self.gloc.t_loc[n][i, i])
 
 
-class SextupleBetheSetup(CycleSetupGeneric):
+class SextupleBetheSetup(CycleSetupCommon):
     """
     site transformation must be unitary and diagonalize G, assuming all sites are equal
     """
@@ -581,7 +581,7 @@ class SextupleBetheSetup(CycleSetupGeneric):
         self.global_moves = {"spin-flip": dict([((s1+"-"+k, 0), (s2+"-"+k, 0)) for k in orbital_labels for s1, s2 in itt.product(spins, spins) if s1 != s2]), "XY-flip": dict([((s+"-"+k1, 0), (s+"-"+k2, 0)) for s in spins for k1, k2 in itt.product(xy, xy) if k1 != k2])}
         self.quantum_numbers = [hubbard.get_n_tot(), hubbard.get_n_per_spin(up)]
 
-class SextupleBetheTopologicalSetup(CycleSetupGeneric):
+class SextupleBetheTopologicalSetup(CycleSetupCommon):
     """
     
     """

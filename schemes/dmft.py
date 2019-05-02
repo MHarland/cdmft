@@ -2,10 +2,10 @@ import numpy as np, itertools as itt
 from pytriqs.gf.local import inverse, iOmega_n
 from pytriqs.utility import mpi
 
-from generic import GLocalGeneric, SelfEnergyGeneric, WeissFieldGeneric
+from common import GLocalCommon, SelfEnergyCommon, WeissFieldCommon
 
 
-class GLocal(GLocalGeneric):
+class GLocal(GLocalCommon):
     """
     RevModPhys.77.1027
     """
@@ -13,7 +13,7 @@ class GLocal(GLocalGeneric):
         self.lat = lattice_dispersion
         assert hasattr(self.lat, 'bz_points') and hasattr(self.lat, 'bz_weights') and hasattr(self.lat, 'energies'), 'make sure lattice_dispersion has the attributes bz_points, bz_weights and energies!'
         self.bz = [self.lat.bz_points, self.lat.bz_weights, self.lat.energies]
-        GLocalGeneric.__init__(self, *args, **kwargs)
+        GLocalCommon.__init__(self, *args, **kwargs)
         spins = [s for s in self.indices]
 
     def calculate(self, selfenergy, mu):
@@ -26,11 +26,11 @@ class GLocal(GLocalGeneric):
         mpi.barrier()
 
 
-class SelfEnergy(SelfEnergyGeneric):
+class SelfEnergy(SelfEnergyCommon):
     pass
 
 
-class WeissField(WeissFieldGeneric):
+class WeissField(WeissFieldCommon):
 
     def calc_selfconsistency(self, glocal, selfenergy, mu):
         spins = [s for s in self.indices]

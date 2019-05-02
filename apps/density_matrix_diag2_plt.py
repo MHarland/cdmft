@@ -4,7 +4,7 @@ from cdmft.setups.bethelattice import TriangleMomentum as Setup
 #from cdmft.operators.kanamori import Dimer as Ops # model/setup -dependend!
 from cdmft.operators.hubbard import TriangleMomentum as Ops
 from cdmft.h5interface import Storage
-from cdmft.evaluation.generic import Evaluation
+from cdmft.evaluation.common import Evaluation
 from cdmft.evaluation.densitymatrix import StaticObservable
 from cdmft.plot.cfg import plt, ax
 

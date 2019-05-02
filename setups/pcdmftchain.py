@@ -3,11 +3,11 @@ import itertools as itt
 
 from cdmft.operators.hubbard import DimerMomentum
 from cdmft.schemes.pcdmft import GLocal, SelfEnergy, WeissField
-from cdmft.setups.generic import CycleSetupGeneric
+from cdmft.setups.common import CycleSetupCommon
 from cdmft.transformation import MatrixTransformation
 
 
-class DimerChainSetup(CycleSetupGeneric):
+class DimerChainSetup(CycleSetupCommon):
     """
     TODO needs testing
     """

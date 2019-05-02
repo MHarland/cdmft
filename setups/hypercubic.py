@@ -1,11 +1,11 @@
 import numpy as np
 
-from cdmft.setups.generic import CycleSetupGeneric
+from cdmft.setups.common import CycleSetupCommon
 from cdmft.operators.hubbard import Site
 from cdmft.schemes.hypercubic import GLocal, WeissField, SelfEnergy
 
 
-class HypercubicSetup(CycleSetupGeneric):
+class HypercubicSetup(CycleSetupCommon):
     """
     """
     def __init__(self, beta, mu, u, t = 1, rho_wmin = -20, rho_wmax = 20, rho_npts = 4000, w1 = None, w2 = None, n_mom = 3, n_iw = 1025):

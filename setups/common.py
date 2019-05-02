@@ -1,4 +1,4 @@
-class CycleSetupGeneric:
+class CycleSetupCommon:
     """
     realization needs self.h_int, self.gloc, self.g0, self.se, self.mu, self.global_moves,
     self.quantum_numbers

@@ -1,6 +1,6 @@
 import numpy as np, itertools as itt
 
-from cdmft.setups.generic import CycleSetupGeneric
+from cdmft.setups.common import CycleSetupCommon
 from cdmft.setups.bethelattice import NambuMomentumPlaquette as BetheNambuMomentumPlaquette
 from cdmft.operators.hubbard import PlaquetteMomentum, PlaquetteMomentumNambu
 from cdmft.schemes.cdmft import GLocal, SelfEnergy, WeissField, GLocalNambu, WeissFieldNambu
@@ -69,7 +69,7 @@ def get_hopping(lattice, tnn, tnnn, tz, alpha_x = 1, alpha_y = 1, alpha_prime = 
     return clusterhopping
 
 
-class MomentumPlaquetteSetup(CycleSetupGeneric):
+class MomentumPlaquetteSetup(CycleSetupCommon):
     """
     Plaquette(2by2)-cluster of the 2D squarelattice within Cluster DMFT
     assumes that transformation_matrix diagonalizes the GLocal on site-space

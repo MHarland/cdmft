@@ -3,7 +3,7 @@ from pytriqs.gf.local import inverse, iOmega_n, TailGf
 from pytriqs.dos import DOSFromFunction, HilbertTransform
 import pytriqs.utility.mpi as mpi
 
-from generic import GLocalGeneric, WeissFieldGeneric, SelfEnergyGeneric
+from common import GLocalCommon, WeissFieldCommon, SelfEnergyCommon
 
 
 #scipy.special:
@@ -11,13 +11,13 @@ from generic import GLocalGeneric, WeissFieldGeneric, SelfEnergyGeneric
 #erfc = 1 - erf(x)
 #erf = 2/sqrt(pi)*integral(exp(-t**2), t=0..z)
 
-class GLocal(GLocalGeneric):
+class GLocal(GLocalCommon):
     """
     w1, w2, n_mom are used for calculate only, the fitting after the impurity solver is defined in
     the selfconsistency parameters
     """
     def __init__(self, t, rho_wmin, rho_wmax, rho_npts, w1, w2, n_mom, *args, **kwargs):
-        GLocalGeneric.__init__(self, *args, **kwargs)
+        GLocalCommon.__init__(self, *args, **kwargs)
         self.w1 = (2 * self.n_iw * .8 + 1) * np.pi / self.beta if w1 is None else w1
         self.w2 = (2 * self.n_iw + 1) * np.pi / self.beta if w2 is None else w2
         self.n_mom = n_mom
@@ -78,9 +78,9 @@ class GLocal(GLocalGeneric):
         return new_label
 
 
-class WeissField(WeissFieldGeneric):
+class WeissField(WeissFieldCommon):
     pass
 
 
-class SelfEnergy(SelfEnergyGeneric):
+class SelfEnergy(SelfEnergyCommon):
     pass

@@ -10,7 +10,7 @@ from test_hubbard import TestHubbard
 from test_kanamori import TestKanamori
 from test_h5interface import TestStorage
 from test_transformation import TestTransformation
-from test_schemesgeneric import TestSchemesGeneric
+from test_schemescommon import TestSchemesCommon
 from test_schemesbethe import TestSchemesBethe
 from test_selfconsistency import TestCycle
 from test_setups import TestSetups
@@ -57,7 +57,7 @@ suite.addTest(TestStorage("test_Storage_save_load_cut_merge"))
 suite.addTest(TestTransformation("test_GfStructTransformationIndex"))
 suite.addTest(TestTransformation("test_MatrixTransformation"))
 suite.addTest(TestTransformation("test_InterfaceToBlockstructure"))
-suite.addTest(TestSchemesGeneric("test_SchemesGeneric_inits_and_basic_maths"))
+suite.addTest(TestSchemesCommon("test_SchemesCommon_inits_and_basic_maths"))
 suite.addTest(TestSchemesBethe("test_SchemesBethe_init"))
 suite.addTest(TestSchemesBethe("test_SchemesBethe_calculate"))
 suite.addTest(TestSchemesBethe("test_SchemesBetheAFM_calculate"))

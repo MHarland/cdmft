@@ -7,7 +7,7 @@ from pytriqs.utility.dichotomy import dichotomy
 from ..greensfunctions import MatsubaraGreensFunction
 
 
-class GLocalGeneric(MatsubaraGreensFunction):
+class GLocalCommon(MatsubaraGreensFunction):
     """
     parent class for GLocal for different schemes, needs __init__(...) and 
     calculate(self, selfenergy, mu, w1, w2, filling = None, dmu_max = None){...fit_tail2()} !
@@ -93,7 +93,7 @@ class GLocalGeneric(MatsubaraGreensFunction):
         return mat
 
 
-class WeissFieldGeneric(MatsubaraGreensFunction):
+class WeissFieldCommon(MatsubaraGreensFunction):
     def calc_dyson(self, glocal, selfenergy):
         self << inverse(inverse(glocal) + selfenergy)
 
@@ -101,7 +101,7 @@ class WeissFieldGeneric(MatsubaraGreensFunction):
         self.calc_dyson(glocal, selfenergy)
 
 
-class SelfEnergyGeneric(MatsubaraGreensFunction):
+class SelfEnergyCommon(MatsubaraGreensFunction):
     def calc_dyson(self, weissfield, glocal):
         self << inverse(weissfield) - inverse(glocal) 
 

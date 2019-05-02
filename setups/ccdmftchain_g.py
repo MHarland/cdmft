@@ -1,13 +1,13 @@
 import numpy as np, itertools as itt
 from pytriqs.gf.local import SemiCircular
 
-from cdmft.setups.generic import CycleSetupGeneric
+from cdmft.setups.common import CycleSetupCommon
 from cdmft.operators.hubbard import DimerMomentum
 from cdmft.schemes.ccdmft_g import GLocal, SelfEnergy, WeissField
 from cdmft.transformation import MatrixTransformation
 
 
-class MomentumDimerSetup(CycleSetupGeneric):
+class MomentumDimerSetup(CycleSetupCommon):
     """
     Dimer-cluster of a 1D chain lattice within Cluster DMFT
     assumes that transformation_matrix diagonalizes the GLocal on site-space

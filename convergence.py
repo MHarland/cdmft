@@ -1,7 +1,7 @@
 import numpy as np, itertools as itt
 from scipy.stats import sem, linregress
 from pytriqs.utility import mpi
-from cdmft.evaluation.generic import Evaluation
+from cdmft.evaluation.common import Evaluation
 
 
 class DMuMaxSqueezer:

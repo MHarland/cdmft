@@ -4,13 +4,13 @@ from pytriqs.lattice.tight_binding import TBLattice
 from pytriqs.utility import mpi
 
 from periodization.selfenergyperiodization import LatticeSelfenergy, LatticeGreensfunction
-#from periodization.generic import LocalLatticeGreensfunction
+#from periodization.common import LocalLatticeGreensfunction
 
-from generic import GLocalGeneric, SelfEnergyGeneric, WeissFieldGeneric
+from common import GLocalCommon, SelfEnergyCommon, WeissFieldCommon
 from ..gfoperations import double_dot_product_ggg
 
 
-class GLocal(GLocalGeneric):
+class GLocal(GLocalCommon):
     """
     In fact it is G_cluster constructed from G_lattice, conceptual problem todo
     impurity_transformation is needed to backtransform into site-space before periodization
@@ -19,7 +19,7 @@ class GLocal(GLocalGeneric):
     glocal = u g_cluster udag
     """
     def __init__(self, glat_orb_struct, gcluster_orb_struct, r, weights_r, hopping_r, nk, imp_to_lat_r, lat_r_to_cluster, impurity_transformation, r_cavity, r_cluster, *args, **kwargs):
-        GLocalGeneric.__init__(self, *args, **kwargs)
+        GLocalCommon.__init__(self, *args, **kwargs)
         self.transf = impurity_transformation
         self.se_lat_initdict = {'blocknames': glat_orb_struct.keys(),
                                 'blockindices': glat_orb_struct.values(),
@@ -100,14 +100,14 @@ class GLocal(GLocalGeneric):
         return g_c
 
 
-class SelfEnergy(SelfEnergyGeneric):
+class SelfEnergy(SelfEnergyCommon):
     pass
 
 
-class WeissField(WeissFieldGeneric):
+class WeissField(WeissFieldCommon):
     def __init__(self, tcluster, *args, **kwargs):
         self.tcluster = tcluster
-        WeissFieldGeneric.__init__(self, *args, **kwargs)
+        WeissFieldCommon.__init__(self, *args, **kwargs)
     
     def calc_selfconsistency(self, gloc, selfenergy, mu):
         for s, b in self:
