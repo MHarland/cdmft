@@ -1,5 +1,6 @@
-cdmft - Implementation of the cluster dynamical mean-field theory.
-Copyright (C) 2016  Malte Harland
+MIT License
+
+Copyright (c) 2016 Malte Harland
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
