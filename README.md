@@ -10,7 +10,7 @@ git@bitbucket.org:MHarland/maxent.git
 
 Installation:
 Add the cdmft package to PYTHONPATH (e.g. in .bashrc):
-export PYTHONPATH="$PYTHONPATH:$<PATHTOCDMFT>"
+export PYTHONPATH="$PYTHONPATH:$PATHTOCDMFT"
 
 Tests:
 Change to the test directory and run <pytriqs run_tests.py>
