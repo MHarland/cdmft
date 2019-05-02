@@ -459,7 +459,7 @@ class AFMNambuMomentumPlaquette(NambuMomentumPlaquette):
         t_loc = self.mom_transf.transform_matrix(t_loc)
         if not isinstance(t_bethe, dict):
             t_bethe = {gm: t_bethe * np.identity(4), xy: t_bethe * np.identity(4)}
-            for s, m in t_cdmft.items():
+            for s, m in t_bethe.items():
                 t_bethe[s][1,1] *= -1
                 t_bethe[s][3,3] *= -1
         self.mu = mu

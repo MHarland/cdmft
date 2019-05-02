@@ -70,6 +70,8 @@ class LatticeDispersion:
 
 class SquarelatticeDispersion(LatticeDispersion):
     """
+    TODO needs careful testing, not sure whether phase is correct; don't use!
+    It's probably easier and safer to rewrite this class
     Uses irreducible wedge
     TODO easy to generalize, hard to optimize
     """

@@ -12,6 +12,8 @@ from ..gfoperations import double_dot_product
 class GLocal(GLocalGeneric):
     """
     RevModPhys.77.1027
+    transf_for_ksum allows for a unitary transformation for the k-summation of G_local; it is automatically 
+    backtransformed after the summation
     """
     def __init__(self, lattice_dispersion, transf_for_ksum, *args, **kwargs):
         self.lat = lattice_dispersion

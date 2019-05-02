@@ -99,6 +99,7 @@ if extended: suite.addTest(TestConvergence("test_Criterion_applied_noisy_case"))
 suite.addTest(TestSchemesCCDMFT("test_SchemesCCDMFT_init"))
 suite.addTest(TestSchemesCCDMFT("test_HoppingLattice"))
 suite.addTest(TestSchemesPCDMFT("test_SchemesPCDMFT_init"))
+suite.addTest(TestSetups("test_PCDMFTSetup"))
 suite.addTest(TestTransformation2("test_ReblockG"))
 suite.addTest(TestTransformation2("test_Transformation"))
 

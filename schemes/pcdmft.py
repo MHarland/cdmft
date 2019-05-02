@@ -41,8 +41,11 @@ class GLocal(GLocalGeneric):
         self.se_lat_initdict['sigma_r'] = self.calc_se_r(se_imp)
         self.se_lat = LatticeSelfenergy(**self.se_lat_initdict)
         self.se_lat.periodize()
-        assert False, "calc g cluster!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         self.g_lat = LatticeGreensfunction(self.se_lat, mu)
+        for i_lat, i_cluster in self.lat_r_to_cluster.items():
+            c0, c1, c2 = i_cluster
+            l0, l1, l2, l3 = i_lat
+            self.g_cluster[c0][c1, c2] << self.g_lat[l0][l1][l2, l3]
         if self.transf is not None:
             self << self.transf.transform_g(self.g_cluster)
         else:

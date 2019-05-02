@@ -130,3 +130,7 @@ class CycleCCDMFTG(Cycle):
             self.report("Loop done.")
             if self.is_converged():
                 break
+
+
+class CyclePCDMFT(CycleCCDMFTG):
+    pass

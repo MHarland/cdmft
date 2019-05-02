@@ -14,13 +14,13 @@ class TestSchemesCDMFT(unittest.TestCase):
         t = -1
         h = {(0, 0): [[0,t],[t,0]],(1, 0): [[0,t],[0,0]],(-1, 0): [[0,0],[t,0]]}
         disp = LatticeDispersion(h, 8)
-        g = GLocal(disp, ['up', 'dn'], [2, 2], 10, 1000)
+        g = GLocal(disp, None, ['up', 'dn'], [2, 2], 10, 1000)
 
     def test_SchemesCDMFT_dmu(self):
         t = -1
         h = {(0, 0): [[0,t],[t,0]],(1, 0): [[0,t],[0,0]],(-1, 0): [[0,0],[t,0]]}
         disp = LatticeDispersion(h, 8)
-        g = GLocal(disp, ['up', 'dn'], [2, 2], 10, 1000)
+        g = GLocal(disp, None, ['up', 'dn'], [2, 2], 10, 1000)
         se = SelfEnergy(['up', 'dn'], [2, 2], 10, 1000)
         mu = g.set(se, 3)
         self.assertEqual(3, mu)
@@ -29,7 +29,7 @@ class TestSchemesCDMFT(unittest.TestCase):
         t = -1
         h = {(0, 0): [[0,t],[t,0]],(1, 0): [[0,t],[0,0]],(-1, 0): [[0,0],[t,0]]}
         disp = LatticeDispersion(h, 8)
-        g = GLocal(disp, ['up', 'dn'], [2, 2], 10, 1000)
+        g = GLocal(disp, None, ['up', 'dn'], [2, 2], 10, 1000)
         se = SelfEnergy(['up', 'dn'], [2, 2], 10, 1000)
         se.zero()
         g.set(se, 0)
@@ -45,7 +45,7 @@ class TestSchemesCDMFT(unittest.TestCase):
         reblock_map = {('up',0,0):('up-+',0,0),('up',1,1):('up--',0,0),('dn',0,0):('dn-+',0,0)
                        ,('dn',1,1):('dn--',0,0)}
         disp.transform_site_space(u, new_struct, reblock_map)
-        g = GLocal(disp, ['up-+', 'up--', 'dn-+', 'dn--'], [1] * 4, 10, 1000)
+        g = GLocal(disp, None, ['up-+', 'up--', 'dn-+', 'dn--'], [1] * 4, 10, 1000)
         se = SelfEnergy(['up-+', 'up--', 'dn-+', 'dn--'], [1] * 4, 10, 1000)
         g.set(se, 0)
         self.assertAlmostEqual(g.total_density(), 2)
@@ -60,7 +60,7 @@ class TestSchemesCDMFT(unittest.TestCase):
         reblock_map = {('up',0,0):('up-+',0,0),('up',1,1):('up--',0,0),('dn',0,0):('dn-+',0,0),
                        ('dn',1,1):('dn--',0,0)}
         disp.transform_site_space(u, new_struct, reblock_map)
-        gloc = GLocal(disp, ['up-+', 'up--', 'dn-+', 'dn--'], [1] * 4, 10, 1000)
+        gloc = GLocal(disp, None, ['up-+', 'up--', 'dn-+', 'dn--'], [1] * 4, 10, 1000)
         se = SelfEnergy(['up-+', 'up--', 'dn-+', 'dn--'], [1] * 4, 10, 1000)
         g0 = WeissField(['up-+', 'up--', 'dn-+', 'dn--'], [1] * 4, 10, 1000)
         sto = Storage("test.h5")

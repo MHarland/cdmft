@@ -41,14 +41,14 @@ class TestTightbinding(unittest.TestCase):
                           (-1,-1):[[0,0,0,0],[0,0,0,0],[0,0,0,0],[s,0,0,0]],
                           (0,-1):[[0,0,0,0],[0,0,0,0],[t,s,0,0],[s,t,0,0]],
                           (1,-1):[[0,0,0,0],[0,0,0,0],[0,s,0,0],[0,0,0,0]]}
-        disp = LatticeDispersion(clusterhopping, 8)
-        disp2 = SquarelatticeDispersion(clusterhopping, 8)
+        disp = LatticeDispersion(clusterhopping, 32)
+        #disp2 = SquarelatticeDispersion(clusterhopping, 32)
         #disp3 = SquarelatticeDispersionFast(clusterhopping, 4)
         #self.assertTrue(np.allclose(np.sum(disp3.bz_weights), 1))
-        self.assertTrue(np.allclose(np.sum(disp2.bz_weights), 1))
+        #self.assertTrue(np.allclose(np.sum(disp2.bz_weights), 1))
         self.assertTrue(np.allclose(np.sum(disp.bz_weights), 1))
         t = np.sum([w * d['up'] for k, w, d in disp.loop_over_bz()], axis = 0)
-        t2 = np.sum([w * d['up'] for k, w, d in disp2.loop_over_bz()], axis = 0)
+        #t2 = np.sum([w * d['up'] for k, w, d in disp2.loop_over_bz()], axis = 0)
         #t3 = np.sum([w * d['up'] for k, w, d in disp3.loop_over_bz()], axis = 0)
-        self.assertTrue(np.allclose(t, t2))
-        #self.assertTrue(np.allclose(t, t3))
+        #self.assertTrue(np.allclose(t, t2, atol = 2e-1))
+        self.assertTrue(np.allclose(t, clusterhopping[0,0]))

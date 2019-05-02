@@ -5,6 +5,7 @@ from cdmft.selfconsistency import Cycle
 from cdmft.setups.bethelattice import SingleBetheSetup, TriangleBetheSetup, PlaquetteBetheSetup, TriangleAIAOBetheSetup, TwoOrbitalDimerBetheSetup, TwoOrbitalMomentumDimerBetheSetup, NambuMomentumPlaquette, AFMNambuMomentumPlaquette, TwoMixedOrbitalDimerBetheSetup
 from cdmft.setups.cdmftchain import MomentumDimerSetup, StrelSetup, SingleSiteSetup
 from cdmft.setups.cdmftsquarelattice import MomentumPlaquetteSetup, NambuMomentumPlaquetteSetup
+from cdmft.setups.pcdmftchain import DimerChainSetup
 from cdmft.parameters import TestDMFTParameters
 
 
@@ -157,3 +158,6 @@ class TestSetups(unittest.TestCase):
         cyc = Cycle(sto, par, **setup.initialize_cycle())
         cyc.run(1)
         os.remove('test.h5')
+
+    def test_PCDMFTSetup(self):
+        setup = DimerChainSetup(10, 1, 2, 8)

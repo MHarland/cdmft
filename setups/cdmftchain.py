@@ -22,7 +22,7 @@ class SingleSiteSetup(CycleSetupGeneric):
         up, dn = spins[0], spins[1]
         hubbard = Site(u, spins)
         self.h_int = hubbard.get_h_int()
-        self.gloc = GLocal(disp, [s[0] for s in struct], [1] * 2, beta, n_iw)
+        self.gloc = GLocal(disp, None, [s[0] for s in struct], [1] * 2, beta, n_iw)
         self.g0 = WeissField([s[0] for s in struct], [1] * 2, beta, n_iw)
         self.se = SelfEnergy([s[0] for s in struct], [1] * 2, beta, n_iw)
         self.mu = mu
@@ -47,7 +47,7 @@ class MomentumDimerSetup(CycleSetupGeneric):
         disp.transform_site_space(site_transf_mat, new_struct, reblock_map)
         hubbard = DimerMomentum(u, spins, momenta, site_transf_mat)
         self.h_int = hubbard.get_h_int()
-        self.gloc = GLocal(disp, [s[0] for s in new_struct], [1] * 4, beta, n_iw)
+        self.gloc = GLocal(disp, None, [s[0] for s in new_struct], [1] * 4, beta, n_iw)
         self.g0 = WeissField([s[0] for s in new_struct], [1] * 4, beta, n_iw)
         self.se = SelfEnergy([s[0] for s in new_struct], [1] * 4, beta, n_iw)
         self.mu = mu
@@ -68,7 +68,7 @@ class DimerSetup(CycleSetupGeneric):
             disp.transform_site_space(site_transf_mat)
         hubbard = Dimer(u, spins, site_transf_mat)
         self.h_int = hubbard.get_h_int()
-        self.gloc = GLocal(disp, [s for s in spins], [2] * 2, beta, n_iw)
+        self.gloc = GLocal(disp, None, [s for s in spins], [2] * 2, beta, n_iw)
         self.g0 = WeissField([s for s in spins], [2] * 2, beta, n_iw)
         self.se = SelfEnergy([s for s in spins], [2] * 2, beta, n_iw)
         self.mu = mu
@@ -100,7 +100,7 @@ class StrelSetup(CycleSetupGeneric):
                                            spins[0]+'-'+orbs[1]: disp_c,
                                            spins[1]+'-'+orbs[1]: disp_c})
         self.h_int = KanamoriDimer(u, j, transf = self._site_transf(site_transf_d, site_transf_c), density_density_only = self.nnonly)
-        self.gloc = GLocal(disp, gf_struct = struct, beta = beta, n_iw = n_iw)
+        self.gloc = GLocal(disp, None, gf_struct = struct, beta = beta, n_iw = n_iw)
         self.g0 = WeissField(gf_struct = struct, beta = beta, n_iw = n_iw)
         self.se = SelfEnergy(gf_struct = struct, beta = beta, n_iw = n_iw)
         self.mu = mu
