@@ -1,4 +1,4 @@
-bethe - an implementation of the DMFT.
+cdmft - Implementation of the cluster dynamical mean-field theory.
 Copyright (C) 2016  Malte Harland
 
 This program is free software; you can redistribute it and/or modify
