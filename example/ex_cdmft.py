@@ -12,5 +12,5 @@ par['measure_g_l'] = True
 par['measure_g_tau'] = False
 par['measure_pert_order'] = True
 cyc = Cycle(sto, par, **setup.initialize_cycle())
-cyc.run(5, n_cycles = int(2.5*10**5), filling = None)
+cyc.run(5)
 
