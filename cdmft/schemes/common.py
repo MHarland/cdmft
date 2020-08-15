@@ -10,9 +10,10 @@ from ..greensfunctions import MatsubaraGreensFunction
 class GLocalCommon(MatsubaraGreensFunction):
     """
     parent class for GLocal for different schemes, needs __init__(...) and 
-    calculate(self, selfenergy, mu, w1, w2, filling = None, dmu_max = None){...fit_tail2()} !
+    calculate(self, selfenergy, mu, w1, w2, filling = None, dmu_max = None)
     where mu is a blockmatrix of structure gf_struct
     """
+
     def __init__(self, *args, **kwargs):
         MatsubaraGreensFunction.__init__(self, *args, **kwargs)
         self.filling_with_old_mu = None
@@ -24,8 +25,10 @@ class GLocalCommon(MatsubaraGreensFunction):
         self.dmu_max = 10
         if 'parameters' in kwargs.keys():
             for key, val in kwargs.items():
-                if key == 'filling': self.filling = val
-                if key == 'dmu_max': self.dmu_max = val
+                if key == 'filling':
+                    self.filling = val
+                if key == 'dmu_max':
+                    self.dmu_max = val
 
     def calc_dyson(self, weissfield, selfenergy):
         self << inverse(inverse(weissfield) - selfenergy)
@@ -36,10 +39,12 @@ class GLocalCommon(MatsubaraGreensFunction):
         mu can be either of blockmatrix-type or scalar
         """
         if self.filling is None:
-            assert type(mu) in [float, int, complex], "Unexpected type or class of mu."
+            assert type(mu) in [float, int,
+                                complex], "Unexpected type or class of mu."
             self.calculate(selfenergy, self.make_matrix(mu))
         else:
-            mu = self.find_and_set_mu(self.filling, selfenergy, mu, self.dmu_max)
+            mu = self.find_and_set_mu(
+                self.filling, selfenergy, mu, self.dmu_max)
         return mu
 
     def find_and_set_mu(self, filling, selfenergy, mu0, dmu_max):
@@ -49,10 +54,12 @@ class GLocalCommon(MatsubaraGreensFunction):
         # TODO place mu in center of gap
         if not filling is None:
             self.filling_with_old_mu = self.total_density()
-            f = lambda mu: self._set_mu_get_filling(selfenergy, mu)
+            def f(mu): return self._set_mu_get_filling(selfenergy, mu)
             f = FunctionWithMemory(f)
-            self.last_found_mu_number, self.last_found_density = bound_and_bisect(f, mu0, filling, dx = self.mu_dx, x_name = "mu", y_name = "filling", maxiter = self.mu_maxiter, verbosity = self.verbosity, xtol = 1e-4)
-            new_mu, limit_applied = self.limit(self.last_found_mu_number, mu0, dmu_max)
+            self.last_found_mu_number, self.last_found_density = bound_and_bisect(
+                f, mu0, filling, dx=self.mu_dx, x_name="mu", y_name="filling", maxiter=self.mu_maxiter, verbosity=self.verbosity, xtol=1e-4)
+            new_mu, limit_applied = self.limit(
+                self.last_found_mu_number, mu0, dmu_max)
             if limit_applied:
                 self.calculate(selfenergy, self.make_matrix(new_mu))
             return new_mu
@@ -60,7 +67,7 @@ class GLocalCommon(MatsubaraGreensFunction):
     def _set_mu_get_filling(self, selfenergy, mu):
         """
         needed for find_and_set_mu
-        """        
+        """
         self.calculate(selfenergy, self.make_matrix(mu))
         d = self.total_density()
         return d
@@ -103,7 +110,7 @@ class WeissFieldCommon(MatsubaraGreensFunction):
 
 class SelfEnergyCommon(MatsubaraGreensFunction):
     def calc_dyson(self, weissfield, glocal):
-        self << inverse(weissfield) - inverse(glocal) 
+        self << inverse(weissfield) - inverse(glocal)
 
 
 class FunctionWithMemory:
@@ -111,6 +118,7 @@ class FunctionWithMemory:
     a lambda with memory; memory needed due to bound_and_bisect bound finding algorithm of triqs
     some values are evaluated multiple times
     """
+
     def __init__(self, function):
         self.f = function
         self.x = []

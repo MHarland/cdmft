@@ -1,11 +1,12 @@
-import numpy as np, itertools as itt
+import numpy as np
+import itertools as itt
 from scipy.linalg import logm
-from pytriqs.applications.impurity_solvers.cthyb import AtomDiag, atomic_density_matrix
+from pytriqs.atom_diag import AtomDiag, atomic_density_matrix
 from pytriqs.gf.local import BlockGf, GfImTime
 
 
 class Evaluation:
-    
+
     def __init__(self, archive):
         self.archive = archive
         self.n_loops = self.archive.get_completed_loops()
@@ -17,12 +18,12 @@ class Evaluation:
             signs[i, 1] = self.archive.load("average_sign", i)
         return signs
 
-    def get_density(self, loop = -1):
+    def get_density(self, loop=-1):
         return self.archive.load("density", loop)
 
-    def get_density_matrix(self, loop = -1):
-        rhoblocked = self.archive.load("density_matrix", loop, bcast = False)
-        atom = self.archive.load("h_loc_diagonalization", loop, bcast = False)
+    def get_density_matrix(self, loop=-1):
+        rhoblocked = self.archive.load("density_matrix", loop, bcast=False)
+        atom = self.archive.load("h_loc_diagonalization", loop, bcast=False)
         rho = np.zeros([atom.full_hilbert_space_dim]*2)
         for i_block, block in enumerate(rhoblocked):
             dim = atom.get_block_dim(i_block)
@@ -30,40 +31,41 @@ class Evaluation:
                 k = atom.flatten_block_index(i_block, i)
                 l = atom.flatten_block_index(i_block, j)
                 rho[k, l] = block[i, j]
-                #if not np.allclose(rho[k,l], 0):
+                # if not np.allclose(rho[k,l], 0):
                 #    print k, l, rho[k,l]
         return rho
 
-    def get_entropy(self, loop = -1):
-        rhoblocked = self.archive.load("density_matrix", loop, bcast = False)
+    def get_entropy(self, loop=-1):
+        rhoblocked = self.archive.load("density_matrix", loop, bcast=False)
         s = 0
         for block in rhoblocked:
-            if np.allclose(block, 0): continue
+            if np.allclose(block, 0):
+                continue
             lnrho = logm(block)
             s -= np.trace(block.dot(lnrho))
         return s
 
-    def get_energies(self, loop = -1):
-        atom = self.archive.load("h_loc_diagonalization", loop, bcast = False)
+    def get_energies(self, loop=-1):
+        atom = self.archive.load("h_loc_diagonalization", loop, bcast=False)
         energies = []
         for energy_block in atom.energies:
             for i in range(len(energy_block)):
                 energies.append(energy_block[i])
         return np.array(energies)
 
-    def get_density_matrix_diag(self, loop = -1):
+    def get_density_matrix_diag(self, loop=-1):
         """order corresponds to energies of get_energies"""
-        rho = self.archive.load("density_matrix", loop, bcast = False)
+        rho = self.archive.load("density_matrix", loop, bcast=False)
         probabilities = []
         for rho_block in rho:
             for i in range(len(rho_block)):
                 probabilities.append(rho_block[i, i])
         return np.array(probabilities)
 
-    def get_density_matrix_row(self, row, loop = -1):
+    def get_density_matrix_row(self, row, loop=-1):
         """order corresponds to energies of get_energies"""
-        rhoblocked = self.archive.load("density_matrix", loop, bcast = False)
-        atom = self.archive.load("h_loc_diagonalization", loop, bcast = False)
+        rhoblocked = self.archive.load("density_matrix", loop, bcast=False)
+        atom = self.archive.load("h_loc_diagonalization", loop, bcast=False)
         rhorow = np.zeros([atom.full_hilbert_space_dim])
         energies = np.zeros([atom.full_hilbert_space_dim])
         for i_block, block in enumerate(rhoblocked):
@@ -79,9 +81,9 @@ class Evaluation:
             rhorow[atom.flatten_block_index(row_block, 0)+j] = abs(number)
         return rhorow
 
-    def get_atomic_density_matrix(self, loop = -1, beta = None):
+    def get_atomic_density_matrix(self, loop=-1, beta=None):
         """order corresponds to energies of get_energies"""
-        atom = self.archive.load("h_loc_diagonalization", loop, bcast = False)
+        atom = self.archive.load("h_loc_diagonalization", loop, bcast=False)
         if beta is None:
             g = self.archive.load("g_loc_iw", loop)
             beta = g.beta
@@ -95,17 +97,17 @@ class Evaluation:
                 rho[k, l] = block[i, j]
         return rho
 
-    def get_atomic_blocksizes(self, loop = -1, beta = None):
-        atom = self.archive.load("h_loc_diagonalization", loop, bcast = False)
+    def get_atomic_blocksizes(self, loop=-1, beta=None):
+        atom = self.archive.load("h_loc_diagonalization", loop, bcast=False)
         if beta is None:
             g = self.archive.load("g_loc_iw", loop)
             beta = g.beta
         rhoblocked = atomic_density_matrix(atom, beta)
         return np.array([len(r) for r in rhoblocked])
 
-    def get_atomic_density_matrix_diag(self, loop = -1, beta = None):
+    def get_atomic_density_matrix_diag(self, loop=-1, beta=None):
         """order corresponds to energies of get_energies"""
-        atom = self.archive.load("h_loc_diagonalization", loop, bcast = False)
+        atom = self.archive.load("h_loc_diagonalization", loop, bcast=False)
         if beta is None:
             g = self.archive.load("g_loc_iw", loop)
             beta = g.beta
@@ -116,7 +118,7 @@ class Evaluation:
                 probabilities.append(rho_block[i, i])
         return np.array(probabilities)
 
-    def get_g_static_diags(self, loop = -1):
+    def get_g_static_diags(self, loop=-1):
         g = self.archive.load("g_imp_iw", loop)
         """
         gf_struct = []
@@ -132,10 +134,11 @@ class Evaluation:
                 i = int(ind[1])
                 b = ind[0]
                 #gsd[b+'-'+str(i)+str(i)] = -gtau[b].data[-1, i, i].real
-                gsd[b+'_'+str(i)+str(i)] = g[b][i, i].total_density().real#-gtau[b].data[-1, i, i].real
+                # -gtau[b].data[-1, i, i].real
+                gsd[b+'_'+str(i)+str(i)] = g[b][i, i].total_density().real
         return gsd
 
-    def get_g_static(self, loop = -1):
+    def get_g_static(self, loop=-1):
         g = self.archive.load("g_imp_iw", loop)
         inds = [i for i in g.all_indices]
         gsd = {}
@@ -146,14 +149,14 @@ class Evaluation:
             gsd[b+'_'+str(i)+str(j)] = g[b][i, j].total_density()
         return gsd
 
-    def get_g_static_blockdiags(self, loop = -1):
+    def get_g_static_blockdiags(self, loop=-1):
         g = self.archive.load("g_imp_iw", loop)
         gsd = {}
         for bn, b in g:
             gsd[bn] = b.total_density().real
         return gsd
 
-    def get_quasiparticle_residue(self, n_freq, block = 'up', index = (0, 0)):
+    def get_quasiparticle_residue(self, n_freq, block='up', index=(0, 0)):
         sigma = self.archive.load("se_imp_iw")
         mesh = np.array([w.imag for w in sigma.mesh])
         for n, w in enumerate(mesh):
@@ -161,7 +164,8 @@ class Evaluation:
                 n_0 = n
                 break
         mesh = mesh[n_0:n+n_freq]
-        sigma_values = sigma[block].data[n_0:n+n_freq, int(index[0]), int(index[1])].real
+        sigma_values = sigma[block].data[n_0:n +
+                                         n_freq, int(index[0]), int(index[1])].real
         fit_coefficients = np.polyfit(mesh, sigma_values, len(mesh) - 1)
         derivative_coeff = self.__derivative(fit_coefficients)
         z = 1. / (1 - derivative_coeff[-1])
@@ -169,5 +173,6 @@ class Evaluation:
 
     def __derivative(self, polynomial_coefficients):
         deg = len(polynomial_coefficients)
-        der = np.array([(deg - n - 1) * polynomial_coefficients[n] for n in range(deg - 1)])
+        der = np.array([(deg - n - 1) * polynomial_coefficients[n]
+                        for n in range(deg - 1)])
         return der

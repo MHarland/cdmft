@@ -1,7 +1,7 @@
 import os
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import Operator
-from pytriqs.applications.impurity_solvers.cthyb import AtomDiag
+from pytriqs.atom_diag import AtomDiag
 from pytriqs.gf.local import BlockGf
 from pytriqs.utility import mpi
 
@@ -12,7 +12,8 @@ class Storage:
     takes care of the open/close status of the archive, especially in parallel computations
     internal functions have a leading underscore, avoid using them explicitly
     """
-    def __init__(self, file_name, objects_to_store = {}):
+
+    def __init__(self, file_name, objects_to_store={}):
         self.disk = None
         self.dmft_results = None
         self.file_name = file_name
@@ -21,7 +22,7 @@ class Storage:
             self._close_archive()
         self.memory_container = objects_to_store
 
-    def _open_archive(self, read_only = False):
+    def _open_archive(self, read_only=False):
         assert mpi.is_master_node(), "Only the master node shall access the disk."
         assert not self._archive_is_open(), "Archive has already been opened."
         if read_only:
@@ -39,7 +40,7 @@ class Storage:
         del self.disk
         self.disk = None
 
-    def save_loop(self, objects_to_store = {}, *args):
+    def save_loop(self, objects_to_store={}, *args):
         """args can be an arbitrary number of dicts"""
         for arg in args:
             objects_to_store.update(arg)
@@ -56,13 +57,13 @@ class Storage:
                         try:
                             place_to_store[name][dname] = dobj
                         except TypeError:
-                            print "warning: TypeError while writing dict",dname,"of type",type(dobj),"to archive, skipping this one"
+                            print "warning: TypeError while writing dict", dname, "of type", type(dobj), "to archive, skipping this one"
                 elif not obj is None:
                     try:
                         place_to_store[name] = obj
                     except TypeError:
                         if mpi.is_master_node():
-                            print "warning: TypeError while writing",name,"of type",type(obj),"to archive, skipping this one"
+                            print "warning: TypeError while writing", name, "of type", type(obj), "to archive, skipping this one"
             self.dmft_results["n_dmft_loops"] += 1
             self._close_archive()
 
@@ -82,7 +83,7 @@ class Storage:
             assert loop_nr >= 0, "loop not available"
         return loop_nr
 
-    def load(self, quantity_name, loop_nr = None, bcast = True):
+    def load(self, quantity_name, loop_nr=None, bcast=True):
         """
         allows for negative loop numbers counting backwards from the end
         don't bcast, if you want to load an AtomDiag of TRIQS
@@ -94,13 +95,14 @@ class Storage:
             try:
                 quantity = self.dmft_results[str(loop_nr)][quantity_name]
             except KeyError:
-                if mpi.is_master_node(): 'Warning:', quantity_name, 'could not be loaded'
+                if mpi.is_master_node():
+                    'Warning:', quantity_name, 'could not be loaded'
             self._close_archive()
         if bcast:
             quantity = mpi.bcast(quantity)
         return quantity
 
-    def get_completed_loops(self, _archive_open = False):
+    def get_completed_loops(self, _archive_open=False):
         n_loops = None
         if mpi.is_master_node():
             if _archive_open:
@@ -123,13 +125,14 @@ class Storage:
         old_label = str(old_label)
         new_label = str(new_label)
         results = self.disk["dmft_results"]
-        assert not results.is_group(new_label), "unable to relabel, group already exists"
+        assert not results.is_group(
+            new_label), "unable to relabel, group already exists"
         results.create_group(new_label)
         for key, val in results[old_label].items():
             results[new_label][key] = val
         #self.disk["dmft_results"][new_label_str] = self.disk["dmft_results"][str(old_label)]
         del results[old_label]
-        
+
     def cut_loop(self, loop):
         """
         deletes a loop
@@ -156,15 +159,15 @@ class Storage:
             self.dmft_results.create_group(appended_loop_nr)
             for key, val in storage_to_append.dmft_results[str(l)].items():
                 self.dmft_results[appended_loop_nr][key] = val
-        self.dmft_results["n_dmft_loops"] +=  n_loops_sto2
+        self.dmft_results["n_dmft_loops"] += n_loops_sto2
         self._close_archive()
-        storage_to_append._close_archive()        
-            
-    def provide_initial_guess(self, provide_mu = True):
+        storage_to_append._close_archive()
+
+    def provide_initial_guess(self, provide_mu=True):
         try:
             sigma = self.load("se_imp_iw")
         except KeyError:
-            sigma = self.load("sigma_iw") #backward compatibility
+            sigma = self.load("sigma_iw")  # backward compatibility
         if provide_mu:
             mu = self.load("mu")
             return {"self_energy": sigma, "mu": mu}
@@ -173,7 +176,7 @@ class Storage:
 
     def has_density_matrix(self):
         n = self.get_last_loop_nr()
-        self._open_archive(read_only = True)
+        self._open_archive(read_only=True)
         if self.disk["dmft_results"][str(n)].is_group('density_matrix'):
             has = True
         else:
@@ -183,7 +186,7 @@ class Storage:
 
     def is_dmft_archive(self):
         is_da = None
-        self._open_archive(read_only = True)
+        self._open_archive(read_only=True)
         if 'dmft_results' in self.disk.keys():
             is_da = True
         else:

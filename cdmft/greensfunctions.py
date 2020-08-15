@@ -1,6 +1,7 @@
-import itertools as itt, numpy as np
+import itertools as itt
+import numpy as np
 
-from pytriqs.gf.local import BlockGf, GfImFreq, inverse, GfImTime, TailGf
+from pytriqs.gf.local import BlockGf, GfImFreq, inverse, GfImTime
 
 
 class MatsubaraGreensFunction(BlockGf):
@@ -10,26 +11,28 @@ class MatsubaraGreensFunction(BlockGf):
     __lshift__, __isub__, __iadd__ had to be extended in order to make them available to childs of
     MatsubaraGreensFunction
     """
+
     def __lshift__(self, x):
         if isinstance(x, MatsubaraGreensFunction) or isinstance(x, BlockGf):
-            for i, g in self: g.copy_from(x[i])
+            for i, g in self:
+                g.copy_from(x[i])
             return self
         else:
             BlockGf.__lshift__(self, x)
-    
+
     def __isub__(self, x):
         if isinstance(x, MatsubaraGreensFunction) or isinstance(x, BlockGf):
-            for (n,g) in self:
+            for (n, g) in self:
                 self[n] -= x[n]
         else:
             g = self.get_as_BlockGf()
             g -= x
             self << g
         return self
-    
+
     def __iadd__(self, x):
         if isinstance(x, MatsubaraGreensFunction) or isinstance(x, BlockGf):
-            for (n,g) in self:
+            for (n, g) in self:
                 self[n] += x[n]
         else:
             g = self.get_as_BlockGf()
@@ -43,49 +46,59 @@ class MatsubaraGreensFunction(BlockGf):
         g << self
         return g
 
-    def __init__(self, blocknames = None, blocksizes = None, beta = None, n_iw = 1025, name = '', gf_init = None, gf_struct = None, verbosity = 0, **kwargs):
+    def __init__(self, blocknames=None, blocksizes=None, beta=None, n_iw=1025, name='', gf_init=None, gf_struct=None, verbosity=0, **kwargs):
         kwargskeys = [k for k in kwargs.keys()]
         if type(gf_init) == BlockGf:
             blocknames = [i for i in gf_init.indices]
             blocksizes = [len([i for i in b.indices]) for bn, b in gf_init]
             beta = gf_init.beta
             n_iw = int(len(gf_init.mesh) * .5)
-            BlockGf.__init__(self, name_block_generator = [(bn, GfImFreq(beta = beta, n_points = n_iw, indices = range(bs))) for bn, bs in zip(blocknames, blocksizes)], name = name)
+            BlockGf.__init__(self, name_block_generator=[(bn, GfImFreq(
+                beta=beta, n_points=n_iw, indices=range(bs))) for bn, bs in zip(blocknames, blocksizes)], name=name)
         elif isinstance(gf_init, MatsubaraGreensFunction):
-            assert isinstance(gf_init, MatsubaraGreensFunction), "gf_init must be a Matsubara GreensFunction"
+            assert isinstance(
+                gf_init, MatsubaraGreensFunction), "gf_init must be a Matsubara GreensFunction"
             blocknames = gf_init.blocknames
             blocksizes = gf_init.blocksizes
             beta = gf_init.beta
             n_iw = gf_init.n_iw
-            BlockGf.__init__(self, name_block_generator = [(bn, GfImFreq(beta = beta, n_points = n_iw, indices = range(bs))) for bn, bs in zip(blocknames, blocksizes)], name = name)
-        elif 'name_block_generator' in kwargskeys: # TODO test
-            blocknames = [block[0] for block in kwargs['name_block_generator'].values()]
-            blocksizes = [block[1].N1 for block in kwargs['name_block_generator'].values()]
+            BlockGf.__init__(self, name_block_generator=[(bn, GfImFreq(
+                beta=beta, n_points=n_iw, indices=range(bs))) for bn, bs in zip(blocknames, blocksizes)], name=name)
+        elif 'name_block_generator' in kwargskeys:  # TODO test
+            blocknames = [block[0]
+                          for block in kwargs['name_block_generator'].values()]
+            blocksizes = [
+                block[1].N1 for block in kwargs['name_block_generator'].values()]
             beta = kwargs['name_block_generator'][0][1].beta
             n_iw = int(len(kwargs['name_block_generator'][0][1].mesh) * .5)
             BlockGf.__init__(self, **kwargs)
-        elif 'name_list' in kwargskeys: # TODO test
+        elif 'name_list' in kwargskeys:  # TODO test
             blocknames = kwargs['name_list']
             blocksizes = [g.N1 for g in kwargs['block_list']]
             beta = kwargs['block_list'][0].beta
             n_iw = int(len(kwargs['block_list'][0].mesh) * .5)
             BlockGf.__init__(self, **kwargs)
         elif gf_struct is not None:
-            assert type(gf_struct) == list, "gf_struct must be of list-type here"
+            assert type(
+                gf_struct) == list, "gf_struct must be of list-type here"
             blocknames = [b[0] for b in gf_struct]
             blocksizes = [len(b[1]) for b in gf_struct]
             beta = beta
             n_iw = n_iw
-            BlockGf.__init__(self, name_block_generator = [(bn, GfImFreq(beta = beta, n_points = n_iw, indices = range(bs))) for bn, bs in zip(blocknames, blocksizes)], name = name)
+            BlockGf.__init__(self, name_block_generator=[(bn, GfImFreq(
+                beta=beta, n_points=n_iw, indices=range(bs))) for bn, bs in zip(blocknames, blocksizes)], name=name)
         else:
             assert blocknames is not None and blocksizes is not None and beta is not None and n_iw is not None, "Missing parameter for initialization without gf_init and gf_struct"
-            assert len(blocknames) == len(blocksizes), "Number of Block-names and blocks have to equal"
-            BlockGf.__init__(self, name_block_generator = [(bn, GfImFreq(beta = beta, n_points = n_iw, indices = range(bs))) for bn, bs in zip(blocknames, blocksizes)], name = name)
+            assert len(blocknames) == len(
+                blocksizes), "Number of Block-names and blocks have to equal"
+            BlockGf.__init__(self, name_block_generator=[(bn, GfImFreq(
+                beta=beta, n_points=n_iw, indices=range(bs))) for bn, bs in zip(blocknames, blocksizes)], name=name)
         self.blocknames = blocknames
         self.blocksizes = blocksizes
         self.n_iw = n_iw
-        self.iw_offset = int(.5* self.n_iw)
-        self.gf_struct = [(bn, range(bs)) for bn, bs in zip(blocknames, blocksizes)]
+        self.iw_offset = int(.5 * self.n_iw)
+        self.gf_struct = [(bn, range(bs))
+                          for bn, bs in zip(blocknames, blocksizes)]
         self._gf_lastloop = None
         self.verbosity = verbosity
 
@@ -126,7 +139,8 @@ class MatsubaraGreensFunction(BlockGf):
         returns object as BlockGf, e.g. for writing it into HDFArchives. That process is only
         defined for the parent class BlockGf.
         """
-        g = BlockGf(name_block_generator = [(bn, GfImFreq(beta = self.beta, n_points = self.n_iw, indices = range(bs))) for bn, bs in zip(self.blocknames, self.blocksizes)], name = self.name)
+        g = BlockGf(name_block_generator=[(bn, GfImFreq(beta=self.beta, n_points=self.n_iw, indices=range(
+            bs))) for bn, bs in zip(self.blocknames, self.blocksizes)], name=self.name)
         g << self
         return g
 
@@ -136,28 +150,23 @@ class MatsubaraGreensFunction(BlockGf):
         TODO tail
         """
         inds_tau = range(n_tau)
-        g_tau = BlockGf(name_list = self.blocknames,
-                         block_list = [GfImTime(beta = self.beta, indices = range(s),
-                                                n_points = n_tau) for s in self.blocksizes])
+        g_tau = BlockGf(name_list=self.blocknames,
+                        block_list=[GfImTime(beta=self.beta, indices=range(s),
+                                             n_points=n_tau) for s in self.blocksizes])
         for bname, b in g_tau:
             b.set_from_inverse_fourier(self[bname])
-            inds_block = range(len(b.data[0,:,:]))
+            inds_block = range(len(b.data[0, :, :]))
             for n, i, j in itt.product(inds_tau, inds_block, inds_block):
-                b.data[n,i,j] = b.data[n,i,j].real
+                b.data[n, i, j] = b.data[n, i, j].real
             self[bname].set_from_fourier(b)
 
-    def fit_tail2(self, w_start_fit, w_stop_fit, max_mom_to_fit = 3, known_moments = [(1, np.identity(1))]):
+    def fit_tail2(self, known_moments=[(1, np.identity(1))]):
         """
         (simplified) interface to TRIQS fit_tail for convenience.
         TRIQS fit_tail is also directly available
         """
         for s, b in self:
-            n1 = int(self.beta/(2*np.pi)*w_start_fit -.5)
-            n2 = int(self.beta/(2*np.pi)*w_stop_fit -.5)
-            tails = TailGf(b.N1, b.N2)
-            for moment in known_moments:
-                tails[moment[0]] = moment[1]
-            b.fit_tail(tails, max_mom_to_fit, n1, n2)
+            b.fit_tail(known_moments)
 
     def _to_blockmatrix(self, number):
         bmat = dict()
@@ -165,7 +174,7 @@ class MatsubaraGreensFunction(BlockGf):
             bmat[bname] = np.identity(bsize) * number
         return bmat
 
-    def _quickplot(self, file_name, x_range = (0, 100)):
+    def _quickplot(self, file_name, x_range=(0, 100)):
         """
         for debugging
         """
@@ -176,7 +185,7 @@ class MatsubaraGreensFunction(BlockGf):
             orbs = range(b.data.shape[1])
             for i, j in itt.product(orbs, orbs):
                 plt.plot(mesh[ia:ie], b.data[ia:ie, i, j].imag)
-                plt.plot(mesh[ia:ie], b.data[ia:ie, i, j].real, ls = 'dashed')
+                plt.plot(mesh[ia:ie], b.data[ia:ie, i, j].real, ls='dashed')
         plt.savefig(file_name)
         plt.close()
 
@@ -189,9 +198,11 @@ class MatsubaraGreensFunction(BlockGf):
         elif dn in blocklabel:
             splittedlabel = blocklabel.split(dn)
             new_label = splittedlabel[0] + up + splittedlabel[1]
-        assert isinstance(new_label, str), "couldn't flip spin, spins must be labeled up/dn"
+        assert isinstance(
+            new_label, str), "couldn't flip spin, spins must be labeled up/dn"
         return new_label
 
     def _checkforspins(self):
         for name in self.blocknames:
-            assert (len(name.split("up")) == 2) ^ (len(name.split("dn")) == 2), "the strings up and dn must occur exactly once in blocknames"
+            assert (len(name.split("up")) == 2) ^ (len(name.split("dn")) ==
+                                                   2), "the strings up and dn must occur exactly once in blocknames"
