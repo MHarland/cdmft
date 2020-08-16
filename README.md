@@ -1,19 +1,23 @@
-This python code provides a generic (C)DMFT cycle with evaluation tools. It's based on the TRIQS library.
+# cdmft - Cluster Dynamical Mean-Field Theory
 
-Mandatory Prerequisites:
-git@github.com:TRIQS/triqs.git
-git@github.com:TRIQS/cthyb.git 
+An implementation of the cluster dynamical mean-field theory in Python using [TRIQS](https://github.com/TRIQS/triqs).
 
-Optional for analytic continuation:
-git@github.com:krivenko/som.git
-git@bitbucket.org:MHarland/maxent.git
+## Installation
 
-Installation:
-Add the cdmft package to PYTHONPATH (e.g. in .bashrc):
-export PYTHONPATH="$PYTHONPATH:$PATHTOCDMFT"
+- Get [Docker](https://www.docker.com/)
 
-Tests:
-Change to the test directory and run <pytriqs run_tests.py>
+- Get the cdmft Docker image by either `docker pull mharland/cdmft` or `git clone https://github.com/MHarland/cdmft.git && cd cdmft && docker build -t cdmft --build-arg email=YOUREMAIL .`
 
-HowTo:
-The easy way is to load a provided setup and make it initialize the DMFT-cycle. Example scripts are provided in the example directory. Run e.g. <mpirun -np 2 pytriqs ex_cdmft.py>. For evaluation you can use <pytriqs PATHTOCMDFT/cdmft/apps/SOMESCRIPT.py RESULTSARCHIVE.h5>.
+- Run tests `docker run --rm cdmft`
+
+## Run
+
+- Change into the directory in which you have the script to run and also in which the output shall be, e.g. `cd example`.
+
+- Run `docker run --rm -v ${PWD}:/cdmft/run cdmft python ex_cdmft.py` or with MPI `docker run --rm -v ${PWD}:/cdmft/run cdmft mpirun --mca btl_vader_single_copy_mechanism none -np 8 python ex_cdmft.py`
+
+The flag `--mca btl_vader_single_copy_mechanism none` is unfortunately required to prevent a shared memory issue of MPI.
+
+## Develop the `cdmft` library
+
+I suggest using a Docker container with a bind-mount including the code. In the same directory in which you ran the `git clone` command, run `docker run -it -v ${PWD}:/cdmft cdmft bash`. Then you share your code directories with the container and you can also run experiments in any subdirectories.
