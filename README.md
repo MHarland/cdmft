@@ -6,7 +6,7 @@ An implementation of the cluster dynamical mean-field theory in Python using [TR
 
 - Get [Docker](https://www.docker.com/)
 
-- Get the cdmft Docker image by either `docker pull mharland/cdmft` or `git clone https://github.com/MHarland/cdmft.git && cd cdmft && docker build -t cdmft --build-arg email=YOUREMAIL .`
+- Get the cdmft Docker image by either `docker pull mharland/cdmft && docker image tag mharland/cdmft cdmft` or `git clone https://github.com/MHarland/cdmft.git && cd cdmft && docker build -t cdmft --build-arg email=YOUREMAIL .`
 
 - Run tests `docker run --rm cdmft`
 
