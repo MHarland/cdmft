@@ -8,9 +8,8 @@ setup = MomentumPlaquetteSetup(10, 2, 4, -1, 0, 16)
 sto = Storage('ex_cdmft.h5')
 par = DefaultDMFTParameters()
 par['n_l'] = 35
-par['measure_g_l'] = True
-par['measure_g_tau'] = False
+par['measure_G_l'] = True
+par['measure_G_tau'] = False
 par['measure_pert_order'] = True
 cyc = Cycle(sto, par, **setup.initialize_cycle())
 cyc.run(5)
-

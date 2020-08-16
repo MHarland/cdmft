@@ -21,21 +21,22 @@ class Cycle:
                 p[kwargkey] = kwargs[kwargkey]
         self.storage = loopstorage
         g0 = self.g0 = weiss_field
-        self.imp_solver = ImpuritySolver(g0.beta, dict(g0.gf_struct), g0.n_iw, p['n_tau'], p['n_l'])
+        self.imp_solver = ImpuritySolver(
+            g0.mesh.beta, g0.gf_struct, g0.n_iw, p['n_tau'], p['n_l'])
         self.g_loc = g_local
         self.g_loc.filling = self.p['filling']
         self.g_loc.dmu_max = self.p['dmu_max']
         self.g_loc.verbosity = self.p['verbosity']
-        self.g_imp = GLocalCommon(gf_init = g_local, parameters = p)
+        self.g_imp = GLocalCommon(gf_init=g_local, parameters=p)
         self.convergence_criteria = []
         self.mu = mu
         self.se = self_energy
-        self.dmumaxsqueezer = DMuMaxSqueezer(self.g_loc, self.g_imp, par = p)
+        self.dmumaxsqueezer = DMuMaxSqueezer(self.g_loc, self.g_imp, par=p)
 
     def add_convergence_criterion(self, criterion):
         self.convergence_criteria.append(criterion)
 
-    def run(self, n_loops, save_loops = True):
+    def run(self, n_loops, save_loops=True):
         """
         parameters are taken from initialization
         """
@@ -46,10 +47,12 @@ class Cycle:
             self.mu = self.g_loc.set(self.se, self.mu)
             self.g0.calc_selfconsistency(self.g_loc, self.se, self.mu)
             self.prepare_impurity_run()
-            self.imp_solver.run(self.g0, self.h_int, loop_nr, **self.p.run_solver())
+            self.imp_solver.run(self.g0, self.h_int,
+                                loop_nr, **self.p.run_solver())
             self.g_imp << self.imp_solver.get_g_iw()
             self.process_impurity_results()
-            if save_loops: self.save()
+            if save_loops:
+                self.save()
             self.report("Loop done.")
             if self.is_converged():
                 break
@@ -76,9 +79,9 @@ class Cycle:
                         "density": self.g_imp.total_density(),
                         "loop_time": time() - self.start_time})
         self.storage.save_loop(results)
-        self.report_variable(average_sign = results["average_sign"],
-                             density = results["density"],
-                             loop_time = results["loop_time"])
+        self.report_variable(average_sign=results["average_sign"],
+                             density=results["density"],
+                             loop_time=results["loop_time"])
 
     def process_impurity_results(self):
         """
@@ -111,8 +114,8 @@ class CycleCCDMFTG(Cycle):
     def __init__(self, *args, **kwargs):
         Cycle.__init__(self, *args, **kwargs)
         self.g_imp << self.g_loc
-    
-    def run(self, n_loops, save_loops = True):
+
+    def run(self, n_loops, save_loops=True):
         """
         parameters are taken from initialization
         """
@@ -123,10 +126,12 @@ class CycleCCDMFTG(Cycle):
             self.mu = self.g_loc.set(self.g_imp, self.mu)
             self.g0.calc_selfconsistency(self.g_loc, self.se, self.mu)
             self.prepare_impurity_run()
-            self.imp_solver.run(self.g0, self.h_int, loop_nr, **self.p.run_solver())
+            self.imp_solver.run(self.g0, self.h_int,
+                                loop_nr, **self.p.run_solver())
             self.g_imp << self.imp_solver.get_g_iw()
             self.process_impurity_results()
-            if save_loops: self.save()
+            if save_loops:
+                self.save()
             self.report("Loop done.")
             if self.is_converged():
                 break

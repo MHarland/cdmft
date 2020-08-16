@@ -1,6 +1,6 @@
 import sys
 from pytriqs.archive import HDFArchive
-from pytriqs.gf.local import GfReFreq, GfLegendre, GfImTime, rebinning_tau, BlockGf, MatsubaraToLegendre, LegendreToMatsubara, GfImFreq, inverse
+from pytriqs.gf import GfReFreq, GfLegendre, GfImTime, rebinning_tau, BlockGf, MatsubaraToLegendre, LegendreToMatsubara, GfImFreq, inverse
 from pytriqs.utility import mpi
 #from triqs_som.som import Som
 from pytriqs.applications.analytical_continuation.som import Som
@@ -23,14 +23,14 @@ orbitals = [('up-G', 0, 0), ('up-X', 0, 0), ('up-M', 0, 0)]
 gimp = False
 nptss = [None] * len(fnames)
 run_params = {}
-#dSC
-run_params['energy_window'] = (-16,16) #(-12,12)
+# dSC
+run_params['energy_window'] = (-16, 16)  # (-12,12)
 run_params['max_time'] = -1
 run_params['verbosity'] = 2
 run_params['t'] = 50
 run_params['f'] = 30000
-run_params['min_rect_width'] = 1e-3#3e-4
-run_params['max_rects'] = 100#1000
+run_params['min_rect_width'] = 1e-3  # 3e-4
+run_params['max_rects'] = 100  # 1000
 run_params['adjust_f'] = False
 run_params['l'] = 96*8
 run_params['adjust_l'] = False
@@ -59,38 +59,44 @@ for archive_name, npts in zip(fnames, nptss):
     if gimp:
         if domain == "tau":
             g = sto.load("g_tau")
-            if npts is not None: g = BlockGf(name_block_generator = [(s, rebinning_tau(b, npts)) for s, b in g])
+            if npts is not None:
+                g = BlockGf(name_block_generator=[
+                            (s, rebinning_tau(b, npts)) for s, b in g], make_copies=False)
             npts = len([x for x in g.mesh])
         elif domain == "legendre":
             g = sto.load("g_sol_l")
-            if npts is None: npts = len(g.mesh)
-            if npts is not None: g = BlockGf(name_block_generator = [(s, cut_coefficients(b, npts)) for s, b in g])
+            if npts is None:
+                npts = len(g.mesh)
+            if npts is not None:
+                g = BlockGf(name_block_generator=[
+                            (s, cut_coefficients(b, npts)) for s, b in g], make_copies=False)
             npts = len([x for x in g.mesh])
             if nambu:
                 g = sto.load("g_imp_iw")
                 if hfl:
                     se = sto.load("se_imp_iw")
                     for bn, b in se:
-                        b[0,1] << 0.
-                        b[1,0] << 0.
+                        b[0, 1] << 0.
+                        b[1, 0] << 0.
                     g0 = sto.load("g0_iw")
                     for bn, b in g0:
-                        b[0,1] << 0.
-                        b[1,0] << 0.
+                        b[0, 1] << 0.
+                        b[1, 0] << 0.
                     g << inverse(inverse(g0)-se)
 
                 i_ = 0
                 for s, b in g:
                     for i in b.indices:
                         i = int(i)
-                        if i%2:
-                            b[i,i] << (-1) * b[i,i].conjugate()
+                        if i % 2:
+                            b[i, i] << (-1) * b[i, i].conjugate()
                         i_ += 1
-    else: # gloc
+    else:  # gloc
         gin = sto.load("g_loc_iw")
         if npts is None:
             npts = 101
-        g = BlockGf(name_block_generator = [(bn, GfImFreq(indices = b.indices, n_points = npts, beta = gin.beta)) for bn, b in gin])
+        g = BlockGf(name_block_generator=[(bn, GfImFreq(
+            indices=b.indices, n_points=npts, beta=gin.mesh.beta)) for bn, b in gin], make_copies=False)
         for bn, b in g:
             new_mesh = np.array([w.imag for w in b.mesh])
             old_mesh = np.array([w.imag for w in gin[bn].mesh])
@@ -100,17 +106,18 @@ for archive_name, npts in zip(fnames, nptss):
     s = g.copy()
     if s_by == "const":
         for bn, b in s:
-            b.data[:,:,:] = np.ones(b.data.shape)
+            b.data[:, :, :] = np.ones(b.data.shape)
     g_rec = g.copy()
-    gw = BlockGf(name_block_generator = [(bn, GfReFreq(window = (run_params['energy_window'][0], run_params['energy_window'][1]), n_points = 5000, indices = b.indices)) for bn, b in g])
+    gw = BlockGf(name_block_generator=[(bn, GfReFreq(window=(
+        run_params['energy_window'][0], run_params['energy_window'][1]), n_points=5000, indices=b.indices)) for bn, b in g], make_copies=False)
     for orb in orbitals:
         if mpi.is_master_node():
             print orb
         bn, i, j = orb[0], int(orb[1]), int(orb[2])
-        som = Som(g[bn][i,j], s[bn][i,j], kind = "FermionGf")
+        som = Som(g[bn][i, j], s[bn][i, j], kind="FermionGf")
         som.run(**run_params)
-        g_rec[bn][i,j] << som
-        gw[bn][i,j] << som
+        g_rec[bn][i, j] << som
+        gw[bn][i, j] << som
     if mpi.is_master_node():
         arch = HDFArchive(archive_name, 'a')
         results_groupname = 'som_results_orb'

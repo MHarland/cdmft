@@ -1,8 +1,10 @@
-import matplotlib, sys, numpy as np
-matplotlib.use("Agg")
-from matplotlib import pyplot as plt
-
 from cdmft.storage import LoopStorage
+import matplotlib
+import sys
+import numpy as np
+import matplotlib
+matplotlib.use("PDF")
+from matplotlib import pyplot as plt
 
 
 archive_name = sys.argv[1]
@@ -19,7 +21,7 @@ assert part in ["real", "imag"], "only real or imag available"
 
 archive = LoopStorage(archive_name)
 fig = plt.figure()
-ax = fig.add_axes([.12,.12,.85,.85])
+ax = fig.add_axes([.12, .12, .85, .85])
 for loop_nr in range(first_loop, last_loop + 1):
     f = archive.load(function, loop_nr)
     if loop_nr == first_loop:
@@ -31,8 +33,8 @@ for loop_nr in range(first_loop, last_loop + 1):
         y = f[block].data[arg_min: arg_max, ind1, ind2].imag
     elif part == "real":
         y = f[block].data[arg_min: arg_max, ind1, ind2].real
-    ax.plot(x, y, label = loop_nr)
+    ax.plot(x, y, label=loop_nr)
 ax.set_xlim(mesh[arg_min], mesh[arg_max])
-ax.legend(title = "loop")
+ax.legend(title="loop")
 plt.savefig(archive_name[:-3] + ".pdf")
 plt.close()

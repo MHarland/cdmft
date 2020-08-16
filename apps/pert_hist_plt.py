@@ -1,5 +1,7 @@
-import matplotlib as mpl, sys, numpy as np
-#from pytriqs.gf.local import GfReFreq, GfImTime, GfLegendre
+import matplotlib as mpl
+import sys
+import numpy as np
+#from pytriqs.gf import GfReFreq, GfImTime, GfLegendre
 #from pytriqs.archive import HDFArchive
 #from pytriqs.statistics.histograms import Histogram
 
@@ -9,10 +11,10 @@ from cdmft.plot.cfg import plt
 
 for archive_name in sys.argv[1:]:
     fig = plt.figure()
-    ax = fig.add_axes([.12,.12,.83,.82])
+    ax = fig.add_axes([.12, .12, .83, .82])
     archive = Storage(archive_name)
-    histos_orb = archive.load('perturbation_order', bcast = False)
-    histo_tot = archive.load('perturbation_order_total', bcast = False)
+    histos_orb = archive.load('perturbation_order', bcast=False)
+    histo_tot = archive.load('perturbation_order_total', bcast=False)
     if histo_tot is None:
         continue
     hist = histo_tot
@@ -35,18 +37,18 @@ for archive_name in sys.argv[1:]:
     x = np.linspace(i_min, i_max, i_max - i_min, True)
     n_bins = i_max - i_min
     n_orb = len(histos_orb)
-    colors = [mpl.cm.jet(i/float(max(1, n_orb -1))) for i in range(n_orb)]
+    colors = [mpl.cm.jet(i/float(max(1, n_orb - 1))) for i in range(n_orb)]
     xs = []
     ys = []
-    labels =[]
+    labels = []
     for (orbital, hist), color in zip(histos_orb.items(), colors):
         y = hist[i_min:i_max]
         xs.append(x)
         ys.append(y)
         labels.append('$\mathrm{'+orbital+'}$')
-    ax.hist(xs, n_bins, weights = ys, histtype = 'step', color = colors, label = labels,
-            stacked = True, normed = True, fill = False)
-    ax.set_ylim(bottom = 0)
+    ax.hist(xs, n_bins, weights=ys, histtype='step', color=colors, label=labels,
+            stacked=True, normed=True, fill=False)
+    ax.set_ylim(bottom=0)
     ax.set_xlabel("$D$")
     ax.set_ylabel("$P(D)$")
     ax.legend()

@@ -2,7 +2,7 @@ import os
 from pytriqs.archive import HDFArchive
 from pytriqs.operators import Operator
 from pytriqs.atom_diag import AtomDiag
-from pytriqs.gf.local import BlockGf
+from pytriqs.gf import BlockGf
 from pytriqs.utility import mpi
 
 

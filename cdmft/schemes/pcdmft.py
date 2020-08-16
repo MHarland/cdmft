@@ -1,5 +1,7 @@
-import numpy as np, itertools as itt
-from pytriqs.gf.local import BlockGf, GfImFreq # replace by MatsubaraGreensFunction todo
+import numpy as np
+import itertools as itt
+# replace by MatsubaraGreensFunction todo
+from pytriqs.gf import BlockGf, GfImFreq
 from periodization.selfenergyperiodization import LatticeSelfenergy, LatticeGreensfunction
 
 from ..greensfunctions import MatsubaraGreensFunction
@@ -11,6 +13,7 @@ class GLocal(GLocalCommon):
     In fact it is G_cluster constructed from G_lattice, conceptual problem todo
     impurity_transformation is needed to backtransform into site-space before periodization
     """
+
     def __init__(self, glat_orb_struct, gcluster_orb_struct, r, weights_r, hopping_r, nk, imp_to_lat_r, lat_r_to_cluster, impurity_transformation, *args, **kwargs):
         GLocalCommon.__init__(self, *args, **kwargs)
         self.transf = impurity_transformation
@@ -22,11 +25,13 @@ class GLocal(GLocalCommon):
                                 'weights_r': weights_r}
         self.imp_to_lat_r = imp_to_lat_r
         self.lat_r_to_cluster = lat_r_to_cluster
-        self.se_lat_tmp = BlockGf(name_block_generator = [[bn, GfImFreq(indices = b, mesh = self.mesh)] for bn, b in glat_orb_struct.items()])
-        self.g_cluster = BlockGf(name_block_generator = [[bn, GfImFreq(indices = b, mesh = self.mesh)] for bn, b in gcluster_orb_struct.items()])
+        self.se_lat_tmp = BlockGf(name_block_generator=[[bn, GfImFreq(
+            indices=b, mesh=self.mesh)] for bn, b in glat_orb_struct.items()], make_copies=False)
+        self.g_cluster = BlockGf(name_block_generator=[[bn, GfImFreq(
+            indices=b, mesh=self.mesh)] for bn, b in gcluster_orb_struct.items()], make_copies=False)
         self.g_lat = None
         self.se_lat = None
-        
+
     def set(self, se_imp, mu):
         """
         sets GLocal using calculate(self, mu, selfenergy, w1, w2, n_mom), uses either filling or mu
@@ -76,4 +81,3 @@ class SelfEnergy(SelfEnergyCommon):
 
 class WeissField(WeissFieldCommon):
     pass
-

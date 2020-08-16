@@ -10,7 +10,7 @@ class StaticObservable:
         self.atom = storage.load("h_loc_diagonalization", loop, bcast=False)
         if atomic:
             g = storage.load("g_loc_iw", loop)
-            self.rho = atomic_density_matrix(self.atom, g.beta)
+            self.rho = atomic_density_matrix(self.atom, g.mesh.beta)
             del g
         else:
             self.rho = storage.load("density_matrix")

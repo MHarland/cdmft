@@ -2,7 +2,7 @@ import unittest
 import os
 import numpy as np
 from cdmft.greensfunctions import MatsubaraGreensFunction
-from pytriqs.gf.local import BlockGf, GfImFreq, iOmega_n, inverse, GfImTime, delta, is_gf_real_in_tau
+from pytriqs.gf import BlockGf, GfImFreq, iOmega_n, inverse, GfImTime, delta, is_gf_real_in_tau
 from pytriqs.archive import HDFArchive
 
 
@@ -37,7 +37,7 @@ class TestMatsubaraGreensFunction(unittest.TestCase):
                 b.data.shape[0], b.data.shape[1], b.data.shape[2]) - .5) * .001
         for s, b in g:
             self.assertTrue(not is_gf_real_in_tau(b))
-        g.make_g_tau_real(10001)
+        g.make_g_tau_real(10000)
         for bn, b in g:
             self.assertTrue(is_gf_real_in_tau(b))
 

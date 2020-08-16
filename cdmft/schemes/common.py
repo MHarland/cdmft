@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.optimize import minimize_scalar
-from pytriqs.gf.local import inverse
+from pytriqs.gf import inverse
 from pytriqs.utility.bound_and_bisect import bound_and_bisect
 from pytriqs.utility.dichotomy import dichotomy
 
@@ -53,7 +53,7 @@ class GLocalCommon(MatsubaraGreensFunction):
         """
         # TODO place mu in center of gap
         if not filling is None:
-            self.filling_with_old_mu = self.total_density()
+            self.filling_with_old_mu = self.total_density().real
             def f(mu): return self._set_mu_get_filling(selfenergy, mu)
             f = FunctionWithMemory(f)
             self.last_found_mu_number, self.last_found_density = bound_and_bisect(
@@ -69,7 +69,7 @@ class GLocalCommon(MatsubaraGreensFunction):
         needed for find_and_set_mu
         """
         self.calculate(selfenergy, self.make_matrix(mu))
-        d = self.total_density()
+        d = self.total_density().real
         return d
 
     def limit(self, x, x0, dxlim):
@@ -102,7 +102,8 @@ class GLocalCommon(MatsubaraGreensFunction):
 
 class WeissFieldCommon(MatsubaraGreensFunction):
     def calc_dyson(self, glocal, selfenergy):
-        self << inverse(inverse(glocal) + selfenergy)
+        self << inverse(inverse(glocal.get_as_BlockGf()) +
+                        selfenergy.get_as_BlockGf())
 
     def calc_selfconsistency(self, glocal, selfenergy, mu):
         self.calc_dyson(glocal, selfenergy)

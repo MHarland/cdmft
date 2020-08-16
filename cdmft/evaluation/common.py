@@ -2,7 +2,7 @@ import numpy as np
 import itertools as itt
 from scipy.linalg import logm
 from pytriqs.atom_diag import AtomDiag, atomic_density_matrix
-from pytriqs.gf.local import BlockGf, GfImTime
+from pytriqs.gf import BlockGf, GfImTime
 
 
 class Evaluation:
@@ -86,7 +86,7 @@ class Evaluation:
         atom = self.archive.load("h_loc_diagonalization", loop, bcast=False)
         if beta is None:
             g = self.archive.load("g_loc_iw", loop)
-            beta = g.beta
+            beta = g.mesh.beta
         rhoblocked = atomic_density_matrix(atom, beta)
         rho = np.zeros([atom.full_hilbert_space_dim]*2)
         for i_block, block in enumerate(rhoblocked):
@@ -101,7 +101,7 @@ class Evaluation:
         atom = self.archive.load("h_loc_diagonalization", loop, bcast=False)
         if beta is None:
             g = self.archive.load("g_loc_iw", loop)
-            beta = g.beta
+            beta = g.mesh.beta
         rhoblocked = atomic_density_matrix(atom, beta)
         return np.array([len(r) for r in rhoblocked])
 
@@ -110,7 +110,7 @@ class Evaluation:
         atom = self.archive.load("h_loc_diagonalization", loop, bcast=False)
         if beta is None:
             g = self.archive.load("g_loc_iw", loop)
-            beta = g.beta
+            beta = g.mesh.beta
         rho = atomic_density_matrix(atom, beta)
         probabilities = []
         for rho_block in rho:
@@ -124,7 +124,7 @@ class Evaluation:
         gf_struct = []
         for s, b in g:
             gf_struct.append([s, range(len(b.indices))])
-        gtau = BlockGf(name_block_generator = [(struct[0], GfImTime(indices = struct[1], beta = g.beta, n_points = 10001)) for struct in gf_struct])
+        gtau = BlockGf(name_block_generator = [(struct[0], GfImTime(indices = struct[1], beta = g.mesh.beta, n_points = 10001)) for struct in gf_struct], make_copies=False)
         for s, b in gtau: b.set_from_inverse_fourier(g[s])
         """
         inds = [i for i in g.all_indices]
@@ -135,7 +135,7 @@ class Evaluation:
                 b = ind[0]
                 #gsd[b+'-'+str(i)+str(i)] = -gtau[b].data[-1, i, i].real
                 # -gtau[b].data[-1, i, i].real
-                gsd[b+'_'+str(i)+str(i)] = g[b][i, i].total_density().real
+                gsd[b+'_'+str(i)+str(i)] = g[b][i, i].density().real
         return gsd
 
     def get_g_static(self, loop=-1):
@@ -146,7 +146,7 @@ class Evaluation:
             i = int(ind[1])
             j = int(ind[2])
             b = ind[0]
-            gsd[b+'_'+str(i)+str(j)] = g[b][i, j].total_density()
+            gsd[b+'_'+str(i)+str(j)] = g[b][i, j].density()
         return gsd
 
     def get_g_static_blockdiags(self, loop=-1):

@@ -1,5 +1,6 @@
-import numpy as np, itertools as itt
-from pytriqs.gf.local import inverse, iOmega_n, BlockGf, GfImFreq # todo use mats gf
+import numpy as np
+import itertools as itt
+from pytriqs.gf import inverse, iOmega_n, BlockGf, GfImFreq  # todo use mats gf
 from pytriqs.lattice.tight_binding import TBLattice
 from pytriqs.utility import mpi
 
@@ -18,6 +19,7 @@ class GLocal(GLocalCommon):
     lambd is the hybridization
     glocal = u g_cluster udag
     """
+
     def __init__(self, glat_orb_struct, gcluster_orb_struct, r, weights_r, hopping_r, nk, imp_to_lat_r, lat_r_to_cluster, impurity_transformation, r_cavity, r_cluster, *args, **kwargs):
         GLocalCommon.__init__(self, *args, **kwargs)
         self.transf = impurity_transformation
@@ -29,18 +31,23 @@ class GLocal(GLocalCommon):
                                 'weights_r': weights_r}
         self.imp_to_lat_r = imp_to_lat_r
         self.lat_r_to_cluster = lat_r_to_cluster
-        self.se_lat_tmp = BlockGf(name_block_generator = [[bn, GfImFreq(indices = b, mesh = self.mesh)] for bn, b in glat_orb_struct.items()])
+        self.se_lat_tmp = BlockGf(name_block_generator=[[bn, GfImFreq(
+            indices=b, mesh=self.mesh)] for bn, b in glat_orb_struct.items()], make_copies=False)
         self.g_lat = None
         self.se_lat = None
         self.hopping_lat = HoppingLattice(r, hopping_r)
         self.r_cavity = [tuple(ri) for ri in r_cavity]
         self.r_cluster = [tuple(ri) for ri in r_cluster]
         self.g_cavity = {}
-        self.lambd = BlockGf(name_block_generator = [[bn, GfImFreq(indices = b, mesh = self.mesh)] for bn, b in gcluster_orb_struct.items()])
-        self.gtmp = BlockGf(name_block_generator = [[bn, GfImFreq(indices = b, mesh = self.mesh)] for bn, b in gcluster_orb_struct.items()])
-        self.g_cluster = BlockGf(name_block_generator = [[bn, GfImFreq(indices = b, mesh = self.mesh)] for bn, b in gcluster_orb_struct.items()])
-        self.lambda_imp_basis = BlockGf(name_block_generator = [[bn, GfImFreq(indices = b, mesh = self.mesh)] for bn, b in gcluster_orb_struct.items()])
-        
+        self.lambd = BlockGf(name_block_generator=[[bn, GfImFreq(
+            indices=b, mesh=self.mesh)] for bn, b in gcluster_orb_struct.items()], make_copies=False)
+        self.gtmp = BlockGf(name_block_generator=[[bn, GfImFreq(
+            indices=b, mesh=self.mesh)] for bn, b in gcluster_orb_struct.items()], make_copies=False)
+        self.g_cluster = BlockGf(name_block_generator=[[bn, GfImFreq(
+            indices=b, mesh=self.mesh)] for bn, b in gcluster_orb_struct.items()], make_copies=False)
+        self.lambda_imp_basis = BlockGf(name_block_generator=[[bn, GfImFreq(
+            indices=b, mesh=self.mesh)] for bn, b in gcluster_orb_struct.items()], make_copies=False)
+
     def set(self, se_imp, mu):
         """
         sets GLocal using calculate(self, mu, selfenergy, w1, w2, n_mom), uses either filling or mu
@@ -61,15 +68,18 @@ class GLocal(GLocalCommon):
             self.g_cavity[ri, rj] = self.g_lat[ri, rj].copy()
             for ra, rb in itt.product(*[self.r_cluster]*2):
                 for s, b in self.g_cavity[ri, rj]:
-                    #for i, j, k ,l in itt.product(*[[int(ii) for ii in b.indices]]*4):
-                    b -= self.g_lat[ri,ra][s] * self.g_lat.inverse_real_space_at(ra,rb)[s] * self.g_lat[rb, rj][s]
+                    # for i, j, k ,l in itt.product(*[[int(ii) for ii in b.indices]]*4):
+                    b -= self.g_lat[ri, ra][s] * self.g_lat.inverse_real_space_at(ra, rb)[
+                        s] * self.g_lat[rb, rj][s]
         self.lambd.zero()
         for ila, icl in self.lat_r_to_cluster.items():
             ra, rb = ila[0], ila[1]
             bo, bi, bj = ila[2], ila[3], ila[4]
             for ri, rj in itt.product(*[self.r_cavity]*2):
-                self.lambd[icl[0]][icl[1],icl[2]] += self.hopping_lat[ra,ri][bo][bi,bj] * self.g_cavity[ri,rj][bo][bi,bj] * self.hopping_lat[rj,rb][bo][bi,bj]
-        
+                self.lambd[icl[0]][icl[1], icl[2]] += self.hopping_lat[ra, ri][bo][bi, bj] * \
+                    self.g_cavity[ri, rj][bo][bi, bj] * \
+                    self.hopping_lat[rj, rb][bo][bi, bj]
+
         if self.transf is not None:
             self.lambda_imp_basis = self.transf.transform_g(self.lambd)
             self << self.transf.transform_g(self.g_cluster)
@@ -108,10 +118,11 @@ class WeissField(WeissFieldCommon):
     def __init__(self, tcluster, *args, **kwargs):
         self.tcluster = tcluster
         WeissFieldCommon.__init__(self, *args, **kwargs)
-    
+
     def calc_selfconsistency(self, gloc, selfenergy, mu):
         for s, b in self:
-            b << inverse(iOmega_n + mu - self.tcluster[s] - gloc.lambda_imp_basis[s])
+            b << inverse(iOmega_n + mu -
+                         self.tcluster[s] - gloc.lambda_imp_basis[s])
 
 
 class HoppingLattice:
@@ -119,7 +130,8 @@ class HoppingLattice:
     r is a list of lattice translations
     hopping_r is of the same order as r
     """
-    def __init__(self, r, hopping_r, accuracy = 1e-12):
+
+    def __init__(self, r, hopping_r, accuracy=1e-12):
         self.r = np.array(r)
         self.h_r = [{s: np.array(b) for s, b in h.items()} for h in hopping_r]
         self.acc = accuracy

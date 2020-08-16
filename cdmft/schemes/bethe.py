@@ -1,8 +1,8 @@
 import numpy as np
 import itertools as itt
 import math
-from pytriqs.gf.local.descriptor_base import Function
-from pytriqs.gf.local import inverse, iOmega_n
+from pytriqs.gf.descriptor_base import Function
+from pytriqs.gf import inverse, iOmega_n
 from pytriqs.utility.bound_and_bisect import bound_and_bisect
 from pytriqs.utility import mpi
 
@@ -25,8 +25,9 @@ class GLocal(GLocalCommon):
         self.t_loc = t_local
         self.t_b = t_bethe
         self.w1 = (2 * self.n_iw * .8 + 1) * np.pi / \
-            self.beta if w1 is None else w1
-        self.w2 = (2 * self.n_iw + 1) * np.pi / self.beta if w2 is None else w2
+            self.mesh.beta if w1 is None else w1
+        self.w2 = (2 * self.n_iw + 1) * np.pi / \
+            self.mesh.beta if w2 is None else w2
         self.n_mom = n_mom
 
     def calculate(self, selfenergy, mu):
@@ -39,10 +40,12 @@ class GLocal(GLocalCommon):
                     def gf(iw): return (z(iw) - complex(0, 1) * np.sign(z(iw).imag)
                                         * np.sqrt(4*self.t_b**2 - z(iw)**2))/(2.*self.t_b**2)
                     b.data[n, i, j] = gf(iwn)
+
         assert not math.isnan(self.total_density(
-        )), 'g(iw) undefined for mu = '+str(self.mu_number(mu))
-        self.fit_tail2()
-        assert not math.isnan(self.total_density()), 'tail fit fail!'
+        ).real), 'g(iw) undefined for mu = '+str(self.mu_number(mu))
+        self.fit_tail2(fit_min_w=self.w1, fit_max_w=self.w2,
+                       fit_max_moment=self.n_mom)
+        assert not math.isnan(self.total_density().real), 'tail fit fail!'
 
 
 class GLocalAFM(GLocal):
@@ -59,9 +62,9 @@ class GLocalAFM(GLocal):
                                         * np.sqrt(4*self.t_b**2 - z(iw)**2))/(2.*self.t_b**2)
                     b.data[n, i, j] = gf(iwn)
         assert not math.isnan(self.total_density(
-        )), 'g(iw) undefined for mu = '+str(self.mu_number(mu))
+        ).real), 'g(iw) undefined for mu = '+str(self.mu_number(mu))
         self.fit_tail2()
-        assert not math.isnan(self.total_density()), 'tail fit fail!'
+        assert not math.isnan(self.total_density().real), 'tail fit fail!'
 
 
 class GLocalWithOffdiagonals(GLocalCommon):
@@ -101,13 +104,14 @@ class GLocalWithOffdiagonals(GLocalCommon):
         self._last_g_loc_convergence.append(abs(n-n_last))
         if np.allclose(n, n_last, rtol, atol):
             conv = True
-            for index_triple in self.all_indices:
-                b, i, j = index_triple
-                x = self[b][i, j].data[self.iw_offset:self.iw_offset +
-                                       n_freq_to_compare, 0, 0]
-                y = g_to_compare[b][i, j].data[self.iw_offset:self.iw_offset +
-                                               n_freq_to_compare, 0, 0]
-                if not np.allclose(x, y, rtol, g_atol):
+            for b, i, j in self.all_indices:
+                x = self[b].data[:, :, :]
+                xdat = x[self.iw_offset:self.iw_offset +
+                         n_freq_to_compare, i, j]
+                y = g_to_compare[b].data[:, :, :]
+                ydat = y[self.iw_offset:self.iw_offset +
+                         n_freq_to_compare, i, j]
+                if not np.allclose(xdat, ydat, rtol, g_atol):
                     conv = False
                     break
         return conv
@@ -297,8 +301,8 @@ class GLocalNambu(GLocalWithOffdiagonals):
             g = self
         densities = []
         for s, b in g:
-            densities.append(b[0, 0].total_density())
-            densities.append(- b[1, 1].conjugate().total_density())
+            densities.append(b[0, 0].density())
+            densities.append(- b[1, 1].conjugate().density())
         density = np.sum(densities)
         return density
 
@@ -315,9 +319,9 @@ class GLocalNambu(GLocalWithOffdiagonals):
             for index_triple in self.all_indices:
                 b, i, j = index_triple
                 x = self[b][i, j].data[self.iw_offset:self.iw_offset +
-                                       n_freq_to_compare, 0, 0]
+                                       n_freq_to_compare]  # , 0, 0]
                 y = g_to_compare[b][i, j].data[self.iw_offset:self.iw_offset +
-                                               n_freq_to_compare, 0, 0]
+                                               n_freq_to_compare]  # , 0, 0]
                 if not np.allclose(x, y, rtol, g_atol):
                     conv = False
                     break
@@ -329,7 +333,7 @@ class GLocalNambu(GLocalWithOffdiagonals):
         """
         # TODO place mu in center of gap
         if not filling is None:
-            self.filling_with_old_mu = self.total_density_nambu()
+            self.filling_with_old_mu = self.total_density_nambu().real
             def f(mu): return self._set_mu_get_filling(selfenergy, mu)
             f = FunctionWithMemory(f)
             self.last_found_mu_number, self.last_found_density = bound_and_bisect(
@@ -345,7 +349,7 @@ class GLocalNambu(GLocalWithOffdiagonals):
         needed for find_and_set_mu
         """
         self.calculate(selfenergy, self.make_matrix(mu))
-        d = self.total_density_nambu()
+        d = self.total_density_nambu().real
         return d
 
 
@@ -385,10 +389,10 @@ class GLocalAFMNambu(GLocalNambu):
             g = self
         densities = []
         for s, b in g:
-            densities.append(b[0, 0].total_density())
-            densities.append(- b[1, 1].conjugate().total_density())
-            densities.append(b[2, 2].total_density())
-            densities.append(- b[3, 3].conjugate().total_density())
+            densities.append(b[0, 0].density())
+            densities.append(- b[1, 1].conjugate().density())
+            densities.append(b[2, 2].density())
+            densities.append(- b[3, 3].conjugate().density())
         density = np.sum(densities)
         return density
 
