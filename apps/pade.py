@@ -23,7 +23,7 @@ for archive_name in sys.argv[1:]:
     if nambu:
         for s, b in giw:
             for i in b.indices:
-                i = int(i)
+                i = int(i[0])
                 if i % 2:
                     b[i, i] << (-1) * b[i, i].conjugate()
     tr_giw = GfImFreq(indices=[0], mesh=giw.mesh)

@@ -5,7 +5,6 @@ from pytriqs.gf import inverse
 
 from cdmft.h5interface import Storage
 from cdmft.plot.cfg import plt, fig
-from cdmft.plot.tools import nice_index
 
 
 atol = .0001
@@ -31,14 +30,15 @@ for fname in sys.argv[1:]:
               for i in range(n_orbs)]
     for orb, c in zip(orbs, colors):
         b, i, j = orb
+        i, j = i[0], j[0]
         if i == j:
             continue
-        rey = g[b][i, j].data[n_iw0:n_w_max, 0, 0].real
-        imy = g[b][i, j].data[n_iw0:n_w_max, 0, 0].imag
+        rey = g[b][i, j].data[n_iw0:n_w_max].real
+        imy = g[b][i, j].data[n_iw0:n_w_max].imag
         if g[b].target_shape[0] == 1:
-            label = nice_index(b)
+            label = b
         else:
-            label = nice_index(b)+str(i)+str(j)
+            label = b+str(i)+str(j)
         if not np.allclose(imy, 0, atol=atol):
             ax.plot(mesh, imy, label='$'+label+'$', color=c)
         else:

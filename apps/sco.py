@@ -27,7 +27,7 @@ for fname in sys.argv[1:]:
             n = 0
             b, i, j = orb
             if (i, j) == (1, 1):
-                n += (-1 * g[b][i, j].conjugate()).total_density()
+                n += (-1 * g[b][i, j].conjugate()).density()
             if (i, j) == (0, 0):
                 n += g[b][i, j].density()
             if n.imag > 0.001:

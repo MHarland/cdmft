@@ -15,13 +15,14 @@ for fname in sys.argv[1:]:
     n_inds = len([i for i in g_loc.all_indices])
     colors = [matplotlib.cm.jet(i/float(max(1,n_inds-1))) for i in range(n_inds)]
     for (b, i, j), col in zip(g_loc.all_indices, colors):
+        i, j = i[0], j[0]
         index_label = str(b)+str(i)+str(j)
         supermesh = np.array([iw.imag for iw in g_loc.mesh])
         n_iw0 = int(len(supermesh)*.5)
         n_w_max = np.argwhere(supermesh <= w_max)[-1,0]
         mesh = supermesh[n_iw0:n_w_max]
-        y_a = g_loc[b][i, j].data[n_iw0:n_w_max,0,0].real
-        y_b = g_imp[b][i, j].data[n_iw0:n_w_max,0,0].real
+        y_a = g_loc[b][i, j].data[n_iw0:n_w_max].real
+        y_b = g_imp[b][i, j].data[n_iw0:n_w_max].real
         ax.plot(mesh, y_a, color = col, ls = "--", marker = "x")
         ax.plot(mesh, y_b, color = col, label = '$'+str(b)+str(i)+str(j)+'$', marker = "+")
     ax.set_xlabel("$i\\omega_n$")

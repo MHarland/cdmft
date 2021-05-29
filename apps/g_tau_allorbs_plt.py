@@ -7,7 +7,6 @@ from cdmft.h5interface import Storage
 from cdmft.plot.cfg import plt, ax
 
 
-only_diag = False
 for arch_name in sys.argv[1:]:
     print 'loading', arch_name+'...'
     sto = Storage(arch_name)
@@ -17,9 +16,9 @@ for arch_name in sys.argv[1:]:
             beta=giw.mesh.beta, n_points=3001, indices=[i for i in b.indices])) for s, b in giw], make_copies=False)
         for s, b in giw:
             g[s] << InverseFourier(b)
-        #inds = [(b, i, j) for b, i, j in g.all_indices if i == j or not only_diag]
-        inds = [(b, i, j) for b, i, j in g.all_indices if b == 'XY' and (
-            int(i), int(j)) in [(0, 2), (2, 0), (3, 1), (1, 3)]]
+        inds = [(b, i[0], j[0]) for b, i, j in g.all_indices]
+        #inds = [(b, i, j) for b, i, j in g.all_indices if b == 'XY' and (
+        #    int(i), int(j)) in [(0, 2), (2, 0), (3, 1), (1, 3)]]
         #inds = [(b, i, j) for b, i, j in g.all_indices if b == 'XY' and i!=j]
         #inds = [(b, i, j) for b, i, j in g.all_indices if b == 'XY' and int(i)!=int(j)]
         colors = [matplotlib.cm.jet(i/float(max(1, len(inds)-1)))

@@ -17,7 +17,7 @@ for fname in sys.argv[1:]:
     colors = [matplotlib.cm.jet(i/float(max(1,n_orbs-1))) for i in range(n_orbs)]
     for orb, c in zip(orbs, colors):
         b, i, j = orb
-        y = g[b][i, j].data[n_iw0:n_w_max,0,0].imag
+        y = g[b][i[0], j[0]].data[n_iw0:n_w_max].imag
         ax.plot(mesh, y, label = '$'+b+str(i)+str(j)+'$', color = c)
     ax.set_xlabel("$i\\omega_n$")
     ax.set_ylabel("$\\Im G(i\\omega_n)$")

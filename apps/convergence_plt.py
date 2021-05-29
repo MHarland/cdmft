@@ -22,7 +22,7 @@ for fname in sys.argv[1:]:
             indices = [(b,i,j) for b,i,j in g.all_indices]
             labels = [b+str(i)+str(j) for b,i,j in indices]
         n_iw0 = int(len([iw for iw in g.mesh])*.5)
-        ys.append([g[b][i,j].data[n_iw0,0,0] for b,i,j in indices])
+        ys.append([g[b][i[0],j[0]].data[n_iw0] for b,i,j in indices])
     ys = np.array(ys).T
     n_y = ys.shape[0]
     colors = [matplotlib.cm.jet(i/float(max(n_y-1,1))) for i in range(n_y)]

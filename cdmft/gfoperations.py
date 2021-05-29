@@ -42,8 +42,9 @@ def trace(block_gf, tr_gf):
     n = 0
     for s, b in block_gf:
         for i in b.indices:
+            i = i[0]
             n += 1
-            tr_gf << tr_gf + b[i, i]
+            tr_gf[0, 0] << tr_gf[0, 0] + b[i, i]
     tr_gf << tr_gf / float(n)
 
 

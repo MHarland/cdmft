@@ -464,11 +464,11 @@ class NambuMomentumPlaquette(CycleSetupCommon):
         reblock_map += [[(dn+'-'+k, 0, 0), (k, 1, 1)] for k in self.momenta]
         reblock_map = dict(reblock_map)
         for b, i, j in g.all_indices:
-            b_nam, i_nam, j_nam = reblock_map[(b, int(i), int(j))]
+            b_nam, i_nam, j_nam = reblock_map[(b, int(i[0]), int(j[0]))]
             if i_nam == 0 and j_nam == 0:
-                g_nambu[b_nam][i_nam, j_nam] << g[b][i, j]
+                g_nambu[b_nam][i_nam, j_nam] << g[b][i[0], j[0]]
             if i_nam == 1 and j_nam == 1:
-                g_nambu[b_nam][i_nam, j_nam] << -1 * g[b][i, j].conjugate()
+                g_nambu[b_nam][i_nam, j_nam] << -1 * g[b][i[0], j[0]].conjugate()
 
     def backtransform_g(self, giw):
         """

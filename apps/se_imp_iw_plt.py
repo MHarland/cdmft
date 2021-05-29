@@ -29,8 +29,9 @@ for fname in sys.argv[1:]:
               for i in range(n_orbs)]
     for orb, c in zip(orbs, colors):
         b, i, j = orb
-        rey = g[b][i, j].data[n_iw0:n_w_max, 0, 0].real
-        imy = g[b][i, j].data[n_iw0:n_w_max, 0, 0].imag
+        i, j = i[0], j[0]
+        rey = g[b][i, j].data[n_iw0:n_w_max].real
+        imy = g[b][i, j].data[n_iw0:n_w_max].imag
         if g[b].target_shape[0] == 1:
             label = nice_index(b)
         else:

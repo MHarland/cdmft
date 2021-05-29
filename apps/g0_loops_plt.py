@@ -6,8 +6,8 @@ from cdmft.plot.cfg import plt, ax
 
 index = None
 w_max = 10
-orb1 = ('up', 0, 0)
-orb2 = ('dn', 0, 0)
+orb1 = ('up-X', 0, 0)
+orb2 = ('dn-X', 0, 0)
 for fname in sys.argv[1:]:
     sto = Storage(fname)
     n_loops = min(10, sto.get_completed_loops())
@@ -18,8 +18,8 @@ for fname in sys.argv[1:]:
         n_iw0 = int(len(supermesh)*.5)
         n_w_max = np.argwhere(supermesh <= w_max)[-1,0]
         mesh = supermesh[n_iw0:n_w_max]
-        y_a = g_weiss[orb1[0]][orb1[1], orb1[2]].data[n_iw0:n_w_max,0,0].imag
-        y_b = g_weiss[orb2[0]][orb1[1], orb1[2]].data[n_iw0:n_w_max,0,0].imag
+        y_a = g_weiss[orb1[0]][orb1[1], orb1[2]].data[n_iw0:n_w_max].imag
+        y_b = g_weiss[orb2[0]][orb1[1], orb1[2]].data[n_iw0:n_w_max].imag
         ax.plot(mesh, y_a, color = c, ls = "--", marker = "x")
         ax.plot(mesh, y_b, color = c, label = '$'+str(l)+'$', marker = "+")
     ax.set_xlabel("$i\\omega_n$")

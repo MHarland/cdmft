@@ -24,8 +24,8 @@ for fname, color in zip(sys.argv[1:], colors):
         norb = len(indices)
         norm = n_freq*norb
         for ind in indices:
-            bn, i, j = ind[0], int(ind[1]), int(ind[2])
-            dif += np.sum(np.abs(gdif[bn].data[niw0:niw0+n_freq, i, j]))/norm
+            bn, i, j = ind[0], int(ind[1][0]), int(ind[2][0])
+            dif += np.sum(np.abs(gdif[bn][i, j].data[niw0:niw0+n_freq]))/norm
         x.append(l)
         y.append(dif)
     ax.plot(x, np.log10(y), label = '$\\mathrm{'+fname[:-3]+'}$', color = color)
